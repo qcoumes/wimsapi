@@ -1,0 +1,1198 @@
+# -*- coding: utf-8 -*-
+
+
+"""Low-level API of the adm/raw module of WIMS.
+
+For higher level classes like Class, User and Sheet, see the other .py files.
+
+WIMS direct communication with another web server is two-directional. It can
+receive http/https requests from the other server, and/or send http/https
+requests to the other.
+
+The connectable server must be declared in a file
+within the directory 'WIMS_HOME/log/classes/.connections/'.
+
+/!\ Warning: wims type of output is deprecated and can cause some problem, you should ask your
+server maintainer to set 'ident_type=json' in 'WIMS_HOME/log/classes/.connections/IDENT'
+
+For more informations, see http://wims.unice.fr/wims/?module=adm/raw&job=help"""
+
+
+import string
+import random
+import types
+import json
+
+import requests
+
+
+
+def random_code():
+    return ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(10))
+
+
+def make_url(url, params):
+    return url + '?' + '&'.join([str(k) + '=' + str(v) for k, v in params.items()])
+
+
+def parse_response(request, verbose=False, ignore_not_adm_raw=False):
+    """Return a dictionnary containing at least 'status' and 'message' keys.
+    
+    The goal is that the response is always the same, whether the output type of the WIMS server is
+    set to JSON or WIMS.
+    
+    /!\ Warning: wims type of output is deprecated and can cause some problem, you should ask your
+    server maintainer to set 'ident_type=json' in 'WIMS_HOME/log/classes/.connections/IDENT'."""
+    try:
+        response = request.json()
+    except:
+        status, message = request.text.split('\n', maxsplit=1)
+        code = "N/A"
+        if ' '  in status:
+            status, code = status.split(' ', maxsplit=1)
+        response = {
+            'status': status,
+            'message': message if '\n' not in message else message[:-1],
+            'code': code,
+        }
+    if response['status'] not in ["ERROR", "OK"]:
+        if not ignore_not_adm_raw:
+            raise ValueError("Not a adm/raw response, maybe the URL is incorrect. "
+                              + ("Use verbose=True to see the received response content "
+                              + "or ignore_not_adm_raw=True to ignore this exception."
+                                if not verbose else "Received:\n\n" + request.text))
+        else:
+            return request.text
+        
+    return response
+
+
+
+class WimsAPI():
+    """This class allow a python3 script to communicate with a WIMS server.
+    
+    Parameters:
+        url - (str) url to the wims server CGI. e.g. https://wims.unice.fr/wims/wims.cgi
+        ident - (str) Sender identifier (a word, according to the definition
+                in WIMS_HOME/log/classes/.connections/)
+        passwd - (str) Sender password (as defined in WIMS_HOME/log/classes/.connections/)
+    
+    
+    Two optionnal parameter can be passed to every method:
+        code - (str) a word sent to the request. A random code will be created by the method if none
+               is provided. This word will be sent back, in order to allow to check whether the
+               result is from the good request.
+        verbose - (boolean) Default to False. Tell whether or not showing the whole response in the
+                   the exception if the response could not be parsed.
+    Any additionnal keyword argument will be passe to the request.post() function.
+    
+    Every method return a tuple containing a boolean and a dictionnary containing at least 'status',
+    'message' and 'code' keys.
+    Status is either a word OK (which set the boolean to True), or the word ERROR (which set the
+    boolean to False).
+    In case the status is OK, the 'message' key contains the remaining of the data (can be empty),
+    the dictionnary can also contains more keys.
+    In case the status is ERROR, key 'message' contains the nature of the error.
+    
+    /!\ Warning: wims type of output is deprecated and can cause some problem, you should ask your
+    server maintainer to set 'ident_type=json' in 'WIMS_HOME/log/classes/.connections/IDENT'.
+    
+    For more informations, see http://wims.unice.fr/wims/?module=adm/raw&job=help"""
+    
+    
+    def __init__(self, url, ident, passwd):
+        self.params = {'module': 'adm/raw', 'ident': ident, 'passwd': passwd}
+        self.url = url
+    
+    
+    def addclass(self, qclass, rclass, class_info, supervisor_info, verbose=False, code=None, **kwargs):
+        """Add a class on the receiving server.
+        
+        Parameters:
+            qclass - (int) identifier of the class on the receiving server.
+            rclass - (str) identifier of the class on the sending server.
+            class_info - (dict) properties of the new class, following keys may be present:
+                Mandatory:
+                    description - (str) name of the class
+                    institution - (str) name of the institution
+                    supervisor - (str) full name of the supervisor
+                    email - (str) contact email address
+                    password - (str) password for user registration
+                    lang - (str) class language (en, fr, es, it, etc)
+                Optionnal:
+                    expiration - (str) class expiration date (yyyymmdd, defaults to one year later)
+                    limit - (str) limit of number of participants (defaults to 30)
+                    level - (str) level of the class (defaults to H4) Valid levels: E1,
+                                      E2, ..., E6, H1, ..., H6, U1, ..., U5, G, R
+                    secure - (str) secure hosts
+                    bgcolor - (str) page background color
+                    refcolor - (str) menu background color
+                    css - (str) css file (must be existing css on the WIMS server)
+            supervisor_info - (dict) properties of the supervisor account, folowing keys may be
+                              present:
+                Mandatory
+                    lastname - (str) last name of the supervisor user
+                    firstname - (str) first name of the supervisor user
+                    password - (str) user's password, non-crypted.
+                Optionnal:
+                    email - (str) supervisor email address
+                    comments - (str) any comments
+                    regnum - (str) registration number
+                    photourl - (str) url of a user picture
+                    participate - (str) list classes (if in a class group) where user participates
+                    agreecgu - (str) Boolean indicating if user accepted CGU
+                    regprop1, regprop2, ... regprop5 - (str) custom properties"""	
+        params = {**self.params, **{
+                'job': 'addclass',
+                'code': code if code else random_code(),
+                'qclass': qclass,
+                'rclass': rclass,
+                'data1': '\n'.join([str(k) + "=" + str(v) for k, v in class_info.items()]),
+                'data2': '\n'.join([str(k) + "=" + str(v) for k, v in supervisor_info.items()]),
+        }}
+        request = requests.post(self.url, params=params, **kwargs)
+        response = parse_response(request, verbose)
+        return (response['status'] == 'OK', response)
+    
+    
+    def addexam(self, verbose=False, code=None, **kwargs):
+        pass # TODO
+    
+    
+    def addexo(self, verbose=False, code=None, **kwargs):
+        pass # TODO
+        
+        
+    def addsheet(self, qclass, rclass, sheet_info, verbose=False, code=None, **kwargs):
+        """Add a user to the specified class.
+        
+        Parameters:
+            qclass - (int) identifier of the class on the receiving server.
+            rclass - (str) identifier of the class on the sending server.
+            sheet_info - (dict) properties of the sheet, following keys may be present:
+                Mandatory:
+                    /
+                Optionnal:
+                    title - (str) name of the sheet (defaults to "sheet n#")
+                    description - (str) description of the sheet (defaults to "sheet n#")
+                    expiration - (str) expiration date (yyyymmdd) defaults to one year later
+                    sheetmode - (str) the mode of the sheet:
+                                    0 : pending (default)
+                                    1 : active
+                                    2 : expired
+                                    3 : expired + hidden
+                    weight - (str) weight of the sheet in class score
+                    formula - (str) How the score is calculated for this sheet (0 to 6)
+                    indicator - (str) what indicator will be used in the score formula (0 to 2)
+                    contents - (str) the contents for the multi-line file to be created.
+                                  The semicolons (;) in this parameter will be
+                                  interpreted as new lines. Equal characters (=) must
+                                  be replaced by the character AT (@).
+                                  There is no check made, so the integrity of the
+                                  contents is up to you only! (defaults to "")"""
+        params = {**self.params, **{
+                'job': 'addsheet',
+                'code': code if code else random_code(),
+                'qclass': qclass,
+                'rclass': rclass,
+                'data1': '\n'.join([str(k) + "=" + str(v) for k, v in sheet_info.items()]),
+        }}
+        request = requests.post(self.url, params=params, **kwargs)
+        response = parse_response(request, verbose)
+        return (response['status'] == 'OK', response)
+    
+    
+    def adduser(self, qclass, rclass, quser, user_info, verbose=False, code=None, **kwargs):
+        """Add a user to the specified class.
+        
+        Parameters:
+            qclass - (int) identifier of the class on the receiving server.
+            rclass - (str) identifier of the class on the sending server.
+            quser  - (str) user identifier in the receiving server.
+            user_info - (dict) properties of the user, following keys may be present:
+                Mandatory
+                    lastname - (str) last name of the user
+                    firstname - (str) first name of the user
+                    password - (str) user's password, non-crypted.
+                Optionnal:
+                    email - (str) email address
+                    comments - (str) any comments
+                    regnum - (str) registration number
+                    photourl - (str) url of user's photo
+                    participate - (str) list classes where user participates
+                    courses - (str) special for portal
+                    classes - (str) special for portal
+                    supervise - (str) List classes where teacher are administator
+                    supervisable - (str) yes/no ; give right to the user to supervise a class
+                    external_auth - (str) login for external_auth
+                    agreecgu - (str) if yes, the user will not be asked when he enters
+                               for the first time to agree the cgu
+                    regprop[1..5] - (str) custom variables"""
+        params = {**self.params, **{
+                'job': 'adduser',
+                'code': code if code else random_code(),
+                'qclass': qclass,
+                'rclass': rclass,
+                'quser': quser,
+                'data1': '\n'.join([str(k) + "=" + str(v) for k, v in user_info.items()]),
+        }}
+        request = requests.post(self.url, params=params, **kwargs)
+        response = parse_response(request, verbose)
+        return (response['status'] == 'OK', response)
+    
+    
+    def authuser(self, qclass, rclass, quser, hashlogin=None, verbose=False, code=None, **kwargs):
+        """Get an authentification for a user.
+        
+        User's password is not required.
+        
+        If parameter hashlogin is set to an hash function name, quser should be the external
+        identification of user and the function hashlogin is called to convert
+        such id to a WIMS login. If the user exists in class, it returns a
+        session number as above. If the user does not exists, the WIMS login is
+        returned in the error message.
+         
+        Parameters:
+            qclass - (int) identifier of the class on the receiving server.
+            rclass - (str) identifier of the class on the sending server.
+            quser  - (str) user identifier in the receiving server.
+            hashlogin  - (str) hash function to use for an external authentification
+            
+        Return a session number under which the user can connect with no need of further
+        authentification"""
+        params = {**self.params, **{
+                'job': 'authuser',
+                'code': code if code else random_code(),
+                'qclass': qclass,
+                'rclass': rclass,
+                'quser': quser,
+        }}
+        if hashlogin:
+            params['hashlogin'] = hashlogin
+        request = requests.post(self.url, params=params, **kwargs)
+        response = parse_response(request, verbose)
+        return (response['status'] == 'OK', response)
+    
+    
+    def buildexos(self, verbose=False, code=None, **kwargs):
+        pass # TODO
+    
+    
+    def checkclass(self, qclass, rclass, verbose=False, code=None, **kwargs):
+        """Check whether the class accepts connection.
+        
+        Parameters:
+            qclass - (int) identifier of the class on the receiving server.
+            rclass - (str) identifier of the class on the sending server."""
+        params = {**self.params, **{
+                'job': 'checkclass',
+                'code': code if code else random_code(),
+                'qclass': qclass,
+                'rclass': rclass,
+        }}
+        request = requests.post(self.url, params=params, **kwargs)
+        response = parse_response(request, verbose)
+        return (response['status'] == 'OK', response)
+    
+    
+    def checkexam(self, qclass, rclass, qexam, verbose=False, code=None, **kwargs):
+        """Check whether the exam exists.
+        
+        Parameters:
+            qclass - (int) identifier of the class on the receiving server.
+            rclass - (str) identifier of the class on the sending server.
+            qexam  - (str) exam identifier in the receiving server."""
+        params = {**self.params, **{
+                'job': 'checkexam',
+                'code': code if code else random_code(),
+                'qclass': qclass,
+                'rclass': rclass,
+                'qexam': qexam,
+        }}
+        request = requests.post(self.url, params=params, **kwargs)
+        response = parse_response(request, verbose)
+        return (response['status'] == 'OK', response)
+    
+    
+    def checkident(self, verbose=False, code=None, **kwargs):
+        """Check whether the connection is accepted."""
+        params = {**self.params, **{'job': 'checkident', 'code': code if code else random_code()}}
+        request = requests.post(self.url, params=params, **kwargs)
+        response = parse_response(request, verbose)
+        return (response['status'] == 'OK', response)
+    
+    
+    def checksheet(self, qclass, rclass, qsheet, verbose=False, code=None, **kwargs):
+        """Check whether the sheet exists.
+        
+        Parameters:
+            qclass - (int) identifier of the class on the receiving server.
+            rclass - (str) identifier of the class on the sending server.
+            qsheet - (str) identifier of the sheet on the receiving server."""
+        params = {**self.params, **{
+                'job': 'checksheet',
+                'code': code if code else random_code(),
+                'qclass': qclass,
+                'rclass': rclass,
+                'qsheet': qsheet,
+        }}
+        request = requests.post(self.url, params=params, **kwargs)
+        response = parse_response(request, verbose)
+        return (response['status'] == 'OK', response)
+    
+    
+    def checkuser(self, qclass, rclass, quser, verbose=False, code=None, **kwargs):
+        """Check whether the user exists.
+        
+        Parameters:
+            qclass - (int) identifier of the class on the receiving server.
+            rclass - (str) identifier of the class on the sending server.
+            quser  - (str) user identifier in the receiving server."""
+        params = {**self.params, **{
+                'job': 'checkuser',
+                'code': code if code else random_code(),
+                'qclass': qclass,
+                'rclass': rclass,
+                'quser': quser,
+        }}
+        request = requests.post(self.url, params=params, **kwargs)
+        response = parse_response(request, verbose)
+        return (response['status'] == 'OK', response)
+    
+    
+    def cleanclass(self, verbose=False, code=None, **kwargs):
+        pass # TODO
+    
+    
+    def copyclass(self, verbose=False, code=None, **kwargs):
+        pass # TODO
+    
+    
+    def delclass(self, qclass, rclass, verbose=False, code=None, **kwargs):
+        """Delete a class.
+        
+        Parameters:
+            qclass - (int) identifier of the class on the receiving server.
+            rclass - (str) identifier of the class on the sending server."""
+        params = {**self.params, **{
+                'job': 'delclass',
+                'code': code if code else random_code(),
+                'qclass': qclass,
+                'rclass': rclass,
+        }}
+        request = requests.post(self.url, params=params, **kwargs)
+        response = parse_response(request, verbose)
+        return (response['status'] == 'OK', response)
+    
+    
+    def delexam(self, qclass, rclass, qexam, verbose=False, code=None, **kwargs):
+        """Delete an exam.
+        
+        Parameters:
+            qclass - (int) identifier of the class on the receiving server.
+            rclass - (str) identifier of the class on the sending server.
+            qexam   - (str) exam identifier in the receiving server."""
+        params = {**self.params, **{
+                'job': 'deluser',
+                'code': code if code else random_code(),
+                'qclass': qclass,
+                'rclass': rclass,
+                'qexam': qexam, 
+        }}
+        request = requests.post(self.url, params=params, **kwargs)
+        response = parse_response(request, verbose)
+        return (response['status'] == 'OK', response)
+    
+    
+    def delexo(self, qclass, rclass, qexo, verbose=False, code=None, **kwargs):
+        """Delete an exo.
+        
+        Parameters:
+            qclass - (int) identifier of the class on the receiving server.
+            rclass - (str) identifier of the class on the sending server.
+            qexo   - (str) exo identifier in the receiving server."""
+        params = {**self.params, **{
+                'job': 'deluser',
+                'code': code if code else random_code(),
+                'qclass': qclass,
+                'rclass': rclass,
+                'qexo': qexo, 
+        }}
+        request = requests.post(self.url, params=params, **kwargs)
+        response = parse_response(request, verbose)
+        return (response['status'] == 'OK', response)
+    
+    
+    def delsheet(self, qclass, rclass, qsheet, verbose=False, code=None, **kwargs):
+        """Delete a sheet
+        
+        Parameters:
+            qclass - (int) identifier of the class on the receiving server.
+            rclass - (str) identifier of the class on the sending server.
+            qsheet - (int) identifier of the sheet on the receiving server.
+            options - (list) names of fields queried."""
+        params = {**self.params, **{
+                'job': 'recsheet',
+                'code': code if code else random_code(),
+                'qclass': qclass,
+                'rclass': rclass,
+                'qsheet': qsheet,
+        }}
+        request = requests.post(self.url, params=params, **kwargs)
+        response = parse_response(request, verbose)
+        return (response['status'] == 'OK', response)
+     
+    
+    def deluser(self, qclass, rclass, quser, verbose=False, code=None, **kwargs):
+        """Delete an user.
+        
+        Parameters:
+            qclass - (int) identifier of the class on the receiving server.
+            rclass - (str) identifier of the class on the sending server.
+            quser  - (str) user identifier in the receiving server."""
+        params = {**self.params, **{
+                'job': 'deluser',
+                'code': code if code else random_code(),
+                'qclass': qclass,
+                'rclass': rclass,
+                'quser': quser, 
+        }}
+        request = requests.post(self.url, params=params, **kwargs)
+        response = parse_response(request, verbose)
+        return (response['status'] == 'OK', response)
+    
+    
+    def getclass(self, qclass, rclass, options=None, verbose=False, code=None, **kwargs):
+        """Get the properties of a class.
+        
+        Optionally, the parameter 'options' may contain the names of fields
+        queried. In this case, only the queried properties are returned.
+        
+        Existing properties are: password, creator, secure, external_auth, mixed_external_auth,
+        cas_auth, php_auth, authidp, supervisor, description, institution, lang, email, expiration,
+        limit, topscores, superclass, type, level, parent, typename, bgcolor, bgimg, scorecolor,
+        css, logo, logoside, refcolor, ref_menucolor, ref_button_color, ref_button_bgcolor,
+        ref_button_help_color, ref_button_help_bgcolor, theme, theme_icon, connections, creation,
+        userlist, usercount, examcount, sheetcount
+        
+        Parameters:
+            qclass - (int) identifier of the class on the receiving server.
+            rclass - (str) identifier of the class on the sending server.
+            options - (list) names of fields queried."""
+        params = {**self.params, **{
+                'job': 'getclass',
+                'code': code if code else random_code(),
+                'qclass': qclass,
+                'rclass': rclass,
+        }}
+        if options:
+            params['option'] = ','.join(options)
+        request = requests.post(self.url, params=params, **kwargs)
+        response = parse_response(request, verbose)
+        return (response['status'] == 'OK', response)
+    
+    
+    def getclassesuser(self, rclass, quser, verbose=False, code=None, **kwargs):
+        """List all the classes having connection with rclass where quser exists.
+        
+        Optionally, the parameter 'options' may contain the names of fields
+        queried for each class. In this case, only the queried properties are returned.
+        
+        Existing properties are: password, creator, secure, external_auth, mixed_external_auth,
+        cas_auth, php_auth, authidp, supervisor, description, institution, lang, email, expiration,
+        limit, topscores, superclass, type, level, parent, typename, bgcolor, bgimg, scorecolor,
+        css, logo, logoside, refcolor, ref_menucolor, ref_button_color, ref_button_bgcolor,
+        ref_button_help_color, ref_button_help_bgcolor, theme, theme_icon, connections, creation,
+        userlist, usercount, examcount, sheetcount
+        
+        Parameters:
+            rclass - (str) identifier of the class on the sending server.
+            quser  - (str) user identifier in the receiving server.
+            options - (list) names of fields queried."""
+        params = {**self.params, **{
+                'job': 'getclassesuser',
+                'code': code if code else random_code(),
+                'rclass': rclass,
+                'quser': quser,
+        }}
+        request = requests.post(self.url, params=params, **kwargs)
+        response = parse_response(request, verbose)
+        return (response['status'] == 'OK', response)
+    
+    
+    def getclassfile(self, verbose=False, code=None, **kwargs):
+        pass # TODO
+    
+    
+    def getclassmodif(self, verbose=False, code=None, **kwargs):
+        pass # TODO
+    
+    
+    def getclasstgz(self, verbose=False, code=None, **kwargs):
+        pass # TODO
+    
+    
+    def getcsv(self, qclass, rclass, options, format='csv', verbose=False, code=None, **kwargs):
+        """Get data of the class, under the form of a csv/tsv spreatsheet file.
+        
+        The parameter 'format' may be used to specify the desired output format
+        (csv or tsv, defaults to csv).
+        
+        The parameter 'options' should contain a list of desired data columns.
+        The following names can be included in 'option', with their respective meanings:
+            login       : user identifiers
+            password    : user passwords (uncrypted)
+            name        : user names (last name and first name)
+            lastname    : user family names
+            firstname   : user given names
+            email       : user email addresses
+            regnum      : user registration numbers
+            allscore    : all score fields (averages and details)
+            averages    : score averages (average0, average1, average2)
+            average0    : global score average (as computed by WIMS)
+            average1    : average of scores automatically attributed by WIMS
+            average2    : average of teacher-entered scores
+            exams       : exam1+exam2+...
+            exam1, exam2, ...: scores of each exam
+            sheets      : sheet1+sheet2+...
+            sheet1, sheet2, ...: scores of each worksheet
+            manuals     : manual1+manual2+...
+            manual1, manual2, ...: first, second, ... teacher-entered scores.
+
+        The output content (below the status line in WIMS format) is a csv/tsv
+        spreadsheet table. The first row of the table contains
+        the names of the fields. The second row gives short
+        descriptions of each field. The third row is blank.
+        The rest is the table content, with one row for each user.
+        
+        Parameters:
+            qclass - (int) identifier of the class on the receiving server.
+            rclass - (str) identifier of the class on the sending server.
+            options - (list) list of desired data columns.
+            format  - (str) output format ('csv' or 'tsv', defaults to csv)"""
+        params = {**self.params, **{
+                'job': 'getcsv',
+                'code': code if code else random_code(),
+                'qclass': qclass,
+                'rclass': rclass,
+                'format': format,
+        }}
+        if options:
+            params['option'] = ','.join(options)
+        request = requests.post(self.url, params=params, **kwargs)
+        response = parse_response(request, ignore_not_adm_raw=True)
+        return (response['status'] == 'OK' if type(response) == dict else True, response)
+    
+    
+    def getexam(self, verbose=False, code=None, **kwargs):
+        pass # TODO
+    
+    
+    def getexamlog(self, verbose=False, code=None, **kwargs):
+        pass # TODO
+    
+    
+    def getexamscores(self, qclass, rclass, qexam, verbose=False, code=None, **kwargs):
+        """Get all scores from exam - JSON OUTPUT ONLY.
+        
+        Parameters:
+            qclass - (int) identifier of the class on the receiving server.
+            rclass - (str) identifier of the class on the sending server.
+            qexam - (int) identifier of the exam on the receiving server."""
+        params = {**self.params, **{
+                'job': 'getexamscores',
+                'code': code if code else random_code(),
+                'qclass': qclass,
+                'rclass': rclass,
+                'qexam': qexam,
+        }}
+        request = requests.post(self.url, params=params, **kwargs)
+        response = parse_response(request, verbose)
+        return (response['status'] == 'OK', response)
+    
+    
+    def getexo(self, verbose=False, code=None, **kwargs):
+        pass # TODO
+    
+    
+    def getfile(self, verbose=False, code=None, **kwargs):
+        pass # TODO
+    
+    
+    def getexosheet(self, verbose=False, code=None, **kwargs):
+        pass # TODO
+    
+    
+    def getinfoserver(self, verbose=False, code=None, **kwargs):
+        pass # TODO
+    
+    
+    def getlog(self, qclass, rclass, quser, verbose=False, code=None, **kwargs):
+        """Get the detailed activity registry of a user.
+        
+        Parameters:
+            qclass - (int) identifier of the class on the receiving server.
+            rclass - (str) identifier of the class on the sending server.
+            quser  - (str) user identifier in the receiving server."""
+        params = {**self.params, **{
+                'job': 'getlog',
+                'code': code if code else random_code(),
+                'qclass': qclass,
+                'rclass': rclass,
+                'quser': quser,
+        }}
+        request = requests.post(self.url, params=params, **kwargs)
+        response = parse_response(request, verbose)
+        return (response['status'] == 'OK', response)
+    
+    
+    def getmodule(self, verbose=False, code=None, **kwargs):
+        pass # TODO
+    
+    
+    def getscore(self, qclass, rclass, quser, qsheet=None, verbose=False, code=None, **kwargs):
+        """Get all scores from user.
+        
+        Can optionnal filter from a sheet.
+        
+        Parameters:
+            qclass - (int) identifier of the class on the receiving server.
+            rclass - (str) identifier of the class on the sending server.
+            quser  - (str) user identifier in the receiving server.
+            qsheet - (int) identifier of the sheet on the receiving server. Use to filter the scores."""
+        params = {**self.params, **{
+                'job': 'getscore',
+                'code': code if code else random_code(),
+                'qclass': qclass,
+                'rclass': rclass,
+                'quser': quser,
+        }}
+        if qsheet:
+            params['qsheet'] = qsheet
+        request = requests.post(self.url, params=params, **kwargs)
+        response = parse_response(request, verbose)
+        return (response['status'] == 'OK', response)
+    
+    
+    def getscores(self, verbose=False, code=None, **kwargs):
+        pass # TODO
+    
+    
+    def getsession(self, verbose=False, code=None, **kwargs):
+        pass # TODO
+    
+    
+    def getsheet(self, qclass, rclass, qsheet, options=None, verbose=False, code=None, **kwargs):
+        """Get the properties of a sheet (of a class).
+        
+        Optionally, the parameter 'options' may contain the names of fields
+        queried. In this case, only the queried properties are returned.
+        
+        Existing properties are: exo_cnt, sheet_properties, sheet_status, sheet_expiration,
+        sheet_title, sheet_description, exolist, title, params, points, weight, description
+        
+        Parameters:
+            qclass - (int) identifier of the class on the receiving server.
+            rclass - (str) identifier of the class on the sending server.
+            qsheet - (int) identifier of the sheet on the receiving server.
+            options - (list) names of fields queried."""
+        params = {**self.params, **{
+                'job': 'getsheet',
+                'code': code if code else random_code(),
+                'qclass': qclass,
+                'rclass': rclass,
+                'qsheet': qsheet,
+        }}
+        if options:
+            params['option'] = ','.join(options)
+        request = requests.post(self.url, params=params, **kwargs)
+        response = parse_response(request, verbose)
+        return (response['status'] == 'OK', response)
+    
+    
+    def getsheetscores(self, qclass, rclass, qsheet, verbose=False, code=None, **kwargs):
+        """Get all scores from sheet - JSON OUTPUT ONLY.
+        
+        Parameters:
+            qclass - (int) identifier of the class on the receiving server.
+            rclass - (str) identifier of the class on the sending server.
+            qsheet - (int) identifier of the sheet on the receiving server."""
+        params = {**self.params, **{
+                'job': 'getsheetscores',
+                'code': code if code else random_code(),
+                'qclass': qclass,
+                'rclass': rclass,
+                'qsheet': qsheet,
+        }}
+        request = requests.post(self.url, params=params, **kwargs)
+        response = parse_response(request, verbose)
+        return (response['status'] == 'OK', response)
+    
+    
+    def getsheetstats(self, verbose=False, code=None, **kwargs):
+        pass # TODO
+    
+    
+    def gettime(self, verbose=False, code=None, **kwargs):
+        """Get the detailed activity registry of a user.
+        
+        Can be used for synchronization purposes."""
+        params = {**self.params, **{
+                'job': 'gettime',
+                'code': code if code else random_code(),
+        }}
+        request = requests.post(self.url, params=params, **kwargs)
+        response = parse_response(request, verbose)
+        return (response['status'] == 'OK', response)
+    
+    
+    def getuser(self, qclass, rclass, quser, options=None, verbose=False, code=None, **kwargs):
+        """Get the properties of a user (of a class).
+        
+        Optionally, the parameter 'options' may contain the names of fields
+        queried. In this case, only the queried properties are returned.
+        
+        Existing properties are: firstname, lastname, email, comments, regnum, photourl,
+        participate, courses, classes, supervise, supervisable, external_auth, agreecgu, regprop1,
+        regprop2, regprop3, regprop4, regprop5
+        
+        Parameters:
+            qclass - (int) identifier of the class on the receiving server.
+            rclass - (str) identifier of the class on the sending server.
+            quser  - (str) user identifier in the receiving server.
+            options - (list) names of fields queried."""
+        params = {**self.params, **{
+                'job': 'getuser',
+                'code': code if code else random_code(),
+                'qclass': qclass,
+                'rclass': rclass,
+                'quser': quser,
+        }}
+        if options:
+            params['option'] = ','.join(options)
+        request = requests.post(self.url, params=params, **kwargs)
+        response = parse_response(request, verbose)
+        return (response['status'] == 'OK', response)
+    
+    
+    def lightpopup(self, qclass, rclass, quser, session, exercice, about=True, verbose=False, code=None, **kwargs):
+        """Get data of the class, under the form of a csv/tsv spreatsheet file.
+
+        Parameters:
+            qclass - (int) identifier of the class on the receiving server.
+            rclass - (str) identifier of the class on the sending server.
+            quser  - (str) user identifier in the receiving server.
+            session - (str) session identifer returned by authuser().
+            exercice - (str) addresse of the exercice found in 'About this module / this exercice'
+                       on the page of the exercice eg:
+                       'classes/en&exo=Exercise1&qnum=1&qcmlevel=1&scoredelay=700,700 '
+            about - (bool) If True (default), show "about" which gives author information about the
+                     exercise"""
+        params = {**self.params, **{
+                'job': 'lightpopup',
+                'code': code if code else random_code(),
+                'qclass': qclass,
+                'rclass': rclass,
+                'quser': quser,
+                'session': session,
+                'emod': exercice,
+                'option': 'about' if about else 'noabout',
+        }}
+        request = requests.post(self.url, params=params, **kwargs)
+        response = parse_response(request, ignore_not_adm_raw=True)
+        return (response['status'] == 'OK' if type(response) == dict else True, response)
+    
+    
+    def linkexo(self, verbose=False, code=None, **kwargs):
+        pass # TODO
+    
+    
+    def linksheet(self, qclass, rclass, qsheet, qexam, verbose=False, code=None, **kwargs):
+        """Add all exercices from sheet to exam
+        
+        Parameters:
+            qclass - (int) identifier of the class on the receiving server.
+            rclass - (str) identifier of the class on the sending server.
+            qsheet - (int) identifier of the sheet on the receiving server.
+            qexam - (int) identifier of the exam on the receiving server.
+        """
+        params = {**self.params, **{
+                'job': 'linksheet',
+                'code': code if code else random_code(),
+                'qclass': qclass,
+                'rclass': rclass,
+                'qsheet': qsheet,
+                'qexam': qexam,
+        }}
+        request = requests.post(self.url, params=params, **kwargs)
+        response = parse_response(request, verbose)
+        return (response['status'] == 'OK', response)
+    
+    
+    def listclasses(self, rclass, verbose=False, code=None, **kwargs):
+        """List all the classes having connection with rclass.
+        
+        Optionally, the parameter 'options' may contain the names of fields
+        queried for each class. In this case, only the queried properties are returned.
+        
+        Existing properties are: password, creator, secure, external_auth, mixed_external_auth,
+        cas_auth, php_auth, authidp, supervisor, description, institution, lang, email, expiration,
+        limit, topscores, superclass, type, level, parent, typename, bgcolor, bgimg, scorecolor,
+        css, logo, logoside, refcolor, ref_menucolor, ref_button_color, ref_button_bgcolor,
+        ref_button_help_color, ref_button_help_bgcolor, theme, theme_icon, connections, creation,
+        userlist, usercount, examcount, sheetcount
+        
+        Parameters:
+            rclass - (str) identifier of the class on the sending server.
+            options - (list) names of fields queried."""
+        params = {**self.params, **{
+                'job': 'listclasses',
+                'code': code if code else random_code(),
+                'rclass': rclass,
+        }}
+        request = requests.post(self.url, params=params, **kwargs)
+        response = parse_response(request, verbose)
+        return (response['status'] == 'OK', response)
+    
+    
+    def listexams(self, qclass, rclass, verbose=False, code=None, **kwargs):
+        """Lists all exams presents in class.
+
+        Parameters:
+            qclass - (int) identifier of the class on the receiving server.
+            rclass - (str) identifier of the class on the sending server."""
+        params = {**self.params, **{
+                'job': 'listexams',
+                'code': code if code else random_code(),
+                'qclass': qclass,
+                'rclass': rclass,
+        }}
+        request = requests.post(self.url, params=params, **kwargs)
+        response = parse_response(request, verbose)
+        return (response['status'] == 'OK', response)
+    
+    
+    def listexos(self, qclass, rclass, verbose=False, code=None, **kwargs):
+        """Lists all exercices presents in class.
+
+        Parameters:
+            qclass - (int) identifier of the class on the receiving server.
+            rclass - (str) identifier of the class on the sending server."""
+        params = {**self.params, **{
+                'job': 'addexo',
+                'code': code if code else random_code(),
+                'qclass': qclass,
+                'rclass': rclass,
+                'qsheet': 1,
+                'qexo': 'myexo',
+                'data1': 'U1/algebra/oefdet.fr'
+        }}
+        request = requests.post(self.url, params=params, **kwargs)
+        response = parse_response(request, verbose)
+        return (response['status'] == 'OK', response)
+    
+    
+    def listlinks(self, verbose=False, code=None, **kwargs):
+        pass # TODO
+    
+    
+    def listmodules(self, verbose=False, code=None, **kwargs):
+        pass # TODO
+    
+    
+    def listsheets(self, qclass, rclass, verbose=False, code=None, **kwargs):
+        """List all the sheets of a class.
+
+        Parameters:
+            qclass - (int) identifier of the class on the receiving server.
+            rclass - (str) identifier of the class on the sending server."""
+        params = {**self.params, **{
+                'job': 'listsheets',
+                'code': code if code else random_code(),
+                'qclass': qclass,
+                'rclass': rclass,
+        }}
+        request = requests.post(self.url, params=params, **kwargs)
+        response = parse_response(request, verbose)
+        return (response['status'] == 'OK', response)
+    
+    
+    def modclass(self, qclass, rclass, class_info, verbose=False, code=None, **kwargs):
+        """Modify the properties of a class.
+        
+        Parameters:
+            qclass - (int) identifier of the class on the receiving server.
+            rclass - (str) identifier of the class on the sending server.
+            class_info - (dict) Only modified properties need to be present, following keys
+                         may be present:
+                description - (str) name of the class
+                institution - (str) name of the institution
+                supervisor - (str) full name of the supervisor
+                email - (str) contact email address
+                password - (str) password for user registration
+                lang - (str) class language (en, fr, es, it, etc)
+                expiration - (str) class expiration date (yyyymmdd, defaults to one year later)
+                limit - (str) limit of number of participants (defaults to 30)
+                level - (str) level of the class (defaults to H4) Valid levels: E1,
+                                  E2, ..., E6, H1, ..., H6, U1, ..., U5, G, R
+                secure - (str) secure hosts
+                bgcolor - (str) page background color
+                refcolor - (str) menu background color
+                css - (str) css file (must be existing css on the WIMS server)"""
+        params = {**self.params, **{
+                'job': 'modclass',
+                'code': code if code else random_code(),
+                'qclass': qclass,
+                'rclass': rclass,
+                'data1': '\n'.join([str(k) + "=" + str(v) for k, v in class_info.items()]),
+        }}
+        request = requests.post(self.url, params=params, **kwargs)
+        response = parse_response(request, verbose)
+        return (response['status'] == 'OK', response)
+    
+    
+    def modexam(self, verbose=False, code=None, **kwargs):
+        pass # TODO
+    
+    
+    def modexosheet(self, verbose=False, code=None, **kwargs):
+        pass # TODO
+    
+    
+    def modsheet(self, qclass, rclass, qsheet, sheet_info, verbose=False, code=None, **kwargs):
+        """Modify the properties of a user.
+        
+        Parameters:
+            qclass - (int) identifier of the class on the receiving server.
+            rclass - (str) identifier of the class on the sending server.
+            qsheet - (int) identifier of the sheet on the receiving server.
+            sheet_info - (dict) Only modified properties need to be present, following keys
+                         may be present:
+                title - (str) name of the sheet (defaults to "sheet n#")
+                description - (str) description of the sheet (defaults to "sheet n#")
+                expiration - (str) expiration date (yyyymmdd) defaults to one year later
+                sheetmode - (str) the mode of the sheet:
+                                0 : pending (default)
+                                1 : active
+                                2 : expired
+                                3 : expired + hidden
+                weight - (str) weight of the sheet in class score
+                formula - (str) How the score is calculated for this sheet (0 to 6)
+                indicator - (str) what indicator will be used in the score formula (0 to 2)
+                contents - (str) the contents for the multi-line file to be created.
+                              The semicolons (;) in this parameter will be
+                              interpreted as new lines. Equal characters (=) must
+                              be replaced by the character AT (@).
+                              There is no check made, so the integrity of the
+                              contents is up to you only! (defaults to "")"""
+        params = {**self.params, **{
+                'job': 'modsheet',
+                'code': code if code else random_code(),
+                'qclass': qclass,
+                'rclass': rclass,
+                'qsheet': qsheet,
+                'data1': '\n'.join([str(k) + "=" + str(v) for k, v in sheet_info.items()]),
+        }}
+        request = requests.post(self.url, params=params, **kwargs)
+        response = parse_response(request, verbose)
+        return (response['status'] == 'OK', response)
+    
+    
+    def moduser(self, qclass, rclass, quser, user_info, verbose=False, code=None, **kwargs):
+        """Modify the properties of a user.
+        
+        Parameters:
+            qclass - (int) identifier of the class on the receiving server.
+            rclass - (str) identifier of the class on the sending server.
+            quser  - (str) user identifier in the receiving server.
+            user_info - (dict) Only modified properties need to be present, following keys
+                         may be present:
+                lastname - (str) last name of the supervisor user
+                firstname - (str) first name of the supervisor user
+                password - (str) user's password, non-crypted.
+                email - (str) email address
+                comments - (str) any comments
+                regnum - (str) registration number
+                photourl - (str) url of user's photo
+                participate - (str) list classes where user participates
+                courses - (str) special for portal
+                classes - (str) special for portal
+                supervise - (str) List classes where teacher are administator
+                supervisable - (str) yes/no ; give right to the user to supervise a class
+                external_auth - (str) login for external_auth
+                agreecgu - (str) if yes, the user will not be asked when he enters
+                           for the first time to agree the cgu
+                regprop[1..5] - (str) custom variables"""
+        params = {**self.params, **{
+                'job': 'moduser',
+                'code': code if code else random_code(),
+                'qclass': qclass,
+                'rclass': rclass,
+                'quser': quser,
+                'data1': '\n'.join([str(k) + "=" + str(v) for k, v in user_info.items()]),
+        }}
+        request = requests.post(self.url, params=params, **kwargs)
+        response = parse_response(request, verbose)
+        return (response['status'] == 'OK', response)
+    
+    
+    def movexo(self, qclass, qclass2, rclass, qsheet, copy=False, verbose=False, code=None, **kwargs):
+        """Moves exercice from qclass to qclass2 .
+        
+        Condition : Both 2 classes must be linked by.
+        
+        Parameters:
+            qclass - (int) identifier of the class on the receiving server, source of the exo.
+            qclass2 - (int) identifier of the class on the receiving server, destination of the exo.
+            rclass - (str) identifier of the class on the sending server.
+            qsheet - (int) identifier of the sheet on the receiving server.
+            copy - (bool) If set to True, copy the exo instead of moving it.
+        """
+        params = {**self.params, **{
+                'job': 'movexo',
+                'code': code if code else random_code(),
+                'qclass': qclass,
+                'rclass': rclass,
+                'qsheet': qsheet,
+                'data1': qclass2,
+        }}
+        if copy:
+            params['option'] = 'copy'
+        request = requests.post(self.url, params=params, **kwargs)
+        response = parse_response(request, verbose)
+        return (response['status'] == 'OK', response)
+    
+    
+    def movexos(self, qclass, qclass2, rclass, copy=False, verbose=False, code=None, **kwargs):
+        """Moves ALL exercices from qclass to qclass2 .
+        
+        Condition : Both 2 classes must be linked by.
+        
+        Parameters:
+            qclass - (int) identifier of the class on the receiving server, source of the exos.
+            qclass2 - (int) identifier of the class on the receiving server, destination of the exo.
+            rclass - (str) identifier of the class on the sending server.
+            copy - (bool) If set to True, copy the exo instead of moving it.
+        """
+        params = {**self.params, **{
+                'job': 'movexos',
+                'code': code if code else random_code(),
+                'qclass': qclass,
+                'rclass': rclass,
+                'data1': qclass2,
+        }}
+        if copy:
+            params['option'] = 'copy'
+        request = requests.post(self.url, params=params, **kwargs)
+        response = parse_response(request, verbose)
+        return (response['status'] == 'OK', response)
+    
+    
+    def putcsv(self, qclass, rclass, csv, file=True, verbose=False, code=None, **kwargs): #FIXME getting 'unauthorized'
+        """Put data into the class.
+        
+        csv should respect this format: The first row of the table contains
+        the names of the fields. The second row gives short
+        descriptions of each field. The second row is blank.
+        The rest is the table content, with one row for each user.
+        The following data columns can be included in the csv, with their respective meanings:
+            login       : user identifiers
+            password    : user passwords (uncrypted)
+            name        : user names (last name and first name)
+            lastname    : user family names
+            firstname   : user given names
+            email       : user email addresses
+            regnum      : user registration numbers
+            allscore    : all score fields (averages and details)
+            averages    : score averages (average0, average1, average2)
+            average0    : global score average (as computed by WIMS)
+            average1    : average of scores automatically attributed by WIMS
+            average2    : average of teacher-entered scores
+            exams       : exam1+exam2+...
+            exam1, exam2, ...: scores of each exam
+            sheets      : sheet1+sheet2+...
+            sheet1, sheet2, ...: scores of each worksheet
+            manuals     : manual1+manual2+...
+            manual1, manual2, ...: first, second, ... teacher-entered scores.
+        
+        Parameters:
+            qclass - (int) identifier of the class on the receiving server.
+            rclass - (str) identifier of the class on the sending server.
+            csv	   - (str) path to a csv if 'file' is True (default), content of a csv otherwise.
+            file   - (bool) Whether csv must be interpreted as a path to a csv or a .csv string"""
+        if file:
+            with open(csv, 'r') as f:
+                csv = f.read()
+        params = {**self.params, **{
+                'job': 'putcsv',
+                'code': code if code else random_code(),
+                'qclass': qclass,
+                'rclass': rclass,
+                'data1': csv,
+        }}
+        request = requests.post(self.url, params=params, **kwargs)
+        response = parse_response(request, verbose)
+        return (response['status'] == 'OK', response)
+    
+    
+    def putexo(self, verbose=False, code=None, **kwargs):
+        pass # TODO
+    
+    
+    def recuser(self, qclass, rclass, quser, verbose=False, code=None, **kwargs):
+        """Recover a deleted user.
+        
+        Parameters:
+            qclass - (int) identifier of the class on the receiving server.
+            rclass - (str) identifier of the class on the sending server.
+            quser  - (str) user identifier in the receiving server."""
+        params = {**self.params, **{
+                'job': 'recuser',
+                'code': code if code else random_code(),
+                'qclass': qclass,
+                'rclass': rclass,
+                'quser': quser, 
+        }}
+        request = requests.post(self.url, params=params, **kwargs)
+        response = parse_response(request, verbose)
+        return (response['status'] == 'OK', response)
+    
+    
+    def repairclass(self, verbose=False, code=None, **kwargs):
+        pass # TODO
+    
+    
+    def search(self, verbose=False, code=None, **kwargs):
+        pass # TODO
+    
+    
+    def sharecontent(self, qclass, qclass2, rclass, options=['exo'], verbose=False, code=None, **kwargs):
+        """Declares neighbour classes, allowing class "qclass" to share content with class "data1"
+        
+        Condition : Both 2 classes must be linked by.
+        
+        Parameters:
+            qclass - (int) identifier of the class on the receiving server.
+            qclass2 - (int) identifier of the second class on the receiving server.
+            rclass - (str) identifier of the class on the sending server.
+            options - (list) content to share (currently, only the "exo" content type is supported).
+        """
+        params = {**self.params, **{
+                'job': 'sharecontent',
+                'code': code if code else random_code(),
+                'qclass': qclass,
+                'rclass': rclass,
+                'option': ','.join(options),
+                'data1': qclass2,
+        }}
+        request = requests.post(self.url, params=params, **kwargs)
+        response = parse_response(request, verbose)
+        return (response['status'] == 'OK', response)
+    
+    
+    def testexo(self, verbose=False, code=None, **kwargs):
+        pass # TODO
+    
+    
+    def update(self, verbose=False, code=None, **kwargs):
+        pass # TODO
