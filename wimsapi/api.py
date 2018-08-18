@@ -46,8 +46,8 @@ def parse_response(request, verbose=False, return_request=False):
     The goal is that the response is always the same, whether the output type of the WIMS server is
     set to JSON or WIMS.
     
-    /!\ Warning: output must be set 'ident_type=json' in 'WIMS_HOME/log/classes/.connections/IDENT' for
-    this API to work properly."""
+    /!\ Warning: output must be set 'ident_type=json' in 'WIMS_HOME/log/classes/.connections/IDENT'
+    for this API to work properly."""
     try:
         response = request.json()
     except:
@@ -99,8 +99,8 @@ class WimsAPI():
     the dictionnary can also contains more keys.
     In case the status is ERROR, key 'message' contains the nature of the error.
     
-    /!\ Warning: output must be set 'ident_type=json' in 'WIMS_HOME/log/classes/.connections/IDENT' for
-    this API to work properly.
+    /!\ Warning: output must be set 'ident_type=json' in 'WIMS_HOME/log/classes/.connections/IDENT'
+    for this API to work properly.
     
     For more informations, see http://wims.unice.fr/wims/?module=adm/raw&job=help"""
     
@@ -184,13 +184,14 @@ class WimsAPI():
         return (response['status'] == 'OK', response)
     
     
-    def addexo(self, qclass, rclass, qexo, exo_src, no_build=False, verbose=False, code=None, **kwargs):
+    def addexo(self, qclass, rclass, qexo, exo_src, no_build=False, verbose=False, code=None,
+               **kwargs):
         """Add an exercice to the specified class.
         
         Parameters:
             qclass  - (int) identifier of the class on the receiving server.
             rclass  - (str) identifier of the class on the sending server.
-            qexo    - (str) exo identifier in the receiving server.
+            qexo    - (str) exo identifier on the receiving server.
             exo_src - (str) source of the exercice.
             no_build - (bool) Do not compile the exercise. Improves the speed when there is a lot
                               of exercices to handle at the same time. Do not forget to call
@@ -255,7 +256,7 @@ class WimsAPI():
         Parameters:
             qclass - (int) identifier of the class on the receiving server.
             rclass - (str) identifier of the class on the sending server.
-            quser  - (str) user identifier in the receiving server.
+            quser  - (str) user identifier on the receiving server.
             user_info - (dict) properties of the user, following keys may be present:
                 Mandatory
                     lastname - (str) last name of the user
@@ -302,7 +303,7 @@ class WimsAPI():
         Parameters:
             qclass - (int) identifier of the class on the receiving server.
             rclass - (str) identifier of the class on the sending server.
-            quser  - (str) user identifier in the receiving server.
+            quser  - (str) user identifier on the receiving server.
             hashlogin  - (str) hash function to use for an external authentification
             
         Return a session number under which the user can connect with no need of further
@@ -361,7 +362,7 @@ class WimsAPI():
         Parameters:
             qclass - (int) identifier of the class on the receiving server.
             rclass - (str) identifier of the class on the sending server.
-            qexam  - (str) exam identifier in the receiving server."""
+            qexam  - (str) exam identifier on the receiving server."""
         params = {**self.params, **{
                 'job': 'checkexam',
                 'code': code if code else random_code(),
@@ -407,7 +408,7 @@ class WimsAPI():
         Parameters:
             qclass - (int) identifier of the class on the receiving server.
             rclass - (str) identifier of the class on the sending server.
-            quser  - (str) user identifier in the receiving server."""
+            quser  - (str) user identifier on the receiving server."""
         params = {**self.params, **{
                 'job': 'checkuser',
                 'code': code if code else random_code(),
@@ -477,7 +478,7 @@ class WimsAPI():
         Parameters:
             qclass - (int) identifier of the class on the receiving server.
             rclass - (str) identifier of the class on the sending server.
-            qexam   - (str) exam identifier in the receiving server."""
+            qexam   - (str) exam identifier on the receiving server."""
         params = {**self.params, **{
                 'job': 'deluser',
                 'code': code if code else random_code(),
@@ -496,7 +497,7 @@ class WimsAPI():
         Parameters:
             qclass - (int) identifier of the class on the receiving server.
             rclass - (str) identifier of the class on the sending server.
-            qexo   - (str) exo identifier in the receiving server.
+            qexo   - (str) exo identifier on the receiving server.
             no_build - (bool) Do not compile the exercise. Improves the speed when there is a lot
                               of exercices to handle at the same time. Do not forget to call
                               buildexos() to compile them at the end (defaults to False)"""
@@ -540,7 +541,7 @@ class WimsAPI():
         Parameters:
             qclass - (int) identifier of the class on the receiving server.
             rclass - (str) identifier of the class on the sending server.
-            quser  - (str) user identifier in the receiving server."""
+            quser  - (str) user identifier on the receiving server."""
         params = {**self.params, **{
                 'job': 'deluser',
                 'code': code if code else random_code(),
@@ -598,7 +599,7 @@ class WimsAPI():
         
         Parameters:
             rclass - (str) identifier of the class on the sending server.
-            quser  - (str) user identifier in the receiving server.
+            quser  - (str) user identifier on the receiving server.
             options - (list) names of fields queried."""
         params = {**self.params, **{
                 'job': 'getclassesuser',
@@ -616,7 +617,7 @@ class WimsAPI():
         
         Parameters:
             rclass - (str) identifier of the class on the sending server.
-            quser  - (str) user identifier in the receiving server."""
+            quser  - (str) user identifier on the receiving server."""
         params = {**self.params, **{
                 'job': 'getclassfile',
                 'code': code if code else random_code(),
@@ -637,7 +638,7 @@ class WimsAPI():
         
         Parameters:
             rclass - (str) identifier of the class on the sending server.
-            quser  - (str) user identifier in the receiving server.
+            quser  - (str) user identifier on the receiving server.
             date   - (str) date (yyyymmdd)"""
         params = {**self.params, **{
                 'job': 'getclassmodif',
@@ -656,7 +657,7 @@ class WimsAPI():
         
         Parameters:
             rclass - (str) identifier of the class on the sending server.
-            quser  - (str) user identifier in the receiving server."""
+            quser  - (str) user identifier on the receiving server."""
         params = {**self.params, **{
                 'job': 'getclasstgz',
                 'code': code if code else random_code(),
@@ -866,7 +867,7 @@ class WimsAPI():
         Parameters:
             qclass - (int) identifier of the class on the receiving server.
             rclass - (str) identifier of the class on the sending server.
-            quser  - (str) user identifier in the receiving server."""
+            quser  - (str) user identifier on the receiving server."""
         params = {**self.params, **{
                 'job': 'getlog',
                 'code': code if code else random_code(),
@@ -902,8 +903,9 @@ class WimsAPI():
         Parameters:
             qclass - (int) identifier of the class on the receiving server.
             rclass - (str) identifier of the class on the sending server.
-            quser  - (str) user identifier in the receiving server.
-            qsheet - (int) identifier of the sheet on the receiving server. Use to filter the scores."""
+            quser  - (str) user identifier on the receiving server.
+            qsheet - (int) identifier of the sheet on the receiving server.
+                           Used to filter the scores."""
         params = {**self.params, **{
                 'job': 'getscore',
                 'code': code if code else random_code(),
@@ -1031,7 +1033,7 @@ class WimsAPI():
         Parameters:
             qclass - (int) identifier of the class on the receiving server.
             rclass - (str) identifier of the class on the sending server.
-            quser  - (str) user identifier in the receiving server.
+            quser  - (str) user identifier on the receiving server.
             options - (list) names of fields queried."""
         params = {**self.params, **{
                 'job': 'getuser',
@@ -1047,13 +1049,14 @@ class WimsAPI():
         return (response['status'] == 'OK', response)
     
     
-    def lightpopup(self, qclass, rclass, quser, session, exercice, about=True, verbose=False, code=None, **kwargs):
+    def lightpopup(self, qclass, rclass, quser, session, exercice, about=True, verbose=False,
+                   code=None, **kwargs):
         """Get data of the class, under the form of a csv/tsv spreatsheet file.
 
         Parameters:
             qclass - (int) identifier of the class on the receiving server.
             rclass - (str) identifier of the class on the sending server.
-            quser  - (str) user identifier in the receiving server.
+            quser  - (str) user identifier on the receiving server.
             session - (str) session identifer returned by authuser().
             exercice - (str) addresse of the exercice found in 'About this module / this exercice'
                        on the page of the exercice eg:
@@ -1329,7 +1332,7 @@ class WimsAPI():
         Parameters:
             qclass - (int) identifier of the class on the receiving server.
             rclass - (str) identifier of the class on the sending server.
-            quser  - (str) user identifier in the receiving server.
+            quser  - (str) user identifier on the receiving server.
             user_info - (dict) Only modified properties need to be present, following keys
                          may be present:
                 lastname - (str) last name of the supervisor user
@@ -1361,7 +1364,8 @@ class WimsAPI():
         return (response['status'] == 'OK', response)
     
     
-    def movexo(self, qclass, qclass2, rclass, qsheet, copy=False, verbose=False, code=None, **kwargs):
+    def movexo(self, qclass, qclass2, rclass, qsheet, copy=False, verbose=False, code=None,
+               **kwargs):
         """Moves exercice from qclass to qclass2 .
         
         Condition : Both 2 classes must be linked by.
@@ -1412,8 +1416,8 @@ class WimsAPI():
         response = parse_response(request, verbose)
         return (response['status'] == 'OK', response)
     
-    
-    def putcsv(self, qclass, rclass, csv, file=True, verbose=False, code=None, **kwargs): #FIXME getting 'unauthorized'
+    #FIXME getting 'unauthorized'
+    def putcsv(self, qclass, rclass, csv, file=True, verbose=False, code=None, **kwargs): 
         """Put data into the class.
         
         csv should respect this format: The first row of the table contains
@@ -1460,8 +1464,36 @@ class WimsAPI():
         return (response['status'] == 'OK', response)
     
     
-    def putexo(self, verbose=False, code=None, **kwargs):
-        pass # TODO
+    def putexo(self, qclass, rclass, qsheet, module, options=None, verbose=False, code=None,
+               **kwargs):
+        """Add <module>'s exercise to <qsheet> of a specified class.
+        
+        Parameters:
+            qclass  - (int) identifier of the class on the receiving server.
+            rclass  - (str) identifier of the class on the sending server.
+            qsheet  - (str) sheet identifier on the receiving server.
+            module  - (str) path of a module (i.e. 'E1/geometry/oefsquare.fr').
+            options - (dict) A dictionnary of optionnal parameters:
+                params - (str) string of parameters to add to the module.
+                points - (int) number of requested points.
+                weight - (int) weight of the exercise.
+                title  - (str) title of the exercise in the sheet.
+                description  - (str) description of the exercise in the sheet."""
+            
+        params = {**self.params, **{
+                'job': 'putexo',
+                'code': code if code else random_code(),
+                'qclass': qclass,
+                'rclass': rclass,
+                'qsheet': qsheet,
+                'data1': 'module=' + module,
+        }}
+        if options:
+            params['data1'] += '\n' + '\n'.join([str(k) + "=" + str(v) for k, v in options.items()])
+        print(params)
+        request = requests.post(self.url, params=params, **kwargs)
+        response = parse_response(request, verbose)
+        return (response['status'] == 'OK', response)
     
     
     def recuser(self, qclass, rclass, quser, verbose=False, code=None, **kwargs):
@@ -1470,7 +1502,7 @@ class WimsAPI():
         Parameters:
             qclass - (int) identifier of the class on the receiving server.
             rclass - (str) identifier of the class on the sending server.
-            quser  - (str) user identifier in the receiving server."""
+            quser  - (str) user identifier on the receiving server."""
         params = {**self.params, **{
                 'job': 'recuser',
                 'code': code if code else random_code(),
