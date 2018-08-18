@@ -437,8 +437,21 @@ class WimsAPI():
         return (response['status'] == 'OK', response)
     
     
-    def copyclass(self, verbose=False, code=None, **kwargs):
-        pass # TODO
+    def copyclass(self, qclass, rclass, verbose=False, code=None, **kwargs):
+        """Copy a class. Do not copy users or work done by students.
+        
+        Parameters:
+            qclass - (int) identifier of the class on the receiving server.
+            rclass - (str) identifier of the class on the sending server."""
+        params = {**self.params, **{
+                'job': 'copyclass',
+                'code': code if code else random_code(),
+                'qclass': qclass,
+                'rclass': rclass,
+        }}
+        request = requests.post(self.url, params=params, **kwargs)
+        response = parse_response(request, verbose)
+        return (response['status'] == 'OK', response)
     
     
     def delclass(self, qclass, rclass, verbose=False, code=None, **kwargs):
