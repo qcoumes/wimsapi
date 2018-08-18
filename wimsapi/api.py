@@ -920,11 +920,17 @@ class WimsAPI():
     
     def getscores(self, qclass, rclass, options, verbose=False, code=None, **kwargs):
         return self.getcsv(qclass, rclass, options, format='xls', verbose=verbose, code=code,
-                           **kwards)
-    
+                           **kwargs)
     
     def getsession(self, verbose=False, code=None, **kwargs):
-        pass # TODO
+        """Get informations about the WIMS server."""
+        params = {**self.params, **{
+                'job': 'getsession',
+                'code': code if code else random_code(),
+        }}
+        request = requests.post(self.url, params=params, **kwargs)
+        response = parse_response(request, verbose)
+        return (response['status'] == 'OK', response)
     
     
     def getsheet(self, qclass, rclass, qsheet, options=None, verbose=False, code=None, **kwargs):
