@@ -705,8 +705,8 @@ class WimsAPI():
         The rest is the table content, with one row for each user.
         
         Parameters:
-            qclass - (int) identifier of the class on the receiving server.
-            rclass - (str) identifier of the class on the sending server.
+            qclass  - (int) identifier of the class on the receiving server.
+            rclass  - (str) identifier of the class on the sending server.
             options - (list) list of desired data columns.
             format  - (str) output format ('csv' or 'tsv', defaults to csv)"""
         params = {**self.params, **{
@@ -726,8 +726,23 @@ class WimsAPI():
         )
     
     
-    def getexam(self, verbose=False, code=None, **kwargs):
-        pass # TODO
+    def getexam(self, qclass, rclass, qexam, verbose=False, code=None, **kwargs):
+        """Get an exercice from a sheet.
+        
+         Parameters:
+            qclass - (int) identifier of the class on the receiving server.
+            rclass - (str) identifier of the class on the sending server.
+            qexam  - (int) identifier of the exam on the receiving server."""
+        params = {**self.params, **{
+                'job': 'getexam',
+                'code': code if code else random_code(),
+                'qclass': qclass,
+                'rclass': rclass,
+                'qexam': qexam,
+        }}
+        request = requests.post(self.url, params=params, **kwargs)
+        response = parse_response(request, verbose)
+        return (response['status'] == 'OK', response)
     
     
     def getexamlog(self, verbose=False, code=None, **kwargs):
@@ -740,7 +755,7 @@ class WimsAPI():
         Parameters:
             qclass - (int) identifier of the class on the receiving server.
             rclass - (str) identifier of the class on the sending server.
-            qexam - (int) identifier of the exam on the receiving server."""
+            qexam  - (int) identifier of the exam on the receiving server."""
         params = {**self.params, **{
                 'job': 'getexamscores',
                 'code': code if code else random_code(),
@@ -760,7 +775,7 @@ class WimsAPI():
             qclass - (int) identifier of the class on the receiving server.
             rclass - (str) identifier of the class on the sending server.
             qsheet - (int) identifier of the sheet on the receiving server.
-            qexo - (int) identifier of the qexo on the receiving server."""
+            qexo   - (int) identifier of the exo on the receiving server."""
         params = {**self.params, **{
                 'job': 'getexo',
                 'code': code if code else random_code(),
