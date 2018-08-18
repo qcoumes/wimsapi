@@ -1078,8 +1078,27 @@ class WimsAPI():
         )
     
     
-    def linkexo(self, verbose=False, code=None, **kwargs):
-        pass # TODO
+    def linkexo(self, qclass, rclass, qsheet, qexo, qexam, verbose=False, code=None, **kwargs):
+        """Add exercise <qexo> of the sheet <qsheet> to <qexam>/
+        
+        Parameters:
+            qclass - (int) identifier of the class on the receiving server.
+            rclass - (str) identifier of the class on the sending server.
+            qsheet - (int) identifier of the sheet on the receiving server.
+            qexam - (int) identifier of the exam on the receiving server.
+        """
+        params = {**self.params, **{
+                'job': 'linkexo',
+                'code': code if code else random_code(),
+                'qclass': qclass,
+                'rclass': rclass,
+                'qsheet': qsheet,
+                'qexo': qexo,
+                'qexam': qexam,
+        }}
+        request = requests.post(self.url, params=params, **kwargs)
+        response = parse_response(request, verbose)
+        return (response['status'] == 'OK', response)
     
     
     def linksheet(self, qclass, rclass, qsheet, qexam, verbose=False, code=None, **kwargs):
