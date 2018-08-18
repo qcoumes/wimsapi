@@ -40,7 +40,7 @@ def random_code():
     return ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(10))
 
 
-def parse_response(request, verbose=False, ignore_not_adm_raw=False):
+def parse_response(request, verbose=False, return_request=False):
     """Return a dictionnary containing at least 'status' and 'message' keys.
     
     The goal is that the response is always the same, whether the output type of the WIMS server is
@@ -61,14 +61,14 @@ def parse_response(request, verbose=False, ignore_not_adm_raw=False):
             'code': code,
         }
     if response['status'] not in ["ERROR", "OK"]:
-        if not ignore_not_adm_raw:
+        if not return_request:
             raise ValueError("Not a adm/raw response, maybe the URL is incorrect. "
                               + ("Use verbose=True to see the received response content "
-                              + "or ignore_not_adm_raw=True to ignore this exception."
+                              + "or use return_request=True to get the request object."
                                 if not verbose else "Received:\n\n" + request.text))
         else:
-            return request.text
-        
+            return request
+    
     return response
 
 
@@ -624,17 +624,51 @@ class WimsAPI():
                 'qclass': qclass,
                 'option': filename,
         }}
+        request = requests.post(self.url, params=params, stream=True, **kwargs)
+        response = parse_response(request, return_request=True)
+        return (
+            response['status'] == 'OK' if type(response) == dict else True,
+            response if type(response) == dict else request.content
+        )
+    
+    
+    def getclassmodif(self, qclass, rclass, date, verbose=False, code=None, **kwargs):
+        """List all the files modified on the specified class since <date>.
+        
+        Parameters:
+            rclass - (str) identifier of the class on the sending server.
+            quser  - (str) user identifier in the receiving server.
+            date   - (str) date (yyyymmdd)"""
+        params = {**self.params, **{
+                'job': 'getclassmodif',
+                'code': code if code else random_code(),
+                'rclass': rclass,
+                'qclass': qclass,
+                'data1': date,
+        }}
         request = requests.post(self.url, params=params, **kwargs)
-        response = parse_response(request, ignore_not_adm_raw=True)
-        return (response['status'] == 'OK' if type(response) == dict else True, response)
+        response = parse_response(request, verbose)
+        return (response['status'] == 'OK', response)
     
     
-    def getclassmodif(self, verbose=False, code=None, **kwargs):
-        pass # TODO
-    
-    
-    def getclasstgz(self, verbose=False, code=None, **kwargs):
-        pass # TODO
+    def getclasstgz(self, qclass, rclass, verbose=False, code=None, **kwargs):
+        """Download the class in a compressed (tar-gzip) file.
+        
+        Parameters:
+            rclass - (str) identifier of the class on the sending server.
+            quser  - (str) user identifier in the receiving server."""
+        params = {**self.params, **{
+                'job': 'getclasstgz',
+                'code': code if code else random_code(),
+                'rclass': rclass,
+                'qclass': qclass,
+        }}
+        request = requests.post(self.url, params=params, stream=True, **kwargs)
+        response = parse_response(request, return_request=True)
+        return (
+            response['status'] == 'OK' if type(response) == dict else True,
+            response if type(response) == dict else request.content
+        )
     
     
     def getcsv(self, qclass, rclass, options, format='csv', verbose=False, code=None, **kwargs):
@@ -684,9 +718,12 @@ class WimsAPI():
         }}
         if options:
             params['option'] = ','.join(options)
-        request = requests.post(self.url, params=params, **kwargs)
-        response = parse_response(request, ignore_not_adm_raw=True)
-        return (response['status'] == 'OK' if type(response) == dict else True, response)
+        request = requests.post(self.url, params=params, stream=True, **kwargs)
+        response = parse_response(request, return_request=True)
+        return (
+            response['status'] == 'OK' if type(response) == dict else True,
+            response if type(response) == dict else request.content
+        )
     
     
     def getexam(self, verbose=False, code=None, **kwargs):
@@ -920,9 +957,12 @@ class WimsAPI():
                 'emod': exercice,
                 'option': 'about' if about else 'noabout',
         }}
-        request = requests.post(self.url, params=params, **kwargs)
-        response = parse_response(request, ignore_not_adm_raw=True)
-        return (response['status'] == 'OK' if type(response) == dict else True, response)
+        request = requests.post(self.url, params=params, stream=True, **kwargs)
+        response = parse_response(request, return_request=True)
+        return (
+            response['status'] == 'OK' if type(response) == dict else True,
+            response if type(response) == dict else request.content
+        )
     
     
     def linkexo(self, verbose=False, code=None, **kwargs):
