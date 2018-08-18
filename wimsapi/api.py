@@ -820,13 +820,33 @@ class WimsAPI():
                 'rclass': rclass,
                 'qexo': qexo,
         }}
+        request = requests.post(self.url, params=params, stream=True, **kwargs)
+        response = parse_response(request, return_request=True)
+        return (
+            response['status'] == 'OK' if type(response) == dict else True,
+            response if type(response) == dict else request.content
+        )
+    
+    
+    def getexosheet(self, qclass, rclass, qsheet, qexo, verbose=False, code=None, **kwargs):
+        """Get informations of <qexo> inside of <qsheet> of the specified class.
+        
+         Parameters:
+            qclass - (int) identifier of the class on the receiving server.
+            rclass - (str) identifier of the class on the sending server.
+            qsheet - (int) identifier of the sheet on the receiving server.
+            qexo   - (int) identifier of the exo on the receiving server."""
+        params = {**self.params, **{
+                'job': 'getexosheet',
+                'code': code if code else random_code(),
+                'qclass': qclass,
+                'rclass': rclass,
+                'qsheet': qsheet,
+                'qexo': qexo,
+        }}
         request = requests.post(self.url, params=params, **kwargs)
         response = parse_response(request, verbose)
         return (response['status'] == 'OK', response)
-    
-    
-    def getexosheet(self, verbose=False, code=None, **kwargs):
-        pass # TODO
     
     
     def getinfoserver(self, verbose=False, code=None, **kwargs):
