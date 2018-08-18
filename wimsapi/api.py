@@ -612,7 +612,7 @@ class WimsAPI():
     
     
     def getclassfile(self, qclass, rclass, filename, verbose=False, code=None, **kwargs):
-        """Download the file <option> of the specified class.
+        """Download the file <filename> of the specified class.
         
         Parameters:
             rclass - (str) identifier of the class on the sending server.
@@ -806,8 +806,23 @@ class WimsAPI():
         return (response['status'] == 'OK', response)
     
     
-    def getfile(self, verbose=False, code=None, **kwargs):
-        pass # TODO
+    def getexofile(self, qclass, rclass, qexo, verbose=False, code=None, **kwargs):
+        """Download the <qexo> source file of the specified class.
+        
+         Parameters:
+            qclass - (int) identifier of the class on the receiving server.
+            rclass - (str) identifier of the class on the sending server.
+            qexo   - (int) identifier of the exo on the receiving server."""
+        params = {**self.params, **{
+                'job': 'getexofile',
+                'code': code if code else random_code(),
+                'qclass': qclass,
+                'rclass': rclass,
+                'qexo': qexo,
+        }}
+        request = requests.post(self.url, params=params, **kwargs)
+        response = parse_response(request, verbose)
+        return (response['status'] == 'OK', response)
     
     
     def getexosheet(self, verbose=False, code=None, **kwargs):
