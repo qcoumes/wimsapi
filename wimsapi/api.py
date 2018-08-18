@@ -184,14 +184,17 @@ class WimsAPI():
         return (response['status'] == 'OK', response)
     
     
-    def addexo(self, qclass, rclass, qexo, exo_src, verbose=False, code=None, **kwargs):
+    def addexo(self, qclass, rclass, qexo, exo_src, no_build=False, verbose=False, code=None, **kwargs):
         """Add an exercice to the specified class.
         
         Parameters:
             qclass  - (int) identifier of the class on the receiving server.
             rclass  - (str) identifier of the class on the sending server.
             qexo    - (str) exo identifier in the receiving server.
-            exo_src - (str) source of the exercice."""
+            exo_src - (str) source of the exercice.
+            no_build - (bool) Do not compile the exercise. Improves the speed when there is a lot
+                              of exercices to handle at the same time. Do not forget to call
+                              buildexos() to compile them at the end (defaults to False)"""
         params = {**self.params, **{
                 'job': 'addexo',
                 'code': code if code else random_code(),
@@ -200,6 +203,8 @@ class WimsAPI():
                 'qexo': qexo,
                 'data1': exo_src,
         }}
+        if no_build:
+            params['option'] = 'no_build'
         request = requests.post(self.url, params=params, **kwargs)
         response = parse_response(request, verbose)
         return (response['status'] == 'OK', response)
@@ -316,8 +321,21 @@ class WimsAPI():
         return (response['status'] == 'OK', response)
     
     
-    def buildexos(self, verbose=False, code=None, **kwargs):
-        pass # TODO
+    def buildexos(self, qclass, rclass, verbose=False, code=None, **kwargs):
+        """Compile every exercises of the specified class.
+        
+        Parameters:
+            qclass - (int) identifier of the class on the receiving server.
+            rclass - (str) identifier of the class on the sending server."""
+        params = {**self.params, **{
+                'job': 'buildexos',
+                'code': code if code else random_code(),
+                'qclass': qclass,
+                'rclass': rclass,
+        }}
+        request = requests.post(self.url, params=params, **kwargs)
+        response = parse_response(request, verbose)
+        return (response['status'] == 'OK', response)
     
     
     def checkclass(self, qclass, rclass, verbose=False, code=None, **kwargs):
@@ -446,13 +464,16 @@ class WimsAPI():
         return (response['status'] == 'OK', response)
     
     
-    def delexo(self, qclass, rclass, qexo, verbose=False, code=None, **kwargs):
+    def delexo(self, qclass, rclass, qexo, no_build=False, verbose=False, code=None, **kwargs):
         """Delete an exo.
         
         Parameters:
             qclass - (int) identifier of the class on the receiving server.
             rclass - (str) identifier of the class on the sending server.
-            qexo   - (str) exo identifier in the receiving server."""
+            qexo   - (str) exo identifier in the receiving server.
+            no_build - (bool) Do not compile the exercise. Improves the speed when there is a lot
+                              of exercices to handle at the same time. Do not forget to call
+                              buildexos() to compile them at the end (defaults to False)"""
         params = {**self.params, **{
                 'job': 'deluser',
                 'code': code if code else random_code(),
@@ -460,6 +481,8 @@ class WimsAPI():
                 'rclass': rclass,
                 'qexo': qexo, 
         }}
+        if no_build:
+            params['option'] = 'no_build'
         request = requests.post(self.url, params=params, **kwargs)
         response = parse_response(request, verbose)
         return (response['status'] == 'OK', response)
