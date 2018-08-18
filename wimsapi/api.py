@@ -27,12 +27,17 @@ import requests
 
 
 
+test_exam = {
+    'title': 'Un exam',
+    'description': 'Une description dexam',
+    'expiration': '20190101', 
+    'duration_and_attempts': '25 5',
+}
+
+
+
 def random_code():
     return ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(10))
-
-
-def make_url(url, params):
-    return url + '?' + '&'.join([str(k) + '=' + str(v) for k, v in params.items()])
 
 
 def parse_response(request, verbose=False, ignore_not_adm_raw=False):
@@ -155,12 +160,49 @@ class WimsAPI():
         return (response['status'] == 'OK', response)
     
     
-    def addexam(self, verbose=False, code=None, **kwargs):
-        pass # TODO
+    def addexam(self, qclass, rclass, qexo, exam_info, verbose=False, code=None, **kwargs):
+        """Add an user to the specified class.
+        
+        Parameters:
+            qclass - (int) identifier of the class on the receiving server.
+            rclass - (str) identifier of the class on the sending server.
+            exam_info - (dict) properties of the exam, following keys may be present:
+                title - (str) title of the exam
+                description - (str) description of the exam
+                expiration - (str) exam expiration date (yyyymmdd)
+                duration - (int) duration (in minutes)
+                attempts - (int) number of attempts"""
+        params = {**self.params, **{
+                'job': 'addexam',
+                'code': code if code else random_code(),
+                'qclass': qclass,
+                'rclass': rclass,
+                'data1': '\n'.join([str(k) + "=" + str(v) for k, v in exam_info.items()]),
+        }}
+        request = requests.post(self.url, params=params, **kwargs)
+        response = parse_response(request, verbose)
+        return (response['status'] == 'OK', response)
     
     
-    def addexo(self, verbose=False, code=None, **kwargs):
-        pass # TODO
+    def addexo(self, qclass, rclass, qexo, exo_src, verbose=False, code=None, **kwargs):
+        """Add an exercice to the specified class.
+        
+        Parameters:
+            qclass  - (int) identifier of the class on the receiving server.
+            rclass  - (str) identifier of the class on the sending server.
+            qexo    - (str) exo identifier in the receiving server.
+            exo_src - (str) source of the exercice."""
+        params = {**self.params, **{
+                'job': 'addexo',
+                'code': code if code else random_code(),
+                'qclass': qclass,
+                'rclass': rclass,
+                'qexo': qexo,
+                'data1': exo_src,
+        }}
+        request = requests.post(self.url, params=params, **kwargs)
+        response = parse_response(request, verbose)
+        return (response['status'] == 'OK', response)
         
         
     def addsheet(self, qclass, rclass, sheet_info, verbose=False, code=None, **kwargs):
@@ -611,8 +653,25 @@ class WimsAPI():
         return (response['status'] == 'OK', response)
     
     
-    def getexo(self, verbose=False, code=None, **kwargs):
-        pass # TODO
+    def getexo(self, qclass, rclass, qsheet, qexo, verbose=False, code=None, **kwargs):
+        """Get an exercice from a sheet.
+        
+         Parameters:
+            qclass - (int) identifier of the class on the receiving server.
+            rclass - (str) identifier of the class on the sending server.
+            qsheet - (int) identifier of the sheet on the receiving server.
+            qexo - (int) identifier of the qexo on the receiving server."""
+        params = {**self.params, **{
+                'job': 'getexo',
+                'code': code if code else random_code(),
+                'qclass': qclass,
+                'rclass': rclass,
+                'qsheet': qsheet,
+                'qexo': qexo,
+        }}
+        request = requests.post(self.url, params=params, **kwargs)
+        response = parse_response(request, verbose)
+        return (response['status'] == 'OK', response)
     
     
     def getfile(self, verbose=False, code=None, **kwargs):
