@@ -850,7 +850,14 @@ class WimsAPI():
     
     
     def getinfoserver(self, verbose=False, code=None, **kwargs):
-        pass # TODO
+        """Get informations of <qexo> inside of <qsheet> of the specified class."""
+        params = {**self.params, **{
+                'job': 'getinfoserver',
+                'code': code if code else random_code(),
+        }}
+        request = requests.post(self.url, params=params, **kwargs)
+        response = parse_response(request, verbose)
+        return (response['status'] == 'OK', response)
     
     
     def getlog(self, qclass, rclass, quser, verbose=False, code=None, **kwargs):
