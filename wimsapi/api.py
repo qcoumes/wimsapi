@@ -1208,8 +1208,21 @@ class WimsAPI():
         return (response['status'] == 'OK', response)
     
     
-    def listmodules(self, verbose=False, code=None, **kwargs):
-        pass # TODO
+    def listmodules(self, level='H4', verbose=False, code=None, **kwargs):
+        """Get the number of exercise of <qsheet> linked to <qexam>.
+        
+        Parameters:
+            level - (str) level of the module (defaults to H4).
+                          Valid levels are E1, E2, ..., E6, H1, ..., H6, U1, ..., U5, G, R
+        """
+        params = {**self.params, **{
+                'job': 'listmodules',
+                'code': code if code else random_code(),
+                'option': level,
+        }}
+        request = requests.post(self.url, params=params, **kwargs)
+        response = parse_response(request, verbose)
+        return (response['status'] == 'OK', response)
     
     
     def listsheets(self, qclass, rclass, verbose=False, code=None, **kwargs):
