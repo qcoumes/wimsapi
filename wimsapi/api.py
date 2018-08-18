@@ -727,7 +727,7 @@ class WimsAPI():
     
     
     def getexam(self, qclass, rclass, qexam, verbose=False, code=None, **kwargs):
-        """Get an exercice from a sheet.
+        """Get an exam from a class.
         
          Parameters:
             qclass - (int) identifier of the class on the receiving server.
@@ -745,8 +745,25 @@ class WimsAPI():
         return (response['status'] == 'OK', response)
     
     
-    def getexamlog(self, verbose=False, code=None, **kwargs):
-        pass # TODO
+    def getexamlog(self, qclass, rclass, quser, qexam, verbose=False, code=None, **kwargs):
+        """Get the logs of <quser> on <qexam> inside of a class.
+        
+         Parameters:
+            qclass - (int) identifier of the class on the receiving server.
+            rclass - (str) identifier of the class on the sending server.
+            quser  - (int) identifier of the user on the receiving server.
+            qexam  - (int) identifier of the exam on the receiving server."""
+        params = {**self.params, **{
+                'job': 'getexamlog',
+                'code': code if code else random_code(),
+                'qclass': qclass,
+                'rclass': rclass,
+                'quser': quser,
+                'qexam': qexam,
+        }}
+        request = requests.post(self.url, params=params, **kwargs)
+        response = parse_response(request, verbose)
+        return (response['status'] == 'OK', response)
     
     
     def getexamscores(self, qclass, rclass, qexam, verbose=False, code=None, **kwargs):
