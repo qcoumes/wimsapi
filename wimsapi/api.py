@@ -420,8 +420,21 @@ class WimsAPI():
         return (response['status'] == 'OK', response)
     
     
-    def cleanclass(self, verbose=False, code=None, **kwargs):
-        pass # TODO
+    def cleanclass(self, qclass, rclass, verbose=False, code=None, **kwargs):
+        """Delete users (but supervisor) and all work done by students on the specified class.
+        
+        Parameters:
+            qclass - (int) identifier of the class on the receiving server.
+            rclass - (str) identifier of the class on the sending server."""
+        params = {**self.params, **{
+                'job': 'cleanclass',
+                'code': code if code else random_code(),
+                'qclass': qclass,
+                'rclass': rclass,
+        }}
+        request = requests.post(self.url, params=params, **kwargs)
+        response = parse_response(request, verbose)
+        return (response['status'] == 'OK', response)
     
     
     def copyclass(self, verbose=False, code=None, **kwargs):
