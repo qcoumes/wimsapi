@@ -672,7 +672,7 @@ class WimsAPI():
     
     
     def getcsv(self, qclass, rclass, options, format='csv', verbose=False, code=None, **kwargs):
-        """Get data of the class, under the form of a csv/tsv spreatsheet file.
+        """Get data of the class, under the form of a csv/tsv/xls spreatsheet file.
         
         The parameter 'format' may be used to specify the desired output format
         (csv or tsv, defaults to csv).
@@ -708,7 +708,7 @@ class WimsAPI():
             qclass  - (int) identifier of the class on the receiving server.
             rclass  - (str) identifier of the class on the sending server.
             options - (list) list of desired data columns.
-            format  - (str) output format ('csv' or 'tsv', defaults to csv)"""
+            format  - (str) output format ('csv', 'tsv' or 'xls', defaults to csv)"""
         params = {**self.params, **{
                 'job': 'getcsv',
                 'code': code if code else random_code(),
@@ -850,7 +850,7 @@ class WimsAPI():
     
     
     def getinfoserver(self, verbose=False, code=None, **kwargs):
-        """Get informations of <qexo> inside of <qsheet> of the specified class."""
+        """Get informations about the WIMS server."""
         params = {**self.params, **{
                 'job': 'getinfoserver',
                 'code': code if code else random_code(),
@@ -879,8 +879,19 @@ class WimsAPI():
         return (response['status'] == 'OK', response)
     
     
-    def getmodule(self, verbose=False, code=None, **kwargs):
-        pass # TODO
+    def getmodule(self, module, verbose=False, code=None, **kwargs):
+        """Get informations about <module>.
+        
+        Parameters:
+            module - (str) path of a module (i.e. 'E1/geometry/oefsquare.fr')"""
+        params = {**self.params, **{
+                'job': 'getmodule',
+                'code': code if code else random_code(),
+                'option': module,
+        }}
+        request = requests.post(self.url, params=params, **kwargs)
+        response = parse_response(request, verbose)
+        return (response['status'] == 'OK', response)
     
     
     def getscore(self, qclass, rclass, quser, qsheet=None, verbose=False, code=None, **kwargs):
@@ -907,8 +918,9 @@ class WimsAPI():
         return (response['status'] == 'OK', response)
     
     
-    def getscores(self, verbose=False, code=None, **kwargs):
-        pass # TODO
+    def getscores(self, qclass, rclass, options, verbose=False, code=None, **kwargs):
+        return self.getcsv(qclass, rclass, options, format='xls', verbose=verbose, code=code,
+                           **kwards)
     
     
     def getsession(self, verbose=False, code=None, **kwargs):
