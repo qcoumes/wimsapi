@@ -1102,7 +1102,7 @@ class WimsAPI():
     
     
     def linksheet(self, qclass, rclass, qsheet, qexam, verbose=False, code=None, **kwargs):
-        """Add all exercices from sheet to exam
+        """Add all exercices from sheet to exam.
         
         Parameters:
             qclass - (int) identifier of the class on the receiving server.
@@ -1186,8 +1186,26 @@ class WimsAPI():
         return (response['status'] == 'OK', response)
     
     
-    def listlinks(self, verbose=False, code=None, **kwargs):
-        pass # TODO
+    def listlinks(self, qclass, rclass, qsheet, qexam, verbose=False, code=None, **kwargs):
+        """Get the number of exercise of <qsheet> linked to <qexam>.
+        
+        Parameters:
+            qclass - (int) identifier of the class on the receiving server.
+            rclass - (str) identifier of the class on the sending server.
+            qsheet - (int) identifier of the sheet on the receiving server.
+            qexam - (int) identifier of the exam on the receiving server.
+        """
+        params = {**self.params, **{
+                'job': 'listlinks',
+                'code': code if code else random_code(),
+                'qclass': qclass,
+                'rclass': rclass,
+                'qsheet': qsheet,
+                'qexam': qexam,
+        }}
+        request = requests.post(self.url, params=params, **kwargs)
+        response = parse_response(request, verbose)
+        return (response['status'] == 'OK', response)
     
     
     def listmodules(self, verbose=False, code=None, **kwargs):
