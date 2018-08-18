@@ -611,8 +611,22 @@ class WimsAPI():
         return (response['status'] == 'OK', response)
     
     
-    def getclassfile(self, verbose=False, code=None, **kwargs):
-        pass # TODO
+    def getclassfile(self, qclass, rclass, filename, verbose=False, code=None, **kwargs):
+        """Download the file <option> of the specified class.
+        
+        Parameters:
+            rclass - (str) identifier of the class on the sending server.
+            quser  - (str) user identifier in the receiving server."""
+        params = {**self.params, **{
+                'job': 'getclassfile',
+                'code': code if code else random_code(),
+                'rclass': rclass,
+                'qclass': qclass,
+                'option': filename,
+        }}
+        request = requests.post(self.url, params=params, **kwargs)
+        response = parse_response(request, ignore_not_adm_raw=True)
+        return (response['status'] == 'OK' if type(response) == dict else True, response)
     
     
     def getclassmodif(self, verbose=False, code=None, **kwargs):
