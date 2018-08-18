@@ -12,8 +12,8 @@ requests to the other.
 The connectable server must be declared in a file
 within the directory 'WIMS_HOME/log/classes/.connections/'.
 
-/!\ Warning: wims type of output is deprecated and can cause some problem, you should ask your
-server maintainer to set 'ident_type=json' in 'WIMS_HOME/log/classes/.connections/IDENT'
+/!\ Warning: output must be set 'ident_type=json' in 'WIMS_HOME/log/classes/.connections/IDENT' for
+this API to work properly.
 
 For more informations, see http://wims.unice.fr/wims/?module=adm/raw&job=help"""
 
@@ -46,8 +46,8 @@ def parse_response(request, verbose=False, return_request=False):
     The goal is that the response is always the same, whether the output type of the WIMS server is
     set to JSON or WIMS.
     
-    /!\ Warning: wims type of output is deprecated and can cause some problem, you should ask your
-    server maintainer to set 'ident_type=json' in 'WIMS_HOME/log/classes/.connections/IDENT'."""
+    /!\ Warning: output must be set 'ident_type=json' in 'WIMS_HOME/log/classes/.connections/IDENT' for
+    this API to work properly."""
     try:
         response = request.json()
     except:
@@ -99,8 +99,8 @@ class WimsAPI():
     the dictionnary can also contains more keys.
     In case the status is ERROR, key 'message' contains the nature of the error.
     
-    /!\ Warning: wims type of output is deprecated and can cause some problem, you should ask your
-    server maintainer to set 'ident_type=json' in 'WIMS_HOME/log/classes/.connections/IDENT'.
+    /!\ Warning: output must be set 'ident_type=json' in 'WIMS_HOME/log/classes/.connections/IDENT' for
+    this API to work properly.
     
     For more informations, see http://wims.unice.fr/wims/?module=adm/raw&job=help"""
     
@@ -767,7 +767,7 @@ class WimsAPI():
     
     
     def getexamscores(self, qclass, rclass, qexam, verbose=False, code=None, **kwargs):
-        """Get all scores from exam - JSON OUTPUT ONLY.
+        """Get all scores from exam.
         
         Parameters:
             qclass - (int) identifier of the class on the receiving server.
@@ -919,15 +919,21 @@ class WimsAPI():
     
     
     def getscores(self, qclass, rclass, options, verbose=False, code=None, **kwargs):
+        """Call getcsv() method with format='xls'.
+        
+        For more informations, see WimsAPI.getcsv() documentation."""
         return self.getcsv(qclass, rclass, options, format='xls', verbose=verbose, code=code,
                            **kwargs)
     
-    def getsession(self, verbose=False, code=None, **kwargs):
-        """Get informations about the WIMS server."""
+    
+    def getsession(self, data1='adm/createxo', verbose=False, code=None, **kwargs):
+        """Open a WIMS session and return its ID"""
         params = {**self.params, **{
                 'job': 'getsession',
                 'code': code if code else random_code(),
+                'data1': data1,
         }}
+        print(params)
         request = requests.post(self.url, params=params, **kwargs)
         response = parse_response(request, verbose)
         return (response['status'] == 'OK', response)
@@ -962,7 +968,7 @@ class WimsAPI():
     
     
     def getsheetscores(self, qclass, rclass, qsheet, verbose=False, code=None, **kwargs):
-        """Get all scores from sheet - JSON OUTPUT ONLY.
+        """Get all scores from sheet
         
         Parameters:
             qclass - (int) identifier of the class on the receiving server.
@@ -980,8 +986,23 @@ class WimsAPI():
         return (response['status'] == 'OK', response)
     
     
-    def getsheetstats(self, verbose=False, code=None, **kwargs):
-        pass # TODO
+    def getsheetstats(self, qclass, rclass, qsheet, verbose=False, code=None, **kwargs):
+        """Get stats about work of students for every exercise of <qsheet>.
+        
+        Parameters:
+            qclass - (int) identifier of the class on the receiving server.
+            rclass - (str) identifier of the class on the sending server.
+            qsheet - (int) identifier of the sheet on the receiving server."""
+        params = {**self.params, **{
+                'job': 'getsheetstats',
+                'code': code if code else random_code(),
+                'qclass': qclass,
+                'rclass': rclass,
+                'qsheet': qsheet,
+        }}
+        request = requests.post(self.url, params=params, **kwargs)
+        response = parse_response(request, verbose)
+        return (response['status'] == 'OK', response)
     
     
     def gettime(self, verbose=False, code=None, **kwargs):
