@@ -1559,8 +1559,19 @@ class WimsAPI():
         return (response['status'] == 'OK', response)
     
     
-    def testexo(self, verbose=False, code=None, **kwargs):
-        pass # TODO
+    def testexo(self, exo_src, verbose=False, code=None, **kwargs):
+        """Allow to test the compilation of an exercise without adding it to a class.
+        
+        Parameters:
+            exo_src - (str) source of the exercice."""
+        params = {**self.params, **{
+                'job': 'testexo',
+                'code': code if code else random_code(),
+                'data1': exo_src,
+        }}
+        request = requests.post(self.url, params=params, **kwargs)
+        response = parse_response(request, verbose)
+        return (response['status'] == 'OK', response)
     
     
     def update(self, verbose=False, code=None, **kwargs):
