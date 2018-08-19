@@ -143,7 +143,7 @@ class WimsAPI():
                     email - (str) supervisor email address
                     comments - (str) any comments
                     regnum - (str) registration number
-                    photourl - (str) url of a user picture
+                    photourl - (str) url of an user picture
                     participate - (str) list classes (if in a class group) where user participates
                     agreecgu - (str) Boolean indicating if user accepted CGU
                     regprop1, regprop2, ... regprop5 - (str) custom properties"""	
@@ -160,8 +160,8 @@ class WimsAPI():
         return (response['status'] == 'OK', response)
     
     
-    def addexam(self, qclass, rclass, qexo, exam_info, verbose=False, code=None, **kwargs):
-        """Add an user to the specified class.
+    def addexam(self, qclass, rclass, exam_info, verbose=False, code=None, **kwargs):
+        """Add an exam to the specified class.
         
         Parameters:
             qclass - (int) identifier of the class on the receiving server.
@@ -212,7 +212,7 @@ class WimsAPI():
         
         
     def addsheet(self, qclass, rclass, sheet_info, verbose=False, code=None, **kwargs):
-        """Add a user to the specified class.
+        """Add an user to the specified class.
         
         Parameters:
             qclass - (int) identifier of the class on the receiving server.
@@ -251,7 +251,7 @@ class WimsAPI():
     
     
     def adduser(self, qclass, rclass, quser, user_info, verbose=False, code=None, **kwargs):
-        """Add a user to the specified class.
+        """Add an user to the specified class.
         
         Parameters:
             qclass - (int) identifier of the class on the receiving server.
@@ -290,7 +290,7 @@ class WimsAPI():
     
     
     def authuser(self, qclass, rclass, quser, hashlogin=None, verbose=False, code=None, **kwargs):
-        """Get an authentification for a user.
+        """Get an authentification for an user.
         
         User's password is not required.
         
@@ -862,7 +862,7 @@ class WimsAPI():
     
     
     def getlog(self, qclass, rclass, quser, verbose=False, code=None, **kwargs):
-        """Get the detailed activity registry of a user.
+        """Get the detailed activity registry of an user.
         
         Parameters:
             qclass - (int) identifier of the class on the receiving server.
@@ -1008,7 +1008,7 @@ class WimsAPI():
     
     
     def gettime(self, verbose=False, code=None, **kwargs):
-        """Get the detailed activity registry of a user.
+        """Get the detailed activity registry of an user.
         
         Can be used for synchronization purposes."""
         params = {**self.params, **{
@@ -1021,7 +1021,7 @@ class WimsAPI():
     
     
     def getuser(self, qclass, rclass, quser, options=None, verbose=False, code=None, **kwargs):
-        """Get the properties of a user (of a class).
+        """Get the properties of an user (of a class).
         
         Optionally, the parameter 'options' may contain the names of fields
         queried. In this case, only the queried properties are returned.
@@ -1279,8 +1279,30 @@ class WimsAPI():
         return (response['status'] == 'OK', response)
     
     
-    def modexam(self, verbose=False, code=None, **kwargs):
-        pass # TODO
+    def modexam(self, qclass, rclass, qexam, exam_info, verbose=False, code=None, **kwargs):
+        """Modify the property of an exam
+        
+        Parameters:
+            qclass - (int) identifier of the class on the receiving server.
+            rclass - (str) identifier of the class on the sending server.
+            exam_info - (dict) Only modified properties need to be present, following keys
+                         may be present:
+                title - (str) title of the exam
+                description - (str) description of the exam
+                expiration - (str) exam expiration date (yyyymmdd)
+                duration - (int) duration (in minutes)
+                attempts - (int) number of attempts"""
+        params = {**self.params, **{
+                'job': 'modexam',
+                'code': code if code else random_code(),
+                'qclass': qclass,
+                'rclass': rclass,
+                'qexam': qexam,
+                'data1': '\n'.join([str(k) + "=" + str(v) for k, v in exam_info.items()]),
+        }}
+        request = requests.post(self.url, params=params, **kwargs)
+        response = parse_response(request, verbose)
+        return (response['status'] == 'OK', response)
     
     
     def modexosheet(self, verbose=False, code=None, **kwargs):
@@ -1288,7 +1310,7 @@ class WimsAPI():
     
     
     def modsheet(self, qclass, rclass, qsheet, sheet_info, verbose=False, code=None, **kwargs):
-        """Modify the properties of a user.
+        """Modify the properties of an user.
         
         Parameters:
             qclass - (int) identifier of the class on the receiving server.
@@ -1327,7 +1349,7 @@ class WimsAPI():
     
     
     def moduser(self, qclass, rclass, quser, user_info, verbose=False, code=None, **kwargs):
-        """Modify the properties of a user.
+        """Modify the properties of an user.
         
         Parameters:
             qclass - (int) identifier of the class on the receiving server.
