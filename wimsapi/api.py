@@ -211,7 +211,7 @@ class WimsAPI:
     
     
     def addsheet(self, qclass, rclass, sheet_info, verbose=False, code=None, **kwargs):
-        """Add an user to the specified class.
+        """Add a sheet to the specified class.
         
         Parameters:
             qclass - (int) identifier of the class on the receiving server.
@@ -293,7 +293,7 @@ class WimsAPI:
     
     
     def authuser(self, qclass, rclass, quser, hashlogin=None, verbose=False, code=None, **kwargs):
-        """Get an authentification for an user.
+        """Get an authentification token for an user.
         
         User's password is not required.
         
@@ -1034,7 +1034,7 @@ class WimsAPI:
     
     
     def getsheetscores(self, qclass, rclass, qsheet, verbose=False, code=None, **kwargs):
-        """Get all scores from sheet
+        """Get all scores from sheet.
         
         Parameters:
             qclass - (int) identifier of the class on the receiving server.
@@ -1076,7 +1076,7 @@ class WimsAPI:
     
     
     def gettime(self, verbose=False, code=None, **kwargs):
-        """Get the detailed activity registry of an user.
+        """Get the current time of the server.
         
         Can be used for synchronization purposes."""
         params = {
@@ -1122,7 +1122,7 @@ class WimsAPI:
     
     
     def lightpopup(self, qclass, rclass, quser, session, exercice, about=True, code=None, **kwargs):
-        """Get data of the class, under the form of a csv/tsv spreatsheet file.
+        """Presents an exercise without the top, bottom, and left menu
 
         Parameters:
             qclass - (int) identifier of the class on the receiving server.
@@ -1368,7 +1368,7 @@ class WimsAPI:
     
     
     def modexam(self, qclass, rclass, qexam, exam_info, verbose=False, code=None, **kwargs):
-        """Modify the property of an exam
+        """Modify the property of an exam.
         
         Parameters:
             qclass - (int) identifier of the class on the receiving server.
@@ -1400,7 +1400,7 @@ class WimsAPI:
     
     
     def modsheet(self, qclass, rclass, qsheet, sheet_info, verbose=False, code=None, **kwargs):
-        """Modify the properties of an user.
+        """Modify the properties of a sheet.
         
         Parameters:
             qclass - (int) identifier of the class on the receiving server.
@@ -1482,7 +1482,7 @@ class WimsAPI:
     
     def movexo(self, qclass, qclass2, rclass, qsheet, copy=False, verbose=False, code=None,
                **kwargs):
-        """Moves exercice from qclass to qclass2 .
+        """Moves exercice from qclass to qclass2.
         
         Condition : Both 2 classes must be linked by.
         
@@ -1511,7 +1511,7 @@ class WimsAPI:
     
     
     def movexos(self, qclass, qclass2, rclass, copy=False, verbose=False, code=None, **kwargs):
-        """Moves ALL exercices from qclass to qclass2 .
+        """Moves ALL exercices from qclass to qclass2.
         
         Condition : Both 2 classes must be linked by.
         
@@ -1666,7 +1666,7 @@ class WimsAPI:
     
     def sharecontent(self, qclass, qclass2, rclass, options=('exo',), verbose=False, code=None,
                      **kwargs):
-        """Declares neighbour classes, allowing class "qclass" to share content with class "data1"
+        """Declares neighbour classes, allowing class "qclass" to share content with class "data1".
         
         Condition : Both 2 classes must be linked by.
         
