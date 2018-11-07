@@ -17,27 +17,18 @@ this API to work properly.
 
 For more informations, see http://wims.unice.fr/wims/?module=adm/raw&job=help"""
 
-
-import string
-import random
-import types
 import json
+import random
+import string
 
 import requests
 
 
 
-test_exam = {
-    'title': 'Un exam',
-    'description': 'Une description dexam',
-    'expiration': '20190101', 
-    'duration_and_attempts': '25 5',
-}
-
-
-
 def random_code():
+    """Returns a random code for an adm/raw request."""
     return ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(10))
+
 
 
 def parse_response(request, verbose=False, return_request=False):
@@ -50,30 +41,31 @@ def parse_response(request, verbose=False, return_request=False):
     for this API to work properly."""
     try:
         response = request.json()
-    except:
+    except json.JSONDecodeError:
         status, message = request.text.split('\n', maxsplit=1)
         code = "N/A"
-        if ' '  in status:
+        if ' ' in status:
             status, code = status.split(' ', maxsplit=1)
         response = {
-            'status': status,
+            'status' : status,
             'message': message if '\n' not in message else message[:-1],
-            'code': code,
+            'code'   : code,
         }
     if response['status'] not in ["ERROR", "OK"]:
         if not return_request:
-            raise ValueError("Not a adm/raw response, maybe the URL is incorrect. "
-                              + ("Use verbose=True to see the received response content "
-                              + "or use return_request=True to get the request object."
-                                if not verbose else "Received:\n\n" + request.text))
-        else:
-            return request
+            if verbose:
+                msg = ("Use verbose=True to see the received response content "
+                       + "or use return_request=True to get the request object.")
+            else:
+                msg = "Received:\n\n" + request.text
+            raise ValueError("Not a adm/raw response, maybe the URL is incorrect. " + msg)
+        return request
     
     return response
 
 
 
-class WimsAPI():
+class WimsAPI:
     """This class allow a python3 script to communicate with a WIMS server.
     
     Parameters:
@@ -110,7 +102,8 @@ class WimsAPI():
         self.url = url
     
     
-    def addclass(self, qclass, rclass, class_info, supervisor_info, verbose=False, code=None, **kwargs):
+    def addclass(self, qclass, rclass, class_info, supervisor_info, verbose=False, code=None,
+                 **kwargs):
         """Add a class on the receiving server.
         
         Parameters:
@@ -146,18 +139,20 @@ class WimsAPI():
                     photourl - (str) url of an user picture
                     participate - (str) list classes (if in a class group) where user participates
                     agreecgu - (str) Boolean indicating if user accepted CGU
-                    regprop1, regprop2, ... regprop5 - (str) custom properties"""	
-        params = {**self.params, **{
-                'job': 'addclass',
-                'code': code if code else random_code(),
-                'qclass': qclass,
-                'rclass': rclass,
-                'data1': '\n'.join([str(k) + "=" + str(v) for k, v in class_info.items()]),
-                'data2': '\n'.join([str(k) + "=" + str(v) for k, v in supervisor_info.items()]),
-        }}
+                    regprop1, regprop2, ... regprop5 - (str) custom properties"""
+        params = {
+            **self.params, **{
+            'job'   : 'addclass',
+            'code'  : code if code else random_code(),
+            'qclass': qclass,
+            'rclass': rclass,
+            'data1' : '\n'.join([str(k) + "=" + str(v) for k, v in class_info.items()]),
+            'data2' : '\n'.join([str(k) + "=" + str(v) for k, v in supervisor_info.items()]),
+        }
+        }
         request = requests.post(self.url, data=params, **kwargs)
         response = parse_response(request, verbose)
-        return (response['status'] == 'OK', response)
+        return response['status'] == 'OK', response
     
     
     def addexam(self, qclass, rclass, exam_info, verbose=False, code=None, **kwargs):
@@ -172,16 +167,18 @@ class WimsAPI():
                 expiration - (str) exam expiration date (yyyymmdd)
                 duration - (int) duration (in minutes)
                 attempts - (int) number of attempts"""
-        params = {**self.params, **{
-                'job': 'addexam',
-                'code': code if code else random_code(),
-                'qclass': qclass,
-                'rclass': rclass,
-                'data1': '\n'.join([str(k) + "=" + str(v) for k, v in exam_info.items()]),
-        }}
+        params = {
+            **self.params, **{
+            'job'   : 'addexam',
+            'code'  : code if code else random_code(),
+            'qclass': qclass,
+            'rclass': rclass,
+            'data1' : '\n'.join([str(k) + "=" + str(v) for k, v in exam_info.items()]),
+        }
+        }
         request = requests.post(self.url, data=params, **kwargs)
         response = parse_response(request, verbose)
-        return (response['status'] == 'OK', response)
+        return response['status'] == 'OK', response
     
     
     def addexo(self, qclass, rclass, qexo, exo_src, no_build=False, verbose=False, code=None,
@@ -196,21 +193,23 @@ class WimsAPI():
             no_build - (bool) Do not compile the exercise. Improves the speed when there is a lot
                               of exercices to handle at the same time. Do not forget to call
                               buildexos() to compile them at the end (defaults to False)"""
-        params = {**self.params, **{
-                'job': 'addexo',
-                'code': code if code else random_code(),
-                'qclass': qclass,
-                'rclass': rclass,
-                'qexo': qexo,
-                'data1': exo_src,
-        }}
+        params = {
+            **self.params, **{
+            'job'   : 'addexo',
+            'code'  : code if code else random_code(),
+            'qclass': qclass,
+            'rclass': rclass,
+            'qexo'  : qexo,
+            'data1' : exo_src,
+        }
+        }
         if no_build:
             params['option'] = 'no_build'
         request = requests.post(self.url, data=params, **kwargs)
         response = parse_response(request, verbose)
-        return (response['status'] == 'OK', response)
-        
-        
+        return response['status'] == 'OK', response
+    
+    
     def addsheet(self, qclass, rclass, sheet_info, verbose=False, code=None, **kwargs):
         """Add an user to the specified class.
         
@@ -238,16 +237,18 @@ class WimsAPI():
                                   be replaced by the character AT (@).
                                   There is no check made, so the integrity of the
                                   contents is up to you only! (defaults to "")"""
-        params = {**self.params, **{
-                'job': 'addsheet',
-                'code': code if code else random_code(),
-                'qclass': qclass,
-                'rclass': rclass,
-                'data1': '\n'.join([str(k) + "=" + str(v) for k, v in sheet_info.items()]),
-        }}
+        params = {
+            **self.params, **{
+            'job'   : 'addsheet',
+            'code'  : code if code else random_code(),
+            'qclass': qclass,
+            'rclass': rclass,
+            'data1' : '\n'.join([str(k) + "=" + str(v) for k, v in sheet_info.items()]),
+        }
+        }
         request = requests.post(self.url, data=params, **kwargs)
         response = parse_response(request, verbose)
-        return (response['status'] == 'OK', response)
+        return response['status'] == 'OK', response
     
     
     def adduser(self, qclass, rclass, quser, user_info, verbose=False, code=None, **kwargs):
@@ -276,17 +277,19 @@ class WimsAPI():
                     agreecgu - (str) if yes, the user will not be asked when he enters
                                for the first time to agree the cgu
                     regprop[1..5] - (str) custom variables"""
-        params = {**self.params, **{
-                'job': 'adduser',
-                'code': code if code else random_code(),
-                'qclass': qclass,
-                'rclass': rclass,
-                'quser': quser,
-                'data1': '\n'.join([str(k) + "=" + str(v) for k, v in user_info.items()]),
-        }}
+        params = {
+            **self.params, **{
+            'job'   : 'adduser',
+            'code'  : code if code else random_code(),
+            'qclass': qclass,
+            'rclass': rclass,
+            'quser' : quser,
+            'data1' : '\n'.join([str(k) + "=" + str(v) for k, v in user_info.items()]),
+        }
+        }
         request = requests.post(self.url, data=params, **kwargs)
         response = parse_response(request, verbose)
-        return (response['status'] == 'OK', response)
+        return response['status'] == 'OK', response
     
     
     def authuser(self, qclass, rclass, quser, hashlogin=None, verbose=False, code=None, **kwargs):
@@ -299,7 +302,7 @@ class WimsAPI():
         such id to a WIMS login. If the user exists in class, it returns a
         session number as above. If the user does not exists, the WIMS login is
         returned in the error message.
-         
+        
         Parameters:
             qclass - (int) identifier of the class on the receiving server.
             rclass - (str) identifier of the class on the sending server.
@@ -308,18 +311,20 @@ class WimsAPI():
             
         Return a session number under which the user can connect with no need of further
         authentification"""
-        params = {**self.params, **{
-                'job': 'authuser',
-                'code': code if code else random_code(),
-                'qclass': qclass,
-                'rclass': rclass,
-                'quser': quser,
-        }}
+        params = {
+            **self.params, **{
+            'job'   : 'authuser',
+            'code'  : code if code else random_code(),
+            'qclass': qclass,
+            'rclass': rclass,
+            'quser' : quser,
+        }
+        }
         if hashlogin:
             params['hashlogin'] = hashlogin
         request = requests.post(self.url, data=params, **kwargs)
         response = parse_response(request, verbose)
-        return (response['status'] == 'OK', response)
+        return response['status'] == 'OK', response
     
     
     def buildexos(self, qclass, rclass, verbose=False, code=None, **kwargs):
@@ -328,15 +333,17 @@ class WimsAPI():
         Parameters:
             qclass - (int) identifier of the class on the receiving server.
             rclass - (str) identifier of the class on the sending server."""
-        params = {**self.params, **{
-                'job': 'buildexos',
-                'code': code if code else random_code(),
-                'qclass': qclass,
-                'rclass': rclass,
-        }}
+        params = {
+            **self.params, **{
+            'job'   : 'buildexos',
+            'code'  : code if code else random_code(),
+            'qclass': qclass,
+            'rclass': rclass,
+        }
+        }
         request = requests.post(self.url, data=params, **kwargs)
         response = parse_response(request, verbose)
-        return (response['status'] == 'OK', response)
+        return response['status'] == 'OK', response
     
     
     def checkclass(self, qclass, rclass, verbose=False, code=None, **kwargs):
@@ -345,15 +352,17 @@ class WimsAPI():
         Parameters:
             qclass - (int) identifier of the class on the receiving server.
             rclass - (str) identifier of the class on the sending server."""
-        params = {**self.params, **{
-                'job': 'checkclass',
-                'code': code if code else random_code(),
-                'qclass': qclass,
-                'rclass': rclass,
-        }}
+        params = {
+            **self.params, **{
+            'job'   : 'checkclass',
+            'code'  : code if code else random_code(),
+            'qclass': qclass,
+            'rclass': rclass,
+        }
+        }
         request = requests.post(self.url, data=params, **kwargs)
         response = parse_response(request, verbose)
-        return (response['status'] == 'OK', response)
+        return response['status'] == 'OK', response
     
     
     def checkexam(self, qclass, rclass, qexam, verbose=False, code=None, **kwargs):
@@ -363,16 +372,18 @@ class WimsAPI():
             qclass - (int) identifier of the class on the receiving server.
             rclass - (str) identifier of the class on the sending server.
             qexam  - (str) exam identifier on the receiving server."""
-        params = {**self.params, **{
-                'job': 'checkexam',
-                'code': code if code else random_code(),
-                'qclass': qclass,
-                'rclass': rclass,
-                'qexam': qexam,
-        }}
+        params = {
+            **self.params, **{
+            'job'   : 'checkexam',
+            'code'  : code if code else random_code(),
+            'qclass': qclass,
+            'rclass': rclass,
+            'qexam' : qexam,
+        }
+        }
         request = requests.post(self.url, data=params, **kwargs)
         response = parse_response(request, verbose)
-        return (response['status'] == 'OK', response)
+        return response['status'] == 'OK', response
     
     
     def checkident(self, verbose=False, code=None, **kwargs):
@@ -380,7 +391,7 @@ class WimsAPI():
         params = {**self.params, **{'job': 'checkident', 'code': code if code else random_code()}}
         request = requests.post(self.url, data=params, **kwargs)
         response = parse_response(request, verbose)
-        return (response['status'] == 'OK', response)
+        return response['status'] == 'OK', response
     
     
     def checksheet(self, qclass, rclass, qsheet, verbose=False, code=None, **kwargs):
@@ -390,16 +401,18 @@ class WimsAPI():
             qclass - (int) identifier of the class on the receiving server.
             rclass - (str) identifier of the class on the sending server.
             qsheet - (str) identifier of the sheet on the receiving server."""
-        params = {**self.params, **{
-                'job': 'checksheet',
-                'code': code if code else random_code(),
-                'qclass': qclass,
-                'rclass': rclass,
-                'qsheet': qsheet,
-        }}
+        params = {
+            **self.params, **{
+            'job'   : 'checksheet',
+            'code'  : code if code else random_code(),
+            'qclass': qclass,
+            'rclass': rclass,
+            'qsheet': qsheet,
+        }
+        }
         request = requests.post(self.url, data=params, **kwargs)
         response = parse_response(request, verbose)
-        return (response['status'] == 'OK', response)
+        return response['status'] == 'OK', response
     
     
     def checkuser(self, qclass, rclass, quser, verbose=False, code=None, **kwargs):
@@ -409,16 +422,18 @@ class WimsAPI():
             qclass - (int) identifier of the class on the receiving server.
             rclass - (str) identifier of the class on the sending server.
             quser  - (str) user identifier on the receiving server."""
-        params = {**self.params, **{
-                'job': 'checkuser',
-                'code': code if code else random_code(),
-                'qclass': qclass,
-                'rclass': rclass,
-                'quser': quser,
-        }}
+        params = {
+            **self.params, **{
+            'job'   : 'checkuser',
+            'code'  : code if code else random_code(),
+            'qclass': qclass,
+            'rclass': rclass,
+            'quser' : quser,
+        }
+        }
         request = requests.post(self.url, data=params, **kwargs)
         response = parse_response(request, verbose)
-        return (response['status'] == 'OK', response)
+        return response['status'] == 'OK', response
     
     
     def cleanclass(self, qclass, rclass, verbose=False, code=None, **kwargs):
@@ -427,15 +442,17 @@ class WimsAPI():
         Parameters:
             qclass - (int) identifier of the class on the receiving server.
             rclass - (str) identifier of the class on the sending server."""
-        params = {**self.params, **{
-                'job': 'cleanclass',
-                'code': code if code else random_code(),
-                'qclass': qclass,
-                'rclass': rclass,
-        }}
+        params = {
+            **self.params, **{
+            'job'   : 'cleanclass',
+            'code'  : code if code else random_code(),
+            'qclass': qclass,
+            'rclass': rclass,
+        }
+        }
         request = requests.post(self.url, data=params, **kwargs)
         response = parse_response(request, verbose)
-        return (response['status'] == 'OK', response)
+        return response['status'] == 'OK', response
     
     
     def copyclass(self, qclass, rclass, verbose=False, code=None, **kwargs):
@@ -444,15 +461,17 @@ class WimsAPI():
         Parameters:
             qclass - (int) identifier of the class on the receiving server.
             rclass - (str) identifier of the class on the sending server."""
-        params = {**self.params, **{
-                'job': 'copyclass',
-                'code': code if code else random_code(),
-                'qclass': qclass,
-                'rclass': rclass,
-        }}
+        params = {
+            **self.params, **{
+            'job'   : 'copyclass',
+            'code'  : code if code else random_code(),
+            'qclass': qclass,
+            'rclass': rclass,
+        }
+        }
         request = requests.post(self.url, data=params, **kwargs)
         response = parse_response(request, verbose)
-        return (response['status'] == 'OK', response)
+        return response['status'] == 'OK', response
     
     
     def delclass(self, qclass, rclass, verbose=False, code=None, **kwargs):
@@ -461,15 +480,17 @@ class WimsAPI():
         Parameters:
             qclass - (int) identifier of the class on the receiving server.
             rclass - (str) identifier of the class on the sending server."""
-        params = {**self.params, **{
-                'job': 'delclass',
-                'code': code if code else random_code(),
-                'qclass': qclass,
-                'rclass': rclass,
-        }}
+        params = {
+            **self.params, **{
+            'job'   : 'delclass',
+            'code'  : code if code else random_code(),
+            'qclass': qclass,
+            'rclass': rclass,
+        }
+        }
         request = requests.post(self.url, data=params, **kwargs)
         response = parse_response(request, verbose)
-        return (response['status'] == 'OK', response)
+        return response['status'] == 'OK', response
     
     
     def delexam(self, qclass, rclass, qexam, verbose=False, code=None, **kwargs):
@@ -479,16 +500,18 @@ class WimsAPI():
             qclass - (int) identifier of the class on the receiving server.
             rclass - (str) identifier of the class on the sending server.
             qexam   - (str) exam identifier on the receiving server."""
-        params = {**self.params, **{
-                'job': 'delexam',
-                'code': code if code else random_code(),
-                'qclass': qclass,
-                'rclass': rclass,
-                'qexam': qexam, 
-        }}
+        params = {
+            **self.params, **{
+            'job'   : 'delexam',
+            'code'  : code if code else random_code(),
+            'qclass': qclass,
+            'rclass': rclass,
+            'qexam' : qexam,
+        }
+        }
         request = requests.post(self.url, data=params, **kwargs)
         response = parse_response(request, verbose)
-        return (response['status'] == 'OK', response)
+        return response['status'] == 'OK', response
     
     
     def delexo(self, qclass, rclass, qexo, no_build=False, verbose=False, code=None, **kwargs):
@@ -501,18 +524,20 @@ class WimsAPI():
             no_build - (bool) Do not compile the exercise. Improves the speed when there is a lot
                               of exercices to handle at the same time. Do not forget to call
                               buildexos() to compile them at the end (defaults to False)"""
-        params = {**self.params, **{
-                'job': 'delexo',
-                'code': code if code else random_code(),
-                'qclass': qclass,
-                'rclass': rclass,
-                'qexo': qexo, 
-        }}
+        params = {
+            **self.params, **{
+            'job'   : 'delexo',
+            'code'  : code if code else random_code(),
+            'qclass': qclass,
+            'rclass': rclass,
+            'qexo'  : qexo,
+        }
+        }
         if no_build:
             params['option'] = 'no_build'
         request = requests.post(self.url, data=params, **kwargs)
         response = parse_response(request, verbose)
-        return (response['status'] == 'OK', response)
+        return response['status'] == 'OK', response
     
     
     def delsheet(self, qclass, rclass, qsheet, verbose=False, code=None, **kwargs):
@@ -523,17 +548,19 @@ class WimsAPI():
             rclass - (str) identifier of the class on the sending server.
             qsheet - (int) identifier of the sheet on the receiving server.
             options - (list) names of fields queried."""
-        params = {**self.params, **{
-                'job': 'recsheet',
-                'code': code if code else random_code(),
-                'qclass': qclass,
-                'rclass': rclass,
-                'qsheet': qsheet,
-        }}
+        params = {
+            **self.params, **{
+            'job'   : 'recsheet',
+            'code'  : code if code else random_code(),
+            'qclass': qclass,
+            'rclass': rclass,
+            'qsheet': qsheet,
+        }
+        }
         request = requests.post(self.url, data=params, **kwargs)
         response = parse_response(request, verbose)
-        return (response['status'] == 'OK', response)
-     
+        return response['status'] == 'OK', response
+    
     
     def deluser(self, qclass, rclass, quser, verbose=False, code=None, **kwargs):
         """Delete an user.
@@ -542,16 +569,18 @@ class WimsAPI():
             qclass - (int) identifier of the class on the receiving server.
             rclass - (str) identifier of the class on the sending server.
             quser  - (str) user identifier on the receiving server."""
-        params = {**self.params, **{
-                'job': 'deluser',
-                'code': code if code else random_code(),
-                'qclass': qclass,
-                'rclass': rclass,
-                'quser': quser, 
-        }}
+        params = {
+            **self.params, **{
+            'job'   : 'deluser',
+            'code'  : code if code else random_code(),
+            'qclass': qclass,
+            'rclass': rclass,
+            'quser' : quser,
+        }
+        }
         request = requests.post(self.url, data=params, **kwargs)
         response = parse_response(request, verbose)
-        return (response['status'] == 'OK', response)
+        return response['status'] == 'OK', response
     
     
     def getclass(self, qclass, rclass, options=None, verbose=False, code=None, **kwargs):
@@ -571,17 +600,19 @@ class WimsAPI():
             qclass - (int) identifier of the class on the receiving server.
             rclass - (str) identifier of the class on the sending server.
             options - (list) names of fields queried."""
-        params = {**self.params, **{
-                'job': 'getclass',
-                'code': code if code else random_code(),
-                'qclass': qclass,
-                'rclass': rclass,
-        }}
+        params = {
+            **self.params, **{
+            'job'   : 'getclass',
+            'code'  : code if code else random_code(),
+            'qclass': qclass,
+            'rclass': rclass,
+        }
+        }
         if options:
             params['option'] = ','.join(options)
         request = requests.post(self.url, data=params, **kwargs)
         response = parse_response(request, verbose)
-        return (response['status'] == 'OK', response)
+        return response['status'] == 'OK', response
     
     
     def getclassesuser(self, rclass, quser, verbose=False, code=None, **kwargs):
@@ -601,30 +632,34 @@ class WimsAPI():
             rclass - (str) identifier of the class on the sending server.
             quser  - (str) user identifier on the receiving server.
             options - (list) names of fields queried."""
-        params = {**self.params, **{
-                'job': 'getclassesuser',
-                'code': code if code else random_code(),
-                'rclass': rclass,
-                'quser': quser,
-        }}
+        params = {
+            **self.params, **{
+            'job'   : 'getclassesuser',
+            'code'  : code if code else random_code(),
+            'rclass': rclass,
+            'quser' : quser,
+        }
+        }
         request = requests.post(self.url, data=params, **kwargs)
         response = parse_response(request, verbose)
-        return (response['status'] == 'OK', response)
+        return response['status'] == 'OK', response
     
     
-    def getclassfile(self, qclass, rclass, filename, verbose=False, code=None, **kwargs):
+    def getclassfile(self, qclass, rclass, filename, code=None, **kwargs):
         """Download the file <filename> of the specified class.
         
         Parameters:
             rclass - (str) identifier of the class on the sending server.
             quser  - (str) user identifier on the receiving server."""
-        params = {**self.params, **{
-                'job': 'getclassfile',
-                'code': code if code else random_code(),
-                'rclass': rclass,
-                'qclass': qclass,
-                'option': filename,
-        }}
+        params = {
+            **self.params, **{
+            'job'   : 'getclassfile',
+            'code'  : code if code else random_code(),
+            'rclass': rclass,
+            'qclass': qclass,
+            'option': filename,
+        }
+        }
         request = requests.post(self.url, params=params, stream=True, **kwargs)
         response = parse_response(request, return_request=True)
         return (
@@ -640,30 +675,34 @@ class WimsAPI():
             rclass - (str) identifier of the class on the sending server.
             quser  - (str) user identifier on the receiving server.
             date   - (str) date (yyyymmdd)"""
-        params = {**self.params, **{
-                'job': 'getclassmodif',
-                'code': code if code else random_code(),
-                'rclass': rclass,
-                'qclass': qclass,
-                'data1': date,
-        }}
+        params = {
+            **self.params, **{
+            'job'   : 'getclassmodif',
+            'code'  : code if code else random_code(),
+            'rclass': rclass,
+            'qclass': qclass,
+            'data1' : date,
+        }
+        }
         request = requests.post(self.url, data=params, **kwargs)
         response = parse_response(request, verbose)
-        return (response['status'] == 'OK', response)
+        return response['status'] == 'OK', response
     
     
-    def getclasstgz(self, qclass, rclass, verbose=False, code=None, **kwargs):
+    def getclasstgz(self, qclass, rclass, code=None, **kwargs):
         """Download the class in a compressed (tar-gzip) file.
         
         Parameters:
             rclass - (str) identifier of the class on the sending server.
             quser  - (str) user identifier on the receiving server."""
-        params = {**self.params, **{
-                'job': 'getclasstgz',
-                'code': code if code else random_code(),
-                'rclass': rclass,
-                'qclass': qclass,
-        }}
+        params = {
+            **self.params, **{
+            'job'   : 'getclasstgz',
+            'code'  : code if code else random_code(),
+            'rclass': rclass,
+            'qclass': qclass,
+        }
+        }
         request = requests.post(self.url, params=params, stream=True, **kwargs)
         response = parse_response(request, return_request=True)
         return (
@@ -672,7 +711,7 @@ class WimsAPI():
         )
     
     
-    def getcsv(self, qclass, rclass, options, format='csv', verbose=False, code=None, **kwargs):
+    def getcsv(self, qclass, rclass, options, format='csv', code=None, **kwargs):
         """Get data of the class, under the form of a csv/tsv/xls spreatsheet file.
         
         The parameter 'format' may be used to specify the desired output format
@@ -710,13 +749,15 @@ class WimsAPI():
             rclass  - (str) identifier of the class on the sending server.
             options - (list) list of desired data columns.
             format  - (str) output format ('csv', 'tsv' or 'xls', defaults to csv)"""
-        params = {**self.params, **{
-                'job': 'getcsv',
-                'code': code if code else random_code(),
-                'qclass': qclass,
-                'rclass': rclass,
-                'format': format,
-        }}
+        params = {
+            **self.params, **{
+            'job'   : 'getcsv',
+            'code'  : code if code else random_code(),
+            'qclass': qclass,
+            'rclass': rclass,
+            'format': format,
+        }
+        }
         if options:
             params['option'] = ','.join(options)
         request = requests.post(self.url, params=params, stream=True, **kwargs)
@@ -734,16 +775,18 @@ class WimsAPI():
             qclass - (int) identifier of the class on the receiving server.
             rclass - (str) identifier of the class on the sending server.
             qexam  - (int) identifier of the exam on the receiving server."""
-        params = {**self.params, **{
-                'job': 'getexam',
-                'code': code if code else random_code(),
-                'qclass': qclass,
-                'rclass': rclass,
-                'qexam': qexam,
-        }}
+        params = {
+            **self.params, **{
+            'job'   : 'getexam',
+            'code'  : code if code else random_code(),
+            'qclass': qclass,
+            'rclass': rclass,
+            'qexam' : qexam,
+        }
+        }
         request = requests.post(self.url, data=params, **kwargs)
         response = parse_response(request, verbose)
-        return (response['status'] == 'OK', response)
+        return response['status'] == 'OK', response
     
     
     def getexamlog(self, qclass, rclass, quser, qexam, verbose=False, code=None, **kwargs):
@@ -754,17 +797,19 @@ class WimsAPI():
             rclass - (str) identifier of the class on the sending server.
             quser  - (int) identifier of the user on the receiving server.
             qexam  - (int) identifier of the exam on the receiving server."""
-        params = {**self.params, **{
-                'job': 'getexamlog',
-                'code': code if code else random_code(),
-                'qclass': qclass,
-                'rclass': rclass,
-                'quser': quser,
-                'qexam': qexam,
-        }}
+        params = {
+            **self.params, **{
+            'job'   : 'getexamlog',
+            'code'  : code if code else random_code(),
+            'qclass': qclass,
+            'rclass': rclass,
+            'quser' : quser,
+            'qexam' : qexam,
+        }
+        }
         request = requests.post(self.url, data=params, **kwargs)
         response = parse_response(request, verbose)
-        return (response['status'] == 'OK', response)
+        return response['status'] == 'OK', response
     
     
     def getexamscores(self, qclass, rclass, qexam, verbose=False, code=None, **kwargs):
@@ -774,16 +819,18 @@ class WimsAPI():
             qclass - (int) identifier of the class on the receiving server.
             rclass - (str) identifier of the class on the sending server.
             qexam  - (int) identifier of the exam on the receiving server."""
-        params = {**self.params, **{
-                'job': 'getexamscores',
-                'code': code if code else random_code(),
-                'qclass': qclass,
-                'rclass': rclass,
-                'qexam': qexam,
-        }}
+        params = {
+            **self.params, **{
+            'job'   : 'getexamscores',
+            'code'  : code if code else random_code(),
+            'qclass': qclass,
+            'rclass': rclass,
+            'qexam' : qexam,
+        }
+        }
         request = requests.post(self.url, data=params, **kwargs)
         response = parse_response(request, verbose)
-        return (response['status'] == 'OK', response)
+        return response['status'] == 'OK', response
     
     
     def getexo(self, qclass, rclass, qsheet, qexo, verbose=False, code=None, **kwargs):
@@ -794,33 +841,37 @@ class WimsAPI():
             rclass - (str) identifier of the class on the sending server.
             qsheet - (int) identifier of the sheet on the receiving server.
             qexo   - (int) identifier of the exo on the receiving server."""
-        params = {**self.params, **{
-                'job': 'getexo',
-                'code': code if code else random_code(),
-                'qclass': qclass,
-                'rclass': rclass,
-                'qsheet': qsheet,
-                'qexo': qexo,
-        }}
+        params = {
+            **self.params, **{
+            'job'   : 'getexo',
+            'code'  : code if code else random_code(),
+            'qclass': qclass,
+            'rclass': rclass,
+            'qsheet': qsheet,
+            'qexo'  : qexo,
+        }
+        }
         request = requests.post(self.url, data=params, **kwargs)
         response = parse_response(request, verbose)
-        return (response['status'] == 'OK', response)
+        return response['status'] == 'OK', response
     
     
-    def getexofile(self, qclass, rclass, qexo, verbose=False, code=None, **kwargs):
+    def getexofile(self, qclass, rclass, qexo, code=None, **kwargs):
         """Download the <qexo> source file of the specified class.
         
          Parameters:
             qclass - (int) identifier of the class on the receiving server.
             rclass - (str) identifier of the class on the sending server.
             qexo   - (int) identifier of the exo on the receiving server."""
-        params = {**self.params, **{
-                'job': 'getexofile',
-                'code': code if code else random_code(),
-                'qclass': qclass,
-                'rclass': rclass,
-                'qexo': qexo,
-        }}
+        params = {
+            **self.params, **{
+            'job'   : 'getexofile',
+            'code'  : code if code else random_code(),
+            'qclass': qclass,
+            'rclass': rclass,
+            'qexo'  : qexo,
+        }
+        }
         request = requests.post(self.url, params=params, stream=True, **kwargs)
         response = parse_response(request, return_request=True)
         return (
@@ -837,28 +888,32 @@ class WimsAPI():
             rclass - (str) identifier of the class on the sending server.
             qsheet - (int) identifier of the sheet on the receiving server.
             qexo   - (int) identifier of the exo on the receiving server."""
-        params = {**self.params, **{
-                'job': 'getexosheet',
-                'code': code if code else random_code(),
-                'qclass': qclass,
-                'rclass': rclass,
-                'qsheet': qsheet,
-                'qexo': qexo,
-        }}
+        params = {
+            **self.params, **{
+            'job'   : 'getexosheet',
+            'code'  : code if code else random_code(),
+            'qclass': qclass,
+            'rclass': rclass,
+            'qsheet': qsheet,
+            'qexo'  : qexo,
+        }
+        }
         request = requests.post(self.url, data=params, **kwargs)
         response = parse_response(request, verbose)
-        return (response['status'] == 'OK', response)
+        return response['status'] == 'OK', response
     
     
     def getinfoserver(self, verbose=False, code=None, **kwargs):
         """Get informations about the WIMS server."""
-        params = {**self.params, **{
-                'job': 'getinfoserver',
-                'code': code if code else random_code(),
-        }}
+        params = {
+            **self.params, **{
+            'job' : 'getinfoserver',
+            'code': code if code else random_code(),
+        }
+        }
         request = requests.post(self.url, data=params, **kwargs)
         response = parse_response(request, verbose)
-        return (response['status'] == 'OK', response)
+        return response['status'] == 'OK', response
     
     
     def getlog(self, qclass, rclass, quser, verbose=False, code=None, **kwargs):
@@ -868,16 +923,18 @@ class WimsAPI():
             qclass - (int) identifier of the class on the receiving server.
             rclass - (str) identifier of the class on the sending server.
             quser  - (str) user identifier on the receiving server."""
-        params = {**self.params, **{
-                'job': 'getlog',
-                'code': code if code else random_code(),
-                'qclass': qclass,
-                'rclass': rclass,
-                'quser': quser,
-        }}
+        params = {
+            **self.params, **{
+            'job'   : 'getlog',
+            'code'  : code if code else random_code(),
+            'qclass': qclass,
+            'rclass': rclass,
+            'quser' : quser,
+        }
+        }
         request = requests.post(self.url, data=params, **kwargs)
         response = parse_response(request, verbose)
-        return (response['status'] == 'OK', response)
+        return response['status'] == 'OK', response
     
     
     def getmodule(self, module, verbose=False, code=None, **kwargs):
@@ -885,14 +942,16 @@ class WimsAPI():
         
         Parameters:
             module - (str) path of a module (i.e. 'E1/geometry/oefsquare.fr')"""
-        params = {**self.params, **{
-                'job': 'getmodule',
-                'code': code if code else random_code(),
-                'option': module,
-        }}
+        params = {
+            **self.params, **{
+            'job'   : 'getmodule',
+            'code'  : code if code else random_code(),
+            'option': module,
+        }
+        }
         request = requests.post(self.url, data=params, **kwargs)
         response = parse_response(request, verbose)
-        return (response['status'] == 'OK', response)
+        return response['status'] == 'OK', response
     
     
     def getscore(self, qclass, rclass, quser, qsheet=None, verbose=False, code=None, **kwargs):
@@ -906,38 +965,42 @@ class WimsAPI():
             quser  - (str) user identifier on the receiving server.
             qsheet - (int) identifier of the sheet on the receiving server.
                            Used to filter the scores."""
-        params = {**self.params, **{
-                'job': 'getscore',
-                'code': code if code else random_code(),
-                'qclass': qclass,
-                'rclass': rclass,
-                'quser': quser,
-        }}
+        params = {
+            **self.params, **{
+            'job'   : 'getscore',
+            'code'  : code if code else random_code(),
+            'qclass': qclass,
+            'rclass': rclass,
+            'quser' : quser,
+        }
+        }
         if qsheet:
             params['qsheet'] = qsheet
         request = requests.post(self.url, data=params, **kwargs)
         response = parse_response(request, verbose)
-        return (response['status'] == 'OK', response)
+        return response['status'] == 'OK', response
     
     
-    def getscores(self, qclass, rclass, options, verbose=False, code=None, **kwargs):
+    def getscores(self, qclass, rclass, options, code=None, **kwargs):
         """Call getcsv() method with format='xls'.
         
         For more informations, see WimsAPI.getcsv() documentation."""
-        return self.getcsv(qclass, rclass, options, format='xls', verbose=verbose, code=code,
+        return self.getcsv(qclass, rclass, options, format='xls', code=code,
                            **kwargs)
     
     
     def getsession(self, data1='adm/createxo', verbose=False, code=None, **kwargs):
         """Open a WIMS session and return its ID"""
-        params = {**self.params, **{
-                'job': 'getsession',
-                'code': code if code else random_code(),
-                'data1': data1,
-        }}
+        params = {
+            **self.params, **{
+            'job'  : 'getsession',
+            'code' : code if code else random_code(),
+            'data1': data1,
+        }
+        }
         request = requests.post(self.url, data=params, **kwargs)
         response = parse_response(request, verbose)
-        return (response['status'] == 'OK', response)
+        return response['status'] == 'OK', response
     
     
     def getsheet(self, qclass, rclass, qsheet, options=None, verbose=False, code=None, **kwargs):
@@ -954,18 +1017,20 @@ class WimsAPI():
             rclass - (str) identifier of the class on the sending server.
             qsheet - (int) identifier of the sheet on the receiving server.
             options - (list) names of fields queried."""
-        params = {**self.params, **{
-                'job': 'getsheet',
-                'code': code if code else random_code(),
-                'qclass': qclass,
-                'rclass': rclass,
-                'qsheet': qsheet,
-        }}
+        params = {
+            **self.params, **{
+            'job'   : 'getsheet',
+            'code'  : code if code else random_code(),
+            'qclass': qclass,
+            'rclass': rclass,
+            'qsheet': qsheet,
+        }
+        }
         if options:
             params['option'] = ','.join(options)
         request = requests.post(self.url, data=params, **kwargs)
         response = parse_response(request, verbose)
-        return (response['status'] == 'OK', response)
+        return response['status'] == 'OK', response
     
     
     def getsheetscores(self, qclass, rclass, qsheet, verbose=False, code=None, **kwargs):
@@ -975,16 +1040,18 @@ class WimsAPI():
             qclass - (int) identifier of the class on the receiving server.
             rclass - (str) identifier of the class on the sending server.
             qsheet - (int) identifier of the sheet on the receiving server."""
-        params = {**self.params, **{
-                'job': 'getsheetscores',
-                'code': code if code else random_code(),
-                'qclass': qclass,
-                'rclass': rclass,
-                'qsheet': qsheet,
-        }}
+        params = {
+            **self.params, **{
+            'job'   : 'getsheetscores',
+            'code'  : code if code else random_code(),
+            'qclass': qclass,
+            'rclass': rclass,
+            'qsheet': qsheet,
+        }
+        }
         request = requests.post(self.url, data=params, **kwargs)
         response = parse_response(request, verbose)
-        return (response['status'] == 'OK', response)
+        return response['status'] == 'OK', response
     
     
     def getsheetstats(self, qclass, rclass, qsheet, verbose=False, code=None, **kwargs):
@@ -994,29 +1061,33 @@ class WimsAPI():
             qclass - (int) identifier of the class on the receiving server.
             rclass - (str) identifier of the class on the sending server.
             qsheet - (int) identifier of the sheet on the receiving server."""
-        params = {**self.params, **{
-                'job': 'getsheetstats',
-                'code': code if code else random_code(),
-                'qclass': qclass,
-                'rclass': rclass,
-                'qsheet': qsheet,
-        }}
+        params = {
+            **self.params, **{
+            'job'   : 'getsheetstats',
+            'code'  : code if code else random_code(),
+            'qclass': qclass,
+            'rclass': rclass,
+            'qsheet': qsheet,
+        }
+        }
         request = requests.post(self.url, data=params, **kwargs)
         response = parse_response(request, verbose)
-        return (response['status'] == 'OK', response)
+        return response['status'] == 'OK', response
     
     
     def gettime(self, verbose=False, code=None, **kwargs):
         """Get the detailed activity registry of an user.
         
         Can be used for synchronization purposes."""
-        params = {**self.params, **{
-                'job': 'gettime',
-                'code': code if code else random_code(),
-        }}
+        params = {
+            **self.params, **{
+            'job' : 'gettime',
+            'code': code if code else random_code(),
+        }
+        }
         request = requests.post(self.url, data=params, **kwargs)
         response = parse_response(request, verbose)
-        return (response['status'] == 'OK', response)
+        return response['status'] == 'OK', response
     
     
     def getuser(self, qclass, rclass, quser, options=None, verbose=False, code=None, **kwargs):
@@ -1034,22 +1105,23 @@ class WimsAPI():
             rclass - (str) identifier of the class on the sending server.
             quser  - (str) user identifier on the receiving server.
             options - (list) names of fields queried."""
-        params = {**self.params, **{
-                'job': 'getuser',
-                'code': code if code else random_code(),
-                'qclass': qclass,
-                'rclass': rclass,
-                'quser': quser,
-        }}
+        params = {
+            **self.params, **{
+            'job'   : 'getuser',
+            'code'  : code if code else random_code(),
+            'qclass': qclass,
+            'rclass': rclass,
+            'quser' : quser,
+        }
+        }
         if options:
             params['option'] = ','.join(options)
         request = requests.post(self.url, data=params, **kwargs)
         response = parse_response(request, verbose)
-        return (response['status'] == 'OK', response)
+        return response['status'] == 'OK', response
     
     
-    def lightpopup(self, qclass, rclass, quser, session, exercice, about=True, verbose=False,
-                   code=None, **kwargs):
+    def lightpopup(self, qclass, rclass, quser, session, exercice, about=True, code=None, **kwargs):
         """Get data of the class, under the form of a csv/tsv spreatsheet file.
 
         Parameters:
@@ -1062,16 +1134,18 @@ class WimsAPI():
                        'classes/en&exo=Exercise1&qnum=1&qcmlevel=1&scoredelay=700,700 '
             about - (bool) If True (default), show "about" which gives author information about the
                      exercise"""
-        params = {**self.params, **{
-                'job': 'lightpopup',
-                'code': code if code else random_code(),
-                'qclass': qclass,
-                'rclass': rclass,
-                'quser': quser,
-                'session': session,
-                'emod': exercice,
-                'option': 'about' if about else 'noabout',
-        }}
+        params = {
+            **self.params, **{
+            'job'    : 'lightpopup',
+            'code'   : code if code else random_code(),
+            'qclass' : qclass,
+            'rclass' : rclass,
+            'quser'  : quser,
+            'session': session,
+            'emod'   : exercice,
+            'option' : 'about' if about else 'noabout',
+        }
+        }
         request = requests.post(self.url, params=params, stream=True, **kwargs)
         response = parse_response(request, return_request=True)
         return (
@@ -1089,18 +1163,20 @@ class WimsAPI():
             qsheet - (int) identifier of the sheet on the receiving server.
             qexam - (int) identifier of the exam on the receiving server.
         """
-        params = {**self.params, **{
-                'job': 'linkexo',
-                'code': code if code else random_code(),
-                'qclass': qclass,
-                'rclass': rclass,
-                'qsheet': qsheet,
-                'qexo': qexo,
-                'qexam': qexam,
-        }}
+        params = {
+            **self.params, **{
+            'job'   : 'linkexo',
+            'code'  : code if code else random_code(),
+            'qclass': qclass,
+            'rclass': rclass,
+            'qsheet': qsheet,
+            'qexo'  : qexo,
+            'qexam' : qexam,
+        }
+        }
         request = requests.post(self.url, data=params, **kwargs)
         response = parse_response(request, verbose)
-        return (response['status'] == 'OK', response)
+        return response['status'] == 'OK', response
     
     
     def linksheet(self, qclass, rclass, qsheet, qexam, verbose=False, code=None, **kwargs):
@@ -1112,17 +1188,19 @@ class WimsAPI():
             qsheet - (int) identifier of the sheet on the receiving server.
             qexam - (int) identifier of the exam on the receiving server.
         """
-        params = {**self.params, **{
-                'job': 'linksheet',
-                'code': code if code else random_code(),
-                'qclass': qclass,
-                'rclass': rclass,
-                'qsheet': qsheet,
-                'qexam': qexam,
-        }}
+        params = {
+            **self.params, **{
+            'job'   : 'linksheet',
+            'code'  : code if code else random_code(),
+            'qclass': qclass,
+            'rclass': rclass,
+            'qsheet': qsheet,
+            'qexam' : qexam,
+        }
+        }
         request = requests.post(self.url, data=params, **kwargs)
         response = parse_response(request, verbose)
-        return (response['status'] == 'OK', response)
+        return response['status'] == 'OK', response
     
     
     def listclasses(self, rclass, verbose=False, code=None, **kwargs):
@@ -1141,14 +1219,16 @@ class WimsAPI():
         Parameters:
             rclass - (str) identifier of the class on the sending server.
             options - (list) names of fields queried."""
-        params = {**self.params, **{
-                'job': 'listclasses',
-                'code': code if code else random_code(),
-                'rclass': rclass,
-        }}
+        params = {
+            **self.params, **{
+            'job'   : 'listclasses',
+            'code'  : code if code else random_code(),
+            'rclass': rclass,
+        }
+        }
         request = requests.post(self.url, data=params, **kwargs)
         response = parse_response(request, verbose)
-        return (response['status'] == 'OK', response)
+        return response['status'] == 'OK', response
     
     
     def listexams(self, qclass, rclass, verbose=False, code=None, **kwargs):
@@ -1157,15 +1237,17 @@ class WimsAPI():
         Parameters:
             qclass - (int) identifier of the class on the receiving server.
             rclass - (str) identifier of the class on the sending server."""
-        params = {**self.params, **{
-                'job': 'listexams',
-                'code': code if code else random_code(),
-                'qclass': qclass,
-                'rclass': rclass,
-        }}
+        params = {
+            **self.params, **{
+            'job'   : 'listexams',
+            'code'  : code if code else random_code(),
+            'qclass': qclass,
+            'rclass': rclass,
+        }
+        }
         request = requests.post(self.url, data=params, **kwargs)
         response = parse_response(request, verbose)
-        return (response['status'] == 'OK', response)
+        return response['status'] == 'OK', response
     
     
     def listexos(self, qclass, rclass, verbose=False, code=None, **kwargs):
@@ -1174,15 +1256,17 @@ class WimsAPI():
         Parameters:
             qclass - (int) identifier of the class on the receiving server.
             rclass - (str) identifier of the class on the sending server."""
-        params = {**self.params, **{
-                'job': 'listexos',
-                'code': code if code else random_code(),
-                'qclass': qclass,
-                'rclass': rclass,
-        }}
+        params = {
+            **self.params, **{
+            'job'   : 'listexos',
+            'code'  : code if code else random_code(),
+            'qclass': qclass,
+            'rclass': rclass,
+        }
+        }
         request = requests.post(self.url, data=params, **kwargs)
         response = parse_response(request, verbose)
-        return (response['status'] == 'OK', response)
+        return response['status'] == 'OK', response
     
     
     def listlinks(self, qclass, rclass, qsheet, qexam, verbose=False, code=None, **kwargs):
@@ -1194,17 +1278,19 @@ class WimsAPI():
             qsheet - (int) identifier of the sheet on the receiving server.
             qexam - (int) identifier of the exam on the receiving server.
         """
-        params = {**self.params, **{
-                'job': 'listlinks',
-                'code': code if code else random_code(),
-                'qclass': qclass,
-                'rclass': rclass,
-                'qsheet': qsheet,
-                'qexam': qexam,
-        }}
+        params = {
+            **self.params, **{
+            'job'   : 'listlinks',
+            'code'  : code if code else random_code(),
+            'qclass': qclass,
+            'rclass': rclass,
+            'qsheet': qsheet,
+            'qexam' : qexam,
+        }
+        }
         request = requests.post(self.url, data=params, **kwargs)
         response = parse_response(request, verbose)
-        return (response['status'] == 'OK', response)
+        return response['status'] == 'OK', response
     
     
     def listmodules(self, level='H4', verbose=False, code=None, **kwargs):
@@ -1214,14 +1300,16 @@ class WimsAPI():
             level - (str) level of the module (defaults to H4).
                           Valid levels are E1, E2, ..., E6, H1, ..., H6, U1, ..., U5, G, R
         """
-        params = {**self.params, **{
-                'job': 'listmodules',
-                'code': code if code else random_code(),
-                'option': level,
-        }}
+        params = {
+            **self.params, **{
+            'job'   : 'listmodules',
+            'code'  : code if code else random_code(),
+            'option': level,
+        }
+        }
         request = requests.post(self.url, data=params, **kwargs)
         response = parse_response(request, verbose)
-        return (response['status'] == 'OK', response)
+        return response['status'] == 'OK', response
     
     
     def listsheets(self, qclass, rclass, verbose=False, code=None, **kwargs):
@@ -1230,15 +1318,17 @@ class WimsAPI():
         Parameters:
             qclass - (int) identifier of the class on the receiving server.
             rclass - (str) identifier of the class on the sending server."""
-        params = {**self.params, **{
-                'job': 'listsheets',
-                'code': code if code else random_code(),
-                'qclass': qclass,
-                'rclass': rclass,
-        }}
+        params = {
+            **self.params, **{
+            'job'   : 'listsheets',
+            'code'  : code if code else random_code(),
+            'qclass': qclass,
+            'rclass': rclass,
+        }
+        }
         request = requests.post(self.url, data=params, **kwargs)
         response = parse_response(request, verbose)
-        return (response['status'] == 'OK', response)
+        return response['status'] == 'OK', response
     
     
     def modclass(self, qclass, rclass, class_info, verbose=False, code=None, **kwargs):
@@ -1263,16 +1353,18 @@ class WimsAPI():
                 bgcolor - (str) page background color
                 refcolor - (str) menu background color
                 css - (str) css file (must be existing css on the WIMS server)"""
-        params = {**self.params, **{
-                'job': 'modclass',
-                'code': code if code else random_code(),
-                'qclass': qclass,
-                'rclass': rclass,
-                'data1': '\n'.join([str(k) + "=" + str(v) for k, v in class_info.items()]),
-        }}
+        params = {
+            **self.params, **{
+            'job'   : 'modclass',
+            'code'  : code if code else random_code(),
+            'qclass': qclass,
+            'rclass': rclass,
+            'data1' : '\n'.join([str(k) + "=" + str(v) for k, v in class_info.items()]),
+        }
+        }
         request = requests.post(self.url, data=params, **kwargs)
         response = parse_response(request, verbose)
-        return (response['status'] == 'OK', response)
+        return response['status'] == 'OK', response
     
     
     def modexam(self, qclass, rclass, qexam, exam_info, verbose=False, code=None, **kwargs):
@@ -1288,21 +1380,23 @@ class WimsAPI():
                 expiration - (str) exam expiration date (yyyymmdd)
                 duration - (int) duration (in minutes)
                 attempts - (int) number of attempts"""
-        params = {**self.params, **{
-                'job': 'modexam',
-                'code': code if code else random_code(),
-                'qclass': qclass,
-                'rclass': rclass,
-                'qexam': qexam,
-                'data1': '\n'.join([str(k) + "=" + str(v) for k, v in exam_info.items()]),
-        }}
+        params = {
+            **self.params, **{
+            'job'   : 'modexam',
+            'code'  : code if code else random_code(),
+            'qclass': qclass,
+            'rclass': rclass,
+            'qexam' : qexam,
+            'data1' : '\n'.join([str(k) + "=" + str(v) for k, v in exam_info.items()]),
+        }
+        }
         request = requests.post(self.url, data=params, **kwargs)
         response = parse_response(request, verbose)
-        return (response['status'] == 'OK', response)
+        return response['status'] == 'OK', response
     
     
     def modexosheet(self, verbose=False, code=None, **kwargs):
-        pass # TODO
+        pass  # TODO
     
     
     def modsheet(self, qclass, rclass, qsheet, sheet_info, verbose=False, code=None, **kwargs):
@@ -1331,17 +1425,19 @@ class WimsAPI():
                               be replaced by the character AT (@).
                               There is no check made, so the integrity of the
                               contents is up to you only! (defaults to "")"""
-        params = {**self.params, **{
-                'job': 'modsheet',
-                'code': code if code else random_code(),
-                'qclass': qclass,
-                'rclass': rclass,
-                'qsheet': qsheet,
-                'data1': '\n'.join([str(k) + "=" + str(v) for k, v in sheet_info.items()]),
-        }}
+        params = {
+            **self.params, **{
+            'job'   : 'modsheet',
+            'code'  : code if code else random_code(),
+            'qclass': qclass,
+            'rclass': rclass,
+            'qsheet': qsheet,
+            'data1' : '\n'.join([str(k) + "=" + str(v) for k, v in sheet_info.items()]),
+        }
+        }
         request = requests.post(self.url, data=params, **kwargs)
         response = parse_response(request, verbose)
-        return (response['status'] == 'OK', response)
+        return response['status'] == 'OK', response
     
     
     def moduser(self, qclass, rclass, quser, user_info, verbose=False, code=None, **kwargs):
@@ -1369,17 +1465,19 @@ class WimsAPI():
                 agreecgu - (str) if yes, the user will not be asked when he enters
                            for the first time to agree the cgu
                 regprop[1..5] - (str) custom variables"""
-        params = {**self.params, **{
-                'job': 'moduser',
-                'code': code if code else random_code(),
-                'qclass': qclass,
-                'rclass': rclass,
-                'quser': quser,
-                'data1': '\n'.join([str(k) + "=" + str(v) for k, v in user_info.items()]),
-        }}
+        params = {
+            **self.params, **{
+            'job'   : 'moduser',
+            'code'  : code if code else random_code(),
+            'qclass': qclass,
+            'rclass': rclass,
+            'quser' : quser,
+            'data1' : '\n'.join([str(k) + "=" + str(v) for k, v in user_info.items()]),
+        }
+        }
         request = requests.post(self.url, data=params, **kwargs)
         response = parse_response(request, verbose)
-        return (response['status'] == 'OK', response)
+        return response['status'] == 'OK', response
     
     
     def movexo(self, qclass, qclass2, rclass, qsheet, copy=False, verbose=False, code=None,
@@ -1395,19 +1493,21 @@ class WimsAPI():
             qsheet - (int) identifier of the sheet on the receiving server.
             copy - (bool) If set to True, copy the exo instead of moving it.
         """
-        params = {**self.params, **{
-                'job': 'movexo',
-                'code': code if code else random_code(),
-                'qclass': qclass,
-                'rclass': rclass,
-                'qsheet': qsheet,
-                'data1': qclass2,
-        }}
+        params = {
+            **self.params, **{
+            'job'   : 'movexo',
+            'code'  : code if code else random_code(),
+            'qclass': qclass,
+            'rclass': rclass,
+            'qsheet': qsheet,
+            'data1' : qclass2,
+        }
+        }
         if copy:
             params['option'] = 'copy'
         request = requests.post(self.url, data=params, **kwargs)
         response = parse_response(request, verbose)
-        return (response['status'] == 'OK', response)
+        return response['status'] == 'OK', response
     
     
     def movexos(self, qclass, qclass2, rclass, copy=False, verbose=False, code=None, **kwargs):
@@ -1421,21 +1521,24 @@ class WimsAPI():
             rclass - (str) identifier of the class on the sending server.
             copy - (bool) If set to True, copy the exo instead of moving it.
         """
-        params = {**self.params, **{
-                'job': 'movexos',
-                'code': code if code else random_code(),
-                'qclass': qclass,
-                'rclass': rclass,
-                'data1': qclass2,
-        }}
+        params = {
+            **self.params, **{
+            'job'   : 'movexos',
+            'code'  : code if code else random_code(),
+            'qclass': qclass,
+            'rclass': rclass,
+            'data1' : qclass2,
+        }
+        }
         if copy:
             params['option'] = 'copy'
         request = requests.post(self.url, data=params, **kwargs)
         response = parse_response(request, verbose)
-        return (response['status'] == 'OK', response)
+        return response['status'] == 'OK', response
     
-    #FIXME getting 'unauthorized'
-    def putcsv(self, qclass, rclass, csv, file=True, verbose=False, code=None, **kwargs): 
+    
+    # FIXME getting 'unauthorized'
+    def putcsv(self, qclass, rclass, csv, file=True, verbose=False, code=None, **kwargs):
         """Put data into the class.
         
         csv should respect this format: The first row of the table contains
@@ -1468,18 +1571,20 @@ class WimsAPI():
             csv	   - (str) path to a csv if 'file' is True (default), content of a csv otherwise.
             file   - (bool) Whether csv must be interpreted as a path to a csv or a .csv string"""
         if file:
-            with open(csv, 'r') as f:
+            with open(csv) as f:
                 csv = f.read()
-        params = {**self.params, **{
-                'job': 'putcsv',
-                'code': code if code else random_code(),
-                'qclass': qclass,
-                'rclass': rclass,
-                'data1': csv,
-        }}
+        params = {
+            **self.params, **{
+            'job'   : 'putcsv',
+            'code'  : code if code else random_code(),
+            'qclass': qclass,
+            'rclass': rclass,
+            'data1' : csv,
+        }
+        }
         request = requests.post(self.url, data=params, **kwargs)
         response = parse_response(request, verbose)
-        return (response['status'] == 'OK', response)
+        return response['status'] == 'OK', response
     
     
     def putexo(self, qclass, rclass, qsheet, module, options=None, verbose=False, code=None,
@@ -1497,20 +1602,22 @@ class WimsAPI():
                 weight - (int) weight of the exercise.
                 title  - (str) title of the exercise in the sheet.
                 description  - (str) description of the exercise in the sheet."""
-            
-        params = {**self.params, **{
-                'job': 'putexo',
-                'code': code if code else random_code(),
-                'qclass': qclass,
-                'rclass': rclass,
-                'qsheet': qsheet,
-                'data1': 'module=' + module,
-        }}
+        
+        params = {
+            **self.params, **{
+            'job'   : 'putexo',
+            'code'  : code if code else random_code(),
+            'qclass': qclass,
+            'rclass': rclass,
+            'qsheet': qsheet,
+            'data1' : 'module=' + module,
+        }
+        }
         if options:
             params['data1'] += '\n' + '\n'.join([str(k) + "=" + str(v) for k, v in options.items()])
         request = requests.post(self.url, data=params, **kwargs)
         response = parse_response(request, verbose)
-        return (response['status'] == 'OK', response)
+        return response['status'] == 'OK', response
     
     
     def recuser(self, qclass, rclass, quser, verbose=False, code=None, **kwargs):
@@ -1520,16 +1627,18 @@ class WimsAPI():
             qclass - (int) identifier of the class on the receiving server.
             rclass - (str) identifier of the class on the sending server.
             quser  - (str) user identifier on the receiving server."""
-        params = {**self.params, **{
-                'job': 'recuser',
-                'code': code if code else random_code(),
-                'qclass': qclass,
-                'rclass': rclass,
-                'quser': quser, 
-        }}
+        params = {
+            **self.params, **{
+            'job'   : 'recuser',
+            'code'  : code if code else random_code(),
+            'qclass': qclass,
+            'rclass': rclass,
+            'quser' : quser,
+        }
+        }
         request = requests.post(self.url, data=params, **kwargs)
         response = parse_response(request, verbose)
-        return (response['status'] == 'OK', response)
+        return response['status'] == 'OK', response
     
     
     def repairclass(self, qclass, rclass, verbose=False, code=None, **kwargs):
@@ -1538,22 +1647,25 @@ class WimsAPI():
         Parameters:
             qclass - (int) identifier of the class on the receiving server.
             rclass - (str) identifier of the class on the sending server."""
-        params = {**self.params, **{
-                'job': 'repairclass',
-                'code': code if code else random_code(),
-                'qclass': qclass,
-                'rclass': rclass,
-        }}
+        params = {
+            **self.params, **{
+            'job'   : 'repairclass',
+            'code'  : code if code else random_code(),
+            'qclass': qclass,
+            'rclass': rclass,
+        }
+        }
         request = requests.post(self.url, data=params, **kwargs)
         response = parse_response(request, verbose)
-        return (response['status'] == 'OK', response)
+        return response['status'] == 'OK', response
     
     
     def search(self, verbose=False, code=None, **kwargs):
-        pass # TODO
+        pass  # TODO
     
     
-    def sharecontent(self, qclass, qclass2, rclass, options=['exo'], verbose=False, code=None, **kwargs):
+    def sharecontent(self, qclass, qclass2, rclass, options=('exo',), verbose=False, code=None,
+                     **kwargs):
         """Declares neighbour classes, allowing class "qclass" to share content with class "data1"
         
         Condition : Both 2 classes must be linked by.
@@ -1564,17 +1676,19 @@ class WimsAPI():
             rclass - (str) identifier of the class on the sending server.
             options - (list) content to share (currently, only the "exo" content type is supported).
         """
-        params = {**self.params, **{
-                'job': 'sharecontent',
-                'code': code if code else random_code(),
-                'qclass': qclass,
-                'rclass': rclass,
-                'option': ','.join(options),
-                'data1': qclass2,
-        }}
+        params = {
+            **self.params, **{
+            'job'   : 'sharecontent',
+            'code'  : code if code else random_code(),
+            'qclass': qclass,
+            'rclass': rclass,
+            'option': ','.join(options),
+            'data1' : qclass2,
+        }
+        }
         request = requests.post(self.url, data=params, **kwargs)
         response = parse_response(request, verbose)
-        return (response['status'] == 'OK', response)
+        return response['status'] == 'OK', response
     
     
     def testexo(self, exo_src, verbose=False, code=None, **kwargs):
@@ -1582,15 +1696,17 @@ class WimsAPI():
         
         Parameters:
             exo_src - (str) source of the exercice."""
-        params = {**self.params, **{
-                'job': 'testexo',
-                'code': code if code else random_code(),
-                'data1': exo_src,
-        }}
+        params = {
+            **self.params, **{
+            'job'  : 'testexo',
+            'code' : code if code else random_code(),
+            'data1': exo_src,
+        }
+        }
         request = requests.post(self.url, data=params, **kwargs)
         response = parse_response(request, verbose)
-        return (response['status'] == 'OK', response)
+        return response['status'] == 'OK', response
     
     
     def update(self, verbose=False, code=None, **kwargs):
-        pass # TODO
+        pass  # TODO

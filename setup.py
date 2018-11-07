@@ -1,12 +1,13 @@
 """Setuptools entry point."""
+
 import codecs
 import os
+
 
 try:
     from setuptools import setup
 except ImportError:
     from distutils.core import setup
-
 
 CLASSIFIERS = [
     'Development Status :: 4 - Beta',
@@ -22,9 +23,8 @@ CLASSIFIERS = [
 ]
 
 dirname = os.path.dirname(__file__)
-
 long_description = (
-    codecs.open(os.path.join(dirname, 'README.md'), encoding='utf-8').read() 
+    codecs.open(os.path.join(dirname, 'README.md'), encoding='utf-8').read()
     + '\n\n___'
     + codecs.open(os.path.join(dirname, 'CHANGES.md'), encoding='utf-8').read()
 )
@@ -39,6 +39,6 @@ setup(
     author_email='coumes.quentin@gmail.com',
     url='https://github.com/qcoumes/wimsapi',
     packages=['wimsapi'],
-    install_requires=[],
+    install_requires=['requests'],
     classifiers=CLASSIFIERS
 )
