@@ -101,6 +101,15 @@ class WimsAPI:
         self.params = {'module': 'adm/raw', 'ident': ident, 'passwd': passwd}
         self.url = url
     
+    @property
+    def ident(self):
+        return self.params['ident']
+    
+    
+    @property
+    def passwd(self):
+        return self.params['passwd']
+    
     
     def addclass(self, qclass, rclass, class_info, supervisor_info, verbose=False, code=None,
                  **kwargs):
