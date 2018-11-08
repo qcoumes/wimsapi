@@ -101,7 +101,7 @@ where:
 >>> api = WimsAPI('https://wims.unice.fr/wims/wims.cgi', 'ident', 'toto')
 >>> status, response = api.checkident()
 >>> if not status: # Connection failed
-        print("Can't establish a connection with the WIMS server: ", response)
+        print("Can't establish a connection with the WIMS server: ", response['message'])
 >>>
 >>> api.getclass(9001, "myclass")
 True, {'status': 'OK', 'code': 'I38EDGPL4W', 'job': 'getclass', 'query_class': '9001', 'rclass': 'myclass', 'password': '', 'creator': '', 'secure': 'all', 'external_auth': '', 'mixed_external_auth': '', 'cas_auth': '', 'php_auth': '', 'authidp': '', 'supervisor': 'Sophie, Lemaire; Bernadette, Perrin-Riou', 'description': 'Aide au d veloppement de ressources.', 'institution': 'Classe ouverte pour enseignants', 'lang': 'fr', 'email': 'sophie.lemaire@math.u-psud.fr', 'expiration': '21000101', 'limit': '200', 'topscores': '', 'superclass': '', 'type': '', 'level': 'R', 'parent': '', 'typename': 'class', 'bgcolor': '', 'bgimg': '', 'scorecolor': '', 'css': '-theme-', 'logo': 'gifs/logo/wimsedu.png', 'logoside': 'left', 'refcolor': '', 'ref_menucolor': '', 'ref_button_color': '', 'ref_button_bgcolor': '', 'ref_button_help_color': '', 'ref_button_help_bgcolor': '', 'theme': '', 'theme_icon': '', 'sendmailteacher': '', '': '', 'connections': '+myself/myclass+', 'creation': '20070929', 'userlist': ['anonymous', 'user'], 'usercount': '2', 'examcount': '0', 'sheetcount': '11'}
