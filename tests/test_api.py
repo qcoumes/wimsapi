@@ -2,7 +2,7 @@ import unittest
 
 from wimsapi.api import WimsAPI
 
-WIMS_URL = "http://www.localhost:7777/wims/"
+WIMS_URL = "http://localhost:7777/wims/wims.cgi"
 
 
 class WimsAPITestCase(unittest.TestCase):
