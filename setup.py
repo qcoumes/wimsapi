@@ -4,6 +4,8 @@ import codecs
 import os
 
 
+import wimsapi
+
 try:
     from setuptools import setup
 except ImportError:
@@ -31,7 +33,7 @@ long_description = (
 
 setup(
     name='wimsapi',
-    version='0.2.0',
+    version=wimsapi.__version__,
     description='A Python 3 implementation of WIMS adm/raw module.',
     long_description=long_description,
     long_description_content_type='text/markdown',
