@@ -31,14 +31,16 @@ class User():
         self.regprop4 = regprop4
         self.regprop5 = regprop5
     
+    
     @property
     def fullname(self):
         return (self.firstname + " " + self.firstname).title()
     
+    
     @property
     def infos(self):
         status, user_info = self._api.getuser(
-                self._class.qclass, self._class.qclass.rclass, self.quser)
+            self._class.qclass, self._class.qclass.rclass, self.quser)
         if not status:
             raise AdmRawException(user_info['message'])
         
@@ -57,7 +59,7 @@ class User():
                              "Class.adduser() to add an user to a Wims class.")
         
         status, response = self._class._api.moduser(
-                self._class.qclass, self._class.rclass, self.quser, self._to_payload())
+            self._class.qclass, self._class.rclass, self.quser, self._to_payload())
         
         if not status:
             raise AdmRawException(response['message'])
