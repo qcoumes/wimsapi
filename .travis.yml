@@ -3,37 +3,36 @@ sudo: required
 language: python
 
 services:
-    - docker
+- docker
 
 python:
-    - '3.5'
-    - '3.6'
+- '3.5'
+- '3.6'
 
 before_install:
-    - git clone https://github.com/qcoumes/docker-wims-minimal.git wims
-    - docker build -t wims-minimal wims/
-    - docker run -itd -p 7777:80 --name wims wims-minimal
-    - docker container start wims
-    - docker exec -it wims ./bin/apache-config
-    - docker exec -it wims service apache2 restart
+- git clone https://github.com/qcoumes/docker-wims-minimal.git wims
+- docker build -t wims-minimal wims/
+- docker run -itd -p 7777:80 --name wims wims-minimal
+- docker container start wims
+- docker exec -it wims ./bin/apache-config
+- docker exec -it wims service apache2 restart
 
 install:
-    - pip install -U wheel setuptools
-    - pip install tox-travis
-    - pip install coveralls
+- pip install -U wheel setuptools
+- pip install tox-travis
+- pip install coveralls
 
 script:
-    - tox
+- tox
 
 after_success:
-    - coveralls
-
+- coveralls
 
 deploy:
-    provider: pypi
-    skip_existing: true
-    user: "qcoumes"
-    password:
-        secure: MM7e7vzkV+aHOQI2/A3V1DAeQ6/Kz9CsKvbXEsE2W/UOfo+S9OT9pzGd93lp71sHOUoAyzJJTJC1YFo1f1Kvq2SI3geRNr4zfwwkdC5G7WdOs7N99PjpN6/Fdv3jW3jdP18Lr66H8AjvLlDX9KvAf+xdNx2hitSflGZQluCv1IUYvq8Sj2chWX+bKFquZFK+hJpATC1QkMxYBUKqfxYQqBo28KEAJOrgHQa5Xa7/Bm0/aRrYirTgila4rpWsS5Ze78NOaUjUeo9Q+IKygIEdzfKHSclgUXLxjMI78+75E0Rxj5urJt+7eZjeNy/2/fTeixHilLaVLgGXLvbh/KqcSfh1Z/wUbJukehvtWFTSFDc/RcAriHpkUkMXTgbZaT2nNfITjt7+4KRVbT9a92TfP0c4r9udusFGsueIMjeedeYA4L3uksrexlSyS/1RCmmbtx+eQNA0Bvv1DRhZk7e4hE+R0p/xmCBqZmiqqdaKMN9n2E7m8+4H3BCKJ/eTVA1tjMs/DcEwXc+oyGXjWH9OjeFmcBvAKpO7LyzhIOmoCXv6BRF4BsxDtkv599k7VX/JtwPtSVG3oaaC6S/L0R+eZw60zNUsY2dFkU7++H+0gulcM35Bz65XdIwuF9jgxuGTBJ+1jMN7mWOy1gPct5fsBiP4F0TAc1SLtk5e5Vxcado=
-    on:
-        condition: "$TRAVIS_PYTHON_VERSION == 3.6 && $TRAVIS_EVENT_TYPE != cron"
+  provider: pypi
+  skip_existing: true
+  user: qcoumes
+  password:
+    secure: n3albX0+BIHAKgS3Z6WmdP+QY9/lLgujWhmJiJmDB6thEzyJx7T3Opg2wZ7OhJEBAIaU/Uo2MfngQV66W21n8as+MajX5v74ULfhH3BN4kuPI5+vbOkcPtWit4kHIJYqiJNXTmlx8BRRb6noUpWr/+1NasDeokTuv1ZFHJ+poxU/C4+2lXnI3uGbfehO5lDd86X3Q8ehci+NYpwY5mRXqQMExIKsl0EUy5zwaJeITvSE/g/i8e6efXImkgp3HukhY14ANcY2lFWJEoHzoSPKYuklqUIeL19bX8Rl+VnAm3PwD1x4GlY1mj72KD/TH7qqK5+RejVvN8oWD+LaGllydVGyMqIR9vnysBX2GkArsi6iDRqxIz8jWIsy4qf54TIOWXkX7pzoVSWiUDnqNT9xFMMSe2LsqtsdtJVDpigU+iiCzk9Tqy6lYvAGupY/uteQPBvUQ9h0tn+8rBCsL0T1qhOpm4McRnJB5g0th5S7B2yw4oA10lGT898Xgf9l0SHQYQDmHnG1IEM9Z5TvxyE4LJUdjjGibUSJ8Q5074MCx0M0AVvIkyVkI/3XPPGshRPmspPpixuR68PSpYw5IdwMraai4Yk4GVS2zzSWZTj52djnrYZC/7qPisvcxpHcUVg4MHhHl/p2lFzyd2r+gEhKpPtlpFLSU/GWcQJzEUhnVtg=
+  on:
+    condition: "$TRAVIS_PYTHON_VERSION == 3.6 && $TRAVIS_EVENT_TYPE != cron"
