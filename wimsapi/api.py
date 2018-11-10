@@ -1106,7 +1106,7 @@ class WimsAPI:
         queried. In this case, only the queried properties are returned.
         
         Existing properties are: firstname, lastname, email, comments, regnum, photourl,
-        participate, courses, classes, supervise, supervisable, external_auth, agreecgu, regprop1,
+        participate, password, courses, classes, supervise, supervisable, external_auth, agreecgu, regprop1,
         regprop2, regprop3, regprop4, regprop5
         
         Parameters:
