@@ -9,7 +9,8 @@ requests to the other.
 The connectable server must be declared in a file
 within the directory 'WIMS_HOME/log/classes/.connections/'.
 
-/!\ Warning: output must be set 'ident_type=json' in 'WIMS_HOME/log/classes/.connections/IDENT' for
+/!\ Warning: output must be set 'ident_type=json' and agent must be set to
+'ident_agent=python-requests' in 'WIMS_HOME/log/classes/.connections/IDENT' for
 this API to work properly.
 
 For more informations, see http://wims.unice.fr/wims/?module=adm/raw&job=help"""

@@ -1,6 +1,16 @@
 # Changelog
 
 
+## 0.2.2
+
+* More tests
+
+
+## 0.2.1
+
+* Fixed travis CI
+
+
 ## 0.2.0
 
 * Add User and Class higher level classes

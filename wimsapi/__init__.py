@@ -7,4 +7,4 @@ from .exceptions import AdmRawException
 
 name = "wimsapi"
 __title__ = 'wimsapi'
-__version__ = VERSION = '0.2.1'
+__version__ = VERSION = '0.2.2'

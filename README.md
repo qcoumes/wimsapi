@@ -11,8 +11,24 @@ A Python 3 implementation of WIMS adm/raw module.
 The connectable server must be declared in a file
 within the directory `WIMS_HOME/log/classes/.connections/`.
 
-**/!\ Warning: output must be set `ident_type=json` in `WIMS_HOME/log/classes/.connections/IDENT` for
+**/!\ Warning: output must be set `ident_type=json` and agent set to `ident_agent=python-requests`
+in `WIMS_HOME/log/classes/.connections/IDENT` for
 this API to work properly.**
+
+
+
+## Install
+From source code:
+
+
+git clone https://github.com/qcoumes/wimsapi.git
+cd wimsapi
+python setup.py install
+
+With pip:
+
+`pip install django-http-method`
+
 
 
 ## Low-level API
