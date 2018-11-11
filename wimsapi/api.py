@@ -52,7 +52,7 @@ def parse_response(request, verbose=False, return_request=False):
         }
     if response['status'] not in ["ERROR", "OK"]:
         if not return_request:
-            if verbose:
+            if not verbose:
                 msg = ("Use verbose=True to see the received response content "
                        + "or use return_request=True to get the request object.")
             else:
@@ -579,7 +579,7 @@ class WimsAPI:
         params = {
             **self.params,
             **{
-                'job'   : 'recsheet',
+                'job'   : 'delsheet',
                 'code'  : code if code else random_code(),
                 'qclass': qclass,
                 'rclass': rclass,
