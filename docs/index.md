@@ -59,10 +59,10 @@ Here a description of the important parameters:
 
 * `ident_site`: a space separated list of IP allowed to send request to this
                 *WIMS* server.
-* `ident_agent`: Must be set to `python-requests`.
+* `ident_agent`: ***Must*** be set to `python-requests`.
 * `ident_password`: Used alongside the file's name as *identifier* in the request
                     to authenticate yourself on *WIMS*.
-* `ident_type`: Must be set to `json`.
+* `ident_type`: ***Must*** be set to `json`.
 
 The above example would allow a computer/server of ip `172.17.0.1` to send a request
 to the *WIMS* server with identifier *myself* and password *toto*.
