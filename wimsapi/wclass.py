@@ -2,7 +2,7 @@ import datetime
 
 from wimsapi.api import WimsAPI
 from wimsapi.user import User
-from wimsapi.exceptions import AdmRawException
+from wimsapi.exceptions import AdmRawError, NotSavedError
 
 
 LANG = [
@@ -109,7 +109,7 @@ class Class:
         """Return the url of the server hosting this WIMS class. Raise ValueError
         if the class has not been saved yet."""
         if not self._api:
-            raise ValueError("url is not defined until the WIMS class is saved once")
+            raise NotSavedError("url is not defined until the WIMS class is saved once")
         return self._api.url
     
     
@@ -118,7 +118,7 @@ class Class:
         """Return the ident used on the server hosting this WIMS class. Raise ValueError
         if the class has not been saved yet."""
         if not self._api:
-            raise ValueError("ident is not defined until the WIMS class is saved once")
+            raise NotSavedError("ident is not defined until the WIMS class is saved once")
         return self._api.ident
     
     
@@ -127,7 +127,7 @@ class Class:
         """Return the passwd used on the server hosting this WIMS class. Raise ValueError
         if the class has not been saved yet."""
         if not self._api:
-            raise ValueError("passwd is not defined until the WIMS class is saved once")
+            raise NotSavedError("passwd is not defined until the WIMS class is saved once")
         return self._api.passwd
     
     
@@ -135,10 +135,10 @@ class Class:
     def infos(self):
         """Return all the informations hosted on the WIMS server about this class."""
         if not self._api:
-            raise ValueError("infos is not defined until the WIMS class is saved once")
+            raise NotSavedError("infos is not defined until the WIMS class is saved once")
         status, class_info = self._api.getclass(self.qclass, self.rclass)
         if not status:  # pragma: no cover
-            raise AdmRawException(class_info['message'])
+            raise AdmRawError(class_info['message'])
         
         for k in ['status', 'code', 'job']:
             del class_info[k]
@@ -157,8 +157,8 @@ class Class:
             self._api = WimsAPI(url, ident, passwd)
         
         if not self._api:
-            raise ValueError("url, ident and passwd must be provided when saving for the first "
-                             "time.")
+            raise NotSavedError("url, ident and passwd must be provided when saving for the first "
+                                "time.")
         
         payload = self._to_payload()
         
@@ -167,8 +167,10 @@ class Class:
         else:
             status, response = self._api.addclass(self.qclass, self.rclass, payload,
                                                   self.supervisor._to_payload())
+            self.supervisor.quser = "supervisor"
+        
         if not status:  # pragma: no cover
-            raise AdmRawException(response['message'])
+            raise AdmRawError(response['message'])
         
         self._saved = True
     
@@ -176,11 +178,11 @@ class Class:
     def delete(self):
         """Delete the class from the WIMS server."""
         if not self._saved:
-            raise ValueError("Can't delete unsaved class")
+            raise NotSavedError("Can't delete unsaved class")
         
         status, response = self._api.delclass(self.qclass, self.rclass)
         if not status:  # pragma: no cover
-            raise AdmRawException(response['message'])
+            raise AdmRawError(response['message'])
         
         self._saved = False
         self._api = None
@@ -189,7 +191,7 @@ class Class:
     def refresh(self):
         """Refresh this instance of a WIMS class from the server itself."""
         if not self._saved:
-            raise ValueError("Can't refresh unsaved class")
+            raise NotSavedError("Can't refresh unsaved class")
         new = Class.get(self.url, self.ident, self.passwd, self.qclass, self.rclass)
         self.__class__ = new.__class__
         self.__dict__ = new.__dict__
@@ -203,19 +205,19 @@ class Class:
         
         status, class_info = api.getclass(qclass, rclass)
         if not status:  # pragma: no cover
-            raise AdmRawException(class_info['message'])
+            raise AdmRawError(class_info['message'])
         
         status, class_password = api.getclass(qclass, rclass)
         if not status:  # pragma: no cover
-            raise AdmRawException(class_password['message'])
+            raise AdmRawError(class_password['message'])
         
         status, supervisor_info = api.getuser(qclass, rclass, "supervisor")
         if not status:  # pragma: no cover
-            raise AdmRawException(supervisor_info['message'])
+            raise AdmRawError(supervisor_info['message'])
         
         status, password_info = api.getuser(qclass, rclass, "supervisor", ["password"])
         if not status:  # pragma: no cover
-            raise AdmRawException(password_info['message'])
+            raise AdmRawError(password_info['message'])
         
         supervisor_info['password'] = password_info['password']
         supervisor = User("supervisor", **supervisor_info)
@@ -234,16 +236,16 @@ class Class:
         """Retrieve a wimsapi.user.User instance of the user corresponding to
         'quser' in this class.
         
-        Raise AdmRawException with no user with this id is found in the class."""
+        Raise AdmRawError if no user with this id is found in the class."""
         if not self._saved:
-            raise ValueError("Class must be saved before being able to get an user.")
+            raise NotSavedError("Class must be saved before being able to get an user.")
         
         status, user_info = self._api.getuser(self.qclass, self.rclass, quser)
         if not status:  # pragma: no cover
-            raise AdmRawException(user_info['message'])
+            raise AdmRawError(user_info['message'])
         status, user_password = self._api.getuser(self.qclass, self.rclass, quser, ["password"])
         if not status:  # pragma: no cover
-            raise AdmRawException(user_password['message'])
+            raise AdmRawError(user_password['message'])
         
         user_info['password'] = user_password['password']
         user = User("supervisor", **user_info)
@@ -255,13 +257,13 @@ class Class:
     def add_user(self, user):
         """Add save a wimsapi.user.User into this WIMS class."""
         if not self._saved:
-            raise ValueError("Class must be saved before being able to add an user.")
+            raise NotSavedError("Class must be saved before being able to add an user.")
         
         status, response = self._api.adduser(self.qclass, self.rclass,
                                              user.quser, user._to_payload())
         
         if not status:  # pragma: no cover
-            raise AdmRawException(response['message'])
+            raise AdmRawError(response['message'])
         
         user._class = self
         user._saved = True

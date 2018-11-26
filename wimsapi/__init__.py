@@ -3,7 +3,7 @@
 from .api import WimsAPI
 from .user import User
 from .wclass import Class
-from .exceptions import AdmRawException
+from .exceptions import AdmRawError, NotSavedError, WimsAPIError
 
 name = "wimsapi"
 __title__ = 'wimsapi'

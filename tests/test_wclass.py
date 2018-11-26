@@ -5,7 +5,7 @@ from unittest import mock
 from wimsapi.user import User
 from wimsapi.wclass import Class, one_year_later
 from wimsapi.api import WimsAPI
-from wimsapi.exceptions import AdmRawException
+from wimsapi.exceptions import AdmRawError, NotSavedError
 
 
 WIMS_URL = "http://localhost:7777/wims/wims.cgi"
@@ -53,13 +53,13 @@ class ClassTestCase(unittest.TestCase):
         
         c = Class(999999, "myclass", "A class", "an institution", "mail@mail.com", "password",
                   self.user)
-        with self.assertRaises(ValueError):
+        with self.assertRaises(NotSavedError):
             c.url
-        with self.assertRaises(ValueError):
+        with self.assertRaises(NotSavedError):
             c.ident
-        with self.assertRaises(ValueError):
+        with self.assertRaises(NotSavedError):
             c.passwd
-        with self.assertRaises(ValueError):
+        with self.assertRaises(NotSavedError):
             c.infos
         
         with self.assertRaises(ValueError):
@@ -77,10 +77,10 @@ class ClassTestCase(unittest.TestCase):
         c = Class(999999, "myclass", "A class", "an institution", "mail@mail.com", "password",
                   self.user)
         
-        with self.assertRaises(ValueError):
+        with self.assertRaises(NotSavedError):
             c.save()
         
-        with self.assertRaises(ValueError):
+        with self.assertRaises(NotSavedError):
             c.refresh()
         
         c.save(WIMS_URL, "myself", "toto")
@@ -104,7 +104,7 @@ class ClassTestCase(unittest.TestCase):
         c = Class(999999, "myclass", "A class", "an institution", "mail@mail.com", "password",
                   self.user)
         
-        with self.assertRaises(ValueError):
+        with self.assertRaises(NotSavedError):
             c.get_user("supervisor")
         
         c.save(WIMS_URL, "myself", "toto")
@@ -117,7 +117,7 @@ class ClassTestCase(unittest.TestCase):
                   self.user)
         u = User("quser", "last", "first", "pass", "mail2@mail.com")
         
-        with self.assertRaises(ValueError):
+        with self.assertRaises(NotSavedError):
             c.add_user(u)
         
         c.save(WIMS_URL, "myself", "toto")
@@ -133,12 +133,12 @@ class ClassTestCase(unittest.TestCase):
         c = Class(999999, "myclass", "A class", "an institution", "mail@mail.com", "password",
                   self.user)
         
-        with self.assertRaises(ValueError):
+        with self.assertRaises(NotSavedError):
             c.delete()
         
         c.save(WIMS_URL, "myself", "toto")
         
         Class.get(WIMS_URL, "myself", "toto", c.qclass, c.rclass)  #  Ok
         c.delete()
-        with self.assertRaises(AdmRawException):
+        with self.assertRaises(AdmRawError):
             Class.get(WIMS_URL, "myself", "toto", c.qclass, c.rclass)  # Should raise the exception

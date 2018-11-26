@@ -3,7 +3,7 @@ import unittest
 from wimsapi.api import WimsAPI
 from wimsapi.user import User
 from wimsapi.wclass import Class
-from wimsapi.exceptions import AdmRawException
+from wimsapi.exceptions import AdmRawError, NotSavedError
 
 WIMS_URL = "http://localhost:7777/wims/wims.cgi"
 
@@ -32,20 +32,24 @@ class UserTestCase(unittest.TestCase):
         
         u = User("supervisor", "last", "first", "pass", "mail@mail.com")
         self.assertEqual(u.fullname, "First Last")
-        with self.assertRaises(ValueError):
+        with self.assertRaises(NotSavedError):
             u.infos
     
     
     def test_get_exception(self):
-        with self.assertRaises(ValueError):
+        with self.assertRaises(NotSavedError):
             User.get(self.clas, "supervisor")
+        
+        with self.assertRaises(AdmRawError) as cm:
+            User.get(self.clas, "unknown")
+        self.assertIn("WIMS' server responded with an ERROR:", str(cm.exception))
     
     
     def test_save_and_refresh(self):
         self.clas.save(WIMS_URL, "myself", "toto")
         u = User("Test", "test", "test", "pass", "mail@mail.com")
         
-        with self.assertRaises(ValueError):
+        with self.assertRaises(NotSavedError):
             u.refresh()
         
         u.save(self.clas)
@@ -63,10 +67,10 @@ class UserTestCase(unittest.TestCase):
     
     
     def test_save_exceptions(self):
-        with self.assertRaises(ValueError):
+        with self.assertRaises(NotSavedError):
             self.user.save()
         
-        with self.assertRaises(ValueError):
+        with self.assertRaises(NotSavedError):
             self.user.save(self.clas)
     
     
@@ -74,11 +78,11 @@ class UserTestCase(unittest.TestCase):
         self.clas.save(WIMS_URL, "myself", "toto")
         u = User("Test", "test", "test", "pass", "mail@mail.com")
         
-        with self.assertRaises(ValueError):
+        with self.assertRaises(NotSavedError):
             u.delete()
         
         u.save(self.clas)
         User.get(self.clas, u.quser)  # Ok
         u.delete()
-        with self.assertRaises(AdmRawException):
+        with self.assertRaises(AdmRawError):
             User.get(self.clas, u.quser)  # Should raise the exception

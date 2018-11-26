@@ -1,4 +1,4 @@
-from wimsapi.exceptions import AdmRawException
+from wimsapi.exceptions import AdmRawError, NotSavedError
 
 
 
@@ -63,11 +63,11 @@ class User:
     def infos(self):
         """Return all the informations hosted on the WIMS server about this user."""
         if not self._class:
-            raise ValueError("infos is not defined until the user has been saved once")
+            raise NotSavedError("infos is not defined until the user has been saved once")
         status, user_info = self._class._api.getuser(
             self._class.qclass, self._class.rclass, self.quser)
         if not status:  # pragma: no cover
-            raise AdmRawException(user_info['message'])
+            raise AdmRawError(user_info['message'])
         
         for k in ['status', 'code', 'job']:
             del user_info[k]
@@ -77,7 +77,7 @@ class User:
     def refresh(self):
         """Refresh this instance of a WIMS User from the server itself."""
         if not self._saved:
-            raise ValueError("Can't refresh unsaved user")
+            raise NotSavedError("Can't refresh unsaved user")
         new = User.get(self._class, self.quser)
         self.__class__ = new.__class__
         self.__dict__ = new.__dict__
@@ -93,12 +93,12 @@ class User:
         wclass is an instance of wimsapi.Class. The argument is optionnal
         if the user has already been saved or fetched from a class."""
         if not wclass and not self._class:
-            raise ValueError("wclass must be provided if User has not been imported from a WIMS"
+            raise NotSavedError("wclass must be provided if User has not been imported from a WIMS"
                              " class.")
         
         wclass = wclass or self._class
         if not wclass._saved:
-            raise ValueError("Class must be saved before being able to get / add an user.")
+            raise NotSavedError("Class must be saved before being able to get / add an user.")
         
         if self._saved:
             status, response = wclass._api.moduser(
@@ -108,7 +108,7 @@ class User:
                 wclass.qclass, wclass.rclass, self.quser, self._to_payload())
         
         if not status:  # pragma: no cover
-            raise AdmRawException(response['message'])
+            raise AdmRawError(response['message'])
         
         self._class = wclass
         self._saved = True
@@ -117,13 +117,13 @@ class User:
     def delete(self):
         """Delete the user from its WIMS class on the server."""
         if not self._class:
-            raise ValueError("Can't delete unsaved user")
+            raise NotSavedError("Can't delete unsaved user")
         
         c = self._class
         status, response = c._api.deluser(c.qclass, c.rclass, self.quser)
         
         if not status:  # pragma: no cover
-            raise AdmRawException(response['message'])
+            raise AdmRawError(response['message'])
         
         self._saved = False
         self._class = None
@@ -134,19 +134,19 @@ class User:
         """Retrieve a wimsapi.User instance of the user corresponding to
         'quser' in wclass.
 
-        Raise AdmRawException if the user corresponding to 'quser'
+        Raise AdmRawError if the user corresponding to 'quser'
         in the class is not found."""
         if not wclass._saved:
-            raise ValueError("Class must be saved before being able to get / add an user")
+            raise NotSavedError("Class must be saved before being able to get / add an user")
         
         status, user_info = wclass._api.getuser(wclass.qclass, wclass.rclass, quser)
         if not status:  # pragma: no cover
-            raise AdmRawException(user_info['message'])
+            raise AdmRawError(user_info['message'])
         
         status, user_password = wclass._api.getuser(wclass.qclass, wclass.rclass, quser,
                                                     ["password"])
         if not status:  # pragma: no cover
-            raise AdmRawException(user_password['message'])
+            raise AdmRawError(user_password['message'])
         
         user_info['password'] = user_password['password']
         user = cls(quser, **user_info)
