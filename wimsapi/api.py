@@ -15,7 +15,6 @@ this API to work properly.
 
 For more informations, see http://wims.unice.fr/wims/?module=adm/raw&job=help"""
 
-
 import json
 import random
 import string
@@ -541,16 +540,13 @@ class WimsAPI:
         return response['status'] == 'OK', response
     
     
-    def delexo(self, qclass, rclass, qexo, no_build=False, verbose=False, code=None, **kwargs):
+    def delexo(self, qclass, rclass, qexo, verbose=False, code=None, **kwargs):
         """Delete an exo.
         
         Parameters:
             qclass - (int) identifier of the class on the receiving server.
             rclass - (str) identifier of the class on the sending server.
-            qexo   - (str) exo identifier on the receiving server.
-            no_build - (bool) Do not compile the exercise. Improves the speed when there is a lot
-                              of exercices to handle at the same time. Do not forget to call
-                              buildexos() to compile them at the end (defaults to False)"""
+            qexo   - (str) exo identifier on the receiving server."""
         params = {
             **self.params,
             **{
@@ -561,8 +557,6 @@ class WimsAPI:
                 'qexo'  : qexo,
             }
         }
-        if no_build:
-            params['option'] = 'no_build'
         request = requests.post(self.url, data=params, **kwargs)
         response = parse_response(request, verbose)
         return response['status'] == 'OK', response
@@ -1685,6 +1679,7 @@ class WimsAPI:
         }
         if options:
             params['data1'] += '\n' + '\n'.join([str(k) + "=" + str(v) for k, v in options.items()])
+        print(params)
         request = requests.post(self.url, data=params, **kwargs)
         response = parse_response(request, verbose)
         return response['status'] == 'OK', response

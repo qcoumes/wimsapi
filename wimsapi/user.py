@@ -2,7 +2,7 @@ from wimsapi.exceptions import AdmRawException
 
 
 
-class User():
+class User:
     
     def __init__(self, quser, lastname, firstname, password, email="", comments="", regnum="",
                  photourl="", participate="", courses="", classes="", supervise="",
@@ -10,6 +10,7 @@ class User():
                  external_auth="", agreecgu="yes", regprop1="", regprop2="", regprop3="",
                  regprop4="", regprop5="", **kwargs):
         self._class = None
+        self._saved = False
         self.quser = quser
         self.lastname = lastname
         self.firstname = firstname
@@ -34,14 +35,16 @@ class User():
     
     @property
     def fullname(self):
-        return (self.firstname + " " + self.firstname).title()
+        return (self.firstname + " " + self.lastname).title()
     
     
     @property
     def infos(self):
-        status, user_info = self._api.getuser(
-            self._class.qclass, self._class.qclass.rclass, self.quser)
-        if not status:
+        if not self._class:
+            raise ValueError("infos is not defined until the user has been saved once")
+        status, user_info = self._class._api.getuser(
+            self._class.qclass, self._class.rclass, self.quser)
+        if not status:  # pragma: no cover
             raise AdmRawException(user_info['message'])
         
         for k in ['status', 'code', 'job']:
@@ -49,17 +52,74 @@ class User():
         return user_info
     
     
+    def refresh(self):
+        """Refresh this instance of a WIMS User from the server itself."""
+        if not self._saved:
+            raise ValueError("Can't refresh unsaved user")
+        new = User.get(self._class, self.quser)
+        self.__class__ = new.__class__
+        self.__dict__ = new.__dict__
+    
+    
     def _to_payload(self):
         return {k: v for k, v in self.__dict__.items() if k not in ['quser', '_api', '_class']}
     
     
-    def save(self):
-        if not self._class:
-            raise ValueError("User must be added to a Wims class before being saved. Use "
-                             "Class.adduser() to add an user to a Wims class.")
+    def save(self, wclass=None):
+        if not wclass and not self._class:
+            raise ValueError("wclass must be provided if User has not been imported from a WIMS"
+                             " class.")
         
-        status, response = self._class._api.moduser(
-            self._class.qclass, self._class.rclass, self.quser, self._to_payload())
+        wclass = wclass or self._class
+        if not wclass._saved:
+            raise ValueError("Class must be saved before being able to get / add an user.")
         
-        if not status:
+        if self._saved:
+            status, response = wclass._api.moduser(
+                wclass.qclass, wclass.rclass, self.quser, self._to_payload())
+        else:
+            status, response = wclass._api.adduser(
+                wclass.qclass, wclass.rclass, self.quser, self._to_payload())
+
+        if not status:  # pragma: no cover
             raise AdmRawException(response['message'])
+
+        self._class = wclass
+        self._saved = True
+    
+    
+    def delete(self):
+        if not self._class:
+            raise ValueError("Can't delete unsaved user")
+        
+        c = self._class
+        status, response = c._api.deluser(c.qclass, c.rclass, self.quser)
+        
+        if not status:  # pragma: no cover
+            raise AdmRawException(response['message'])
+    
+    
+    @classmethod
+    def get(cls, wclass, quser):
+        """Retrieve a wimsapi.user.User instance of the user corresponding to
+        'quser' in wclass.
+
+        Raise AdmRawException if the user corresponding to 'quser'
+        in the class is not found."""
+        if not wclass._saved:
+            raise ValueError("Class must be saved before being able to get / add an user")
+        
+        status, user_info = wclass._api.getuser(wclass.qclass, wclass.rclass, quser)
+        if not status:  # pragma: no cover
+            raise AdmRawException(user_info['message'])
+        
+        status, user_password = wclass._api.getuser(wclass.qclass, wclass.rclass, quser,
+                                                    ["password"])
+        if not status:  # pragma: no cover
+            raise AdmRawException(user_password['message'])
+        
+        user_info['password'] = user_password['password']
+        user = cls(quser, **user_info)
+        user._class = wclass
+        user._saved = True
+        return user
