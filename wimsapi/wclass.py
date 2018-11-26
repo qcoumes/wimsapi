@@ -18,7 +18,7 @@ LANG = [
     'lt', 'lb', 'lu', 'lg', 'mk', 'mh', 'ml', 'mi', 'mr', 'ms', 'Mi', 'mk',
     'mg', 'mt', 'mn', 'mi', 'ms', 'my', 'na', 'nv', 'nr', 'nd', 'ng', 'ne',
     'nl', 'nn', 'nb', 'no', 'oc', 'oj', 'or', 'om', 'os', 'pa', 'fa', 'pi',
-    'pl', 'pt', 'ps', 'qu', 'rm', 'ro', 'ro', 'rn', 'ru', 'sg', 'sa', 'si', *
+    'pl', 'pt', 'ps', 'qu', 'rm', 'ro', 'ro', 'rn', 'ru', 'sg', 'sa', 'si',
     'sk', 'sk', 'sl', 'se', 'sm', 'sn', 'sd', 'so', 'st', 'es', 'sq', 'sc',
     'sr', 'ss', 'su', 'sw', 'sv', 'ty', 'ta', 'tt', 'te', 'tg', 'tl', 'th',
     'bo', 'ti', 'to', 'tn', 'ts', 'tk', 'tr', 'tw', 'ug', 'uk', 'ur', 'uz',
@@ -35,6 +35,7 @@ LEVEL = [
 
 
 def one_year_later():
+    """Give the date one year later from now in the format yyyymmdd."""
     d = datetime.date.today()
     return d.replace(year=d.year + 1).strftime("%Y%m%d")
 
@@ -173,12 +174,16 @@ class Class:
     
     
     def delete(self):
+        """Delete the class from the WIMS server."""
         if not self._saved:
             raise ValueError("Can't delete unsaved class")
         
         status, response = self._api.delclass(self.qclass, self.rclass)
         if not status:  # pragma: no cover
             raise AdmRawException(response['message'])
+        
+        self._saved = False
+        self._api = None
     
     
     def refresh(self):
@@ -251,12 +256,12 @@ class Class:
         """Add save a wimsapi.user.User into this WIMS class."""
         if not self._saved:
             raise ValueError("Class must be saved before being able to add an user.")
-
+        
         status, response = self._api.adduser(self.qclass, self.rclass,
-                                               user.quser, user._to_payload())
-
+                                             user.quser, user._to_payload())
+        
         if not status:  # pragma: no cover
             raise AdmRawException(response['message'])
-
+        
         user._class = self
         user._saved = True
