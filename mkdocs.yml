@@ -1,0 +1,9 @@
+site_name: WimsAPI Documentation
+
+nav:
+  - Installation: index.md
+  - Class: class.md
+  - User: user.md
+  - "Low-Level API": api.md
+
+theme: readthedocs
