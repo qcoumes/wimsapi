@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.3.0
+
+* Adding **Classe** higher level API, allowing to manipulate a WIMS' Class.
+* Adding **User** higher level API, allowing to manipulate a WIMS' User.
+
 
 ## 0.2.2
 
