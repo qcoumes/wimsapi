@@ -2,8 +2,14 @@ site_name: WimsAPI Documentation
 
 nav:
   - Installation: index.md
-  - Class: class.md
-  - User: user.md
+  - API:
+    - Class: class.md
+    - User: user.md
+    - Sheet: sheet.md
+    - Exercise: exercise.md
+    - Exam: exam.md
   - "Low-Level API": api.md
+  - "Change log": CHANGES.md
+  - License: license.md
 
 theme: readthedocs
