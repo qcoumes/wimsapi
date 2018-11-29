@@ -1,4 +1,6 @@
 site_name: WimsAPI Documentation
+site_author: Quentin Coumes
+repo_url: https://github.com/qcoumes/wimsapi
 
 nav:
   - Installation: index.md
@@ -8,8 +10,10 @@ nav:
     - Sheet: sheet.md
     - Exercise: exercise.md
     - Exam: exam.md
+    - Exceptions: exceptions.md
   - "Low-Level API": api.md
   - "Change log": CHANGES.md
   - License: license.md
+  - Github: https://github.com/qcoumes/wimsapi
 
 theme: readthedocs
