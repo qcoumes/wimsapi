@@ -1,3 +1,5 @@
+dist: xenial
+
 sudo: required
 
 language: python
@@ -8,10 +10,11 @@ services:
 python:
 - '3.5'
 - '3.6'
+- '3.7'
 
 before_install:
 - git clone https://github.com/qcoumes/docker-wims-minimal.git wims
-- docker build -t wims-minimal wims/
+- docker build -t wims-minimal wims/ &> /dev/null
 - docker run -itd -p 7777:80 --name wims wims-minimal
 - docker container start wims
 - docker exec -it wims ./bin/apache-config
@@ -35,4 +38,4 @@ deploy:
   password:
     secure: n3albX0+BIHAKgS3Z6WmdP+QY9/lLgujWhmJiJmDB6thEzyJx7T3Opg2wZ7OhJEBAIaU/Uo2MfngQV66W21n8as+MajX5v74ULfhH3BN4kuPI5+vbOkcPtWit4kHIJYqiJNXTmlx8BRRb6noUpWr/+1NasDeokTuv1ZFHJ+poxU/C4+2lXnI3uGbfehO5lDd86X3Q8ehci+NYpwY5mRXqQMExIKsl0EUy5zwaJeITvSE/g/i8e6efXImkgp3HukhY14ANcY2lFWJEoHzoSPKYuklqUIeL19bX8Rl+VnAm3PwD1x4GlY1mj72KD/TH7qqK5+RejVvN8oWD+LaGllydVGyMqIR9vnysBX2GkArsi6iDRqxIz8jWIsy4qf54TIOWXkX7pzoVSWiUDnqNT9xFMMSe2LsqtsdtJVDpigU+iiCzk9Tqy6lYvAGupY/uteQPBvUQ9h0tn+8rBCsL0T1qhOpm4McRnJB5g0th5S7B2yw4oA10lGT898Xgf9l0SHQYQDmHnG1IEM9Z5TvxyE4LJUdjjGibUSJ8Q5074MCx0M0AVvIkyVkI/3XPPGshRPmspPpixuR68PSpYw5IdwMraai4Yk4GVS2zzSWZTj52djnrYZC/7qPisvcxpHcUVg4MHhHl/p2lFzyd2r+gEhKpPtlpFLSU/GWcQJzEUhnVtg=
   on:
-    condition: "$TRAVIS_PYTHON_VERSION == 3.6 && $TRAVIS_EVENT_TYPE != cron"
+    condition: "$TRAVIS_PYTHON_VERSION == 3.7 && $TRAVIS_EVENT_TYPE != cron"
