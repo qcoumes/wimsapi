@@ -1,37 +1,39 @@
 from wimsapi.exceptions import AdmRawError, NotSavedError
+from wimsapi.item import ClassItemABC
 
 
 
-class User:
+class User(ClassItemABC):
     """This class is used to represent a WIMS' user.
 
-        Parameters:
-            quser  - (str) user identifier on the receiving server.
-            lastname - (str) last name of the user.
-            firstname - (str) first name of the user.
-            password - (str) user's password, non-crypted.
-            email - (str) email address.
-            comments - (str) any comments.
-            regnum - (str) registration number.
-            photourl - (str) url of user's photo.
-            participate - (str) list classes where user participates.
-            courses - (str) special for portal.
-            classes - (str) special for portal.
-            supervise - (str) List classes where teacher are administator.
-            supervisable - (str) yes/no ; give right to the user to supervise a class
-                                 (default to 'no').
-            external_auth - (str) login for external_auth.
-            agreecgu - (str) yes/ no ; if yes, the user will not be asked when he enters
-                             for the first time to agree the cgu (default to "yes").
-            regprop[1..5] - (str) custom variables."""
+    Parameters:
+        quser  - (str) user identifier on the receiving server.
+        lastname - (str) last name of the user.
+        firstname - (str) first name of the user.
+        password - (str) user's password, non-crypted.
+        email - (str) email address.
+        comments - (str) any comments.
+        regnum - (str) registration number.
+        photourl - (str) url of user's photo.
+        participate - (str) list classes where user participates.
+        courses - (str) special for portal.
+        classes - (str) special for portal.
+        supervise - (str) List classes where teacher are administator.
+        supervisable - (str) yes/no ; give right to the user to supervise a class
+                             (default to 'no').
+        external_auth - (str) login for external_auth.
+        agreecgu - (str) yes/ no ; if yes, the user will not be asked when he enters
+                         for the first time to agree the cgu (default to "yes").
+        regprop[1..5] - (str) custom variables."""
     
     
     def __init__(self, quser, lastname, firstname, password, email="", comments="", regnum="",
                  photourl="", participate="", courses="", classes="", supervise="",
                  supervisable="no", external_auth="", agreecgu="yes", regprop1="", regprop2="",
                  regprop3="", regprop4="", regprop5="", **kwargs):
+        super().__init__()
         self._class = None
-        self._saved = False
+        self.wclass = False
         self.quser = quser
         self.lastname = lastname
         self.firstname = firstname
@@ -65,7 +67,7 @@ class User:
         if not self._class:
             raise NotSavedError("infos is not defined until the user has been saved once")
         status, user_info = self._class._api.getuser(
-            self._class.qclass, self._class.rclass, self.quser)
+            self._class.qclass, self._class.rclass, self.quser, verbose=True)
         if not status:  # pragma: no cover
             raise AdmRawError(user_info['message'])
         
@@ -76,8 +78,9 @@ class User:
     
     def refresh(self):
         """Refresh this instance of a WIMS User from the server itself."""
-        if not self._saved:
+        if not self.wclass:
             raise NotSavedError("Can't refresh unsaved user")
+        
         new = User.get(self._class, self.quser)
         self.__class__ = new.__class__
         self.__dict__ = new.__dict__
@@ -91,65 +94,103 @@ class User:
         """Save the User in the given class.
         
         wclass is an instance of wimsapi.Class. The argument is optionnal
-        if the user has already been saved or fetched from a class."""
+        if the user has already been saved or fetched from a Class, it
+        will default to the last Class used to saved or the Class from which
+        the user was fetched."""
         if not wclass and not self._class:
-            raise NotSavedError("wclass must be provided if User has not been imported from a WIMS"
-                             " class.")
-        
+            raise NotSavedError("wclass must be provided if this user has neither been imported "
+                                "from a WIMS class nor saved once yet")
+
         wclass = wclass or self._class
+        
         if not wclass._saved:
-            raise NotSavedError("Class must be saved before being able to get / add an user.")
+            raise NotSavedError("Class must be saved before being able to save an user")
+        
+        if wclass is not None:
+            self._saved = wclass.checkitem(self)
         
         if self._saved:
             status, response = wclass._api.moduser(
-                wclass.qclass, wclass.rclass, self.quser, self._to_payload())
+                wclass.qclass, wclass.rclass, self.quser, self._to_payload(), verbose=True)
         else:
             status, response = wclass._api.adduser(
-                wclass.qclass, wclass.rclass, self.quser, self._to_payload())
+                wclass.qclass, wclass.rclass, self.quser, self._to_payload(), verbose=True)
         
         if not status:  # pragma: no cover
             raise AdmRawError(response['message'])
         
         self._class = wclass
-        self._saved = True
+        self.wclass = True
     
     
     def delete(self):
-        """Delete the user from its WIMS class on the server."""
-        if not self._class:
-            raise NotSavedError("Can't delete unsaved user")
+        """Delete the user from its associated WIMS class on the server."""
+        if not self.wclass:
+            raise NotSavedError("Cannot delete an unsaved user")
         
-        c = self._class
-        status, response = c._api.deluser(c.qclass, c.rclass, self.quser)
-        
+        status, response = self._class._api.deluser(self._class.qclass, self._class.rclass,
+                                                    self.quser, verbose=True)
         if not status:  # pragma: no cover
             raise AdmRawError(response['message'])
         
-        self._saved = False
+        self.wclass = False
         self._class = None
     
     
     @classmethod
-    def get(cls, wclass, quser):
-        """Retrieve a wimsapi.User instance of the user corresponding to
-        'quser' in wclass.
+    def check(cls, wclass, user):
+        """Returns True if item is in wclass, False otherwise.
 
-        Raise AdmRawError if the user corresponding to 'quser'
-        in the class is not found."""
+        user can be either an instance of User, or string corresponding to the identifier (quser)
+        of the User in the WIMS class.
+
+        E.G. either User.check(wclass, "quser") or User.check(wclass, User(...))"""
         if not wclass._saved:
-            raise NotSavedError("Class must be saved before being able to get / add an user")
+            raise NotSavedError("Class must be saved before being able to check whether an user "
+                                "exists")
         
-        status, user_info = wclass._api.getuser(wclass.qclass, wclass.rclass, quser)
+        quser = user.quser if type(user) is cls else user
+        status, response = wclass._api.checkuser(wclass.qclass, wclass.rclass, quser, verbose=True)
+        msg = 'user %s not in this class (%s)' % (str(quser), str(wclass.qclass))
+        if not status and msg not in response['message']:  # pragma: no cover
+            raise AdmRawError(response['message'])
+        
+        return status
+    
+    
+    @classmethod
+    def remove(cls, wclass, user):
+        """Remove the user from wclass.
+
+        user can be either an instance of User, or string corresponding to the identifier (quser)
+        of the User in the WIMS class.
+
+        E.G. either User.remove(wclass, "quser") or User.remove(wclass, User(...))"""
+        if not wclass._saved:
+            raise NotSavedError("Class must be saved before being able to remove an user")
+        
+        quser = user.quser if type(user) is cls else user
+        status, response = wclass._api.deluser(wclass.qclass, wclass.rclass, quser, verbose=True)
+        if not status:  # pragma: no cover
+            raise AdmRawError(response['message'])
+    
+    
+    @classmethod
+    def get(cls, wclass, quser):
+        """Returns an instance of User corresponding to quser in wclass."""
+        if not wclass._saved:
+            raise NotSavedError("Class must be saved before being able to get an user")
+        
+        status, user_info = wclass._api.getuser(wclass.qclass, wclass.rclass, quser, verbose=True)
         if not status:  # pragma: no cover
             raise AdmRawError(user_info['message'])
-        
         status, user_password = wclass._api.getuser(wclass.qclass, wclass.rclass, quser,
-                                                    ["password"])
+                                                    ["password"], verbose=True)
         if not status:  # pragma: no cover
             raise AdmRawError(user_password['message'])
         
         user_info['password'] = user_password['password']
-        user = cls(quser, **user_info)
+        user = User(quser, **user_info)
         user._class = wclass
-        user._saved = True
+        user.wclass = True
         return user

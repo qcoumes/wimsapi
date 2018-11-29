@@ -50,7 +50,7 @@ def parse_response(request, verbose=False, return_request=False):
             'code'   : code,
         }
     if response['status'] not in ["ERROR", "OK"]:
-        if not return_request:
+        if not return_request:  # pragma: no cover
             if not verbose:
                 msg = ("Use verbose=True to see the received response content "
                        + "or use return_request=True to get the request object.")
@@ -690,8 +690,8 @@ class WimsAPI:
         request = requests.post(self.url, params=params, stream=True, **kwargs)
         response = parse_response(request, return_request=True)
         return (
-            response['status'] == 'OK' if type(response) == dict else True,
-            response if type(response) == dict else request.content
+            response['status'] == 'OK' if type(response) is dict else True,
+            response if type(response) is dict else request.content
         )
     
     
@@ -735,8 +735,8 @@ class WimsAPI:
         request = requests.post(self.url, params=params, stream=True, **kwargs)
         response = parse_response(request, return_request=True)
         return (
-            response['status'] == 'OK' if type(response) == dict else True,
-            response if type(response) == dict else request.content
+            response['status'] == 'OK' if type(response) is dict else True,
+            response if type(response) is dict else request.content
         )
     
     
@@ -793,8 +793,8 @@ class WimsAPI:
         request = requests.post(self.url, params=params, stream=True, **kwargs)
         response = parse_response(request, return_request=True)
         return (
-            response['status'] == 'OK' if type(response) == dict else True,
-            response if type(response) == dict else request.content
+            response['status'] == 'OK' if type(response) is dict else True,
+            response if type(response) is dict else request.content
         )
     
     
@@ -910,8 +910,8 @@ class WimsAPI:
         request = requests.post(self.url, params=params, stream=True, **kwargs)
         response = parse_response(request, return_request=True)
         return (
-            response['status'] == 'OK' if type(response) == dict else True,
-            response if type(response) == dict else request.content
+            response['status'] == 'OK' if type(response) is dict else True,
+            response if type(response) is dict else request.content
         )
     
     
@@ -1014,7 +1014,7 @@ class WimsAPI:
                 'quser' : quser,
             }
         }
-        if qsheet:
+        if qsheet is not None:
             params['qsheet'] = qsheet
         request = requests.post(self.url, data=params, **kwargs)
         response = parse_response(request, verbose)
@@ -1197,8 +1197,8 @@ class WimsAPI:
         request = requests.post(self.url, params=params, stream=True, **kwargs)
         response = parse_response(request, return_request=True)
         return (
-            response['status'] == 'OK' if type(response) == dict else True,
-            response if type(response) == dict else request.content
+            response['status'] == 'OK' if type(response) is dict else True,
+            response if type(response) is dict else request.content
         )
     
     

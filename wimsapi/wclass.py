@@ -1,8 +1,9 @@
 import datetime
 
 from wimsapi.api import WimsAPI
+from wimsapi.exceptions import AdmRawError, InvalidItemTypeError, NotSavedError
+from wimsapi.item import ClassItemABC
 from wimsapi.user import User
-from wimsapi.exceptions import AdmRawError, NotSavedError
 
 
 LANG = [
@@ -94,10 +95,22 @@ class Class:
         self.css = css
     
     
+    def __contains__(self, item):
+        """check if an item is in the WIMS class.
+        
+        Item must be a subclass of wimsapi.item.ClassItemABC."""
+        if issubclass(type(item), ClassItemABC):
+            if not self._saved:
+                raise NotSavedError("Cannot use 'in' operator with an unsaved class.")
+            return self.checkitem(item)
+        
+        return NotImplemented  # pragma: no cover
+    
+    
     def _to_payload(self):
         """Return a dictionnary representing this class as defined in adm/raw."""
         d = {k: v for k, v in self.__dict__.items()
-             if k not in ['qclass', 'rclass', 'supervisor', '_api', '_saved']}
+             if k not in ['qclass', 'rclass', 'supervisor', '_api', 'wclass']}
         d['description'] = d['name']
         d['supervisor'] = self.supervisor.fullname
         del d['name']
@@ -136,7 +149,7 @@ class Class:
         """Return all the informations hosted on the WIMS server about this class."""
         if not self._api:
             raise NotSavedError("infos is not defined until the WIMS class is saved once")
-        status, class_info = self._api.getclass(self.qclass, self.rclass)
+        status, class_info = self._api.getclass(self.qclass, self.rclass, verbose=True)
         if not status:  # pragma: no cover
             raise AdmRawError(class_info['message'])
         
@@ -163,10 +176,10 @@ class Class:
         payload = self._to_payload()
         
         if self._saved:
-            status, response = self._api.modclass(self.qclass, self.rclass, payload)
+            status, response = self._api.modclass(self.qclass, self.rclass, payload, verbose=True)
         else:
             status, response = self._api.addclass(self.qclass, self.rclass, payload,
-                                                  self.supervisor._to_payload())
+                                                  self.supervisor._to_payload(), verbose=True)
             self.supervisor.quser = "supervisor"
         
         if not status:  # pragma: no cover
@@ -180,7 +193,7 @@ class Class:
         if not self._saved:
             raise NotSavedError("Can't delete unsaved class")
         
-        status, response = self._api.delclass(self.qclass, self.rclass)
+        status, response = self._api.delclass(self.qclass, self.rclass, verbose=True)
         if not status:  # pragma: no cover
             raise AdmRawError(response['message'])
         
@@ -203,19 +216,20 @@ class Class:
         the WIMS server pointed by 'url'."""
         api = WimsAPI(url, ident, passwd)
         
-        status, class_info = api.getclass(qclass, rclass)
+        status, class_info = api.getclass(qclass, rclass, verbose=True)
         if not status:  # pragma: no cover
             raise AdmRawError(class_info['message'])
         
-        status, class_password = api.getclass(qclass, rclass)
+        status, class_password = api.getclass(qclass, rclass, verbose=True)
         if not status:  # pragma: no cover
             raise AdmRawError(class_password['message'])
         
-        status, supervisor_info = api.getuser(qclass, rclass, "supervisor")
+        status, supervisor_info = api.getuser(qclass, rclass, "supervisor", verbose=True)
         if not status:  # pragma: no cover
             raise AdmRawError(supervisor_info['message'])
         
-        status, password_info = api.getuser(qclass, rclass, "supervisor", ["password"])
+        status, password_info = api.getuser(qclass, rclass, "supervisor", ["password"],
+                                            verbose=True)
         if not status:  # pragma: no cover
             raise AdmRawError(password_info['message'])
         
@@ -232,38 +246,71 @@ class Class:
         return c
     
     
-    def get_user(self, quser):
-        """Retrieve a wimsapi.user.User instance of the user corresponding to
-        'quser' in this class.
+    def additem(self, item):
+        """Add an item to the WIMS class.
         
-        Raise AdmRawError if no user with this id is found in the class."""
+        Item must be a subclass of wimsapi.item.ClassItemABC."""
+        if not issubclass(type(item), ClassItemABC):
+            raise InvalidItemTypeError(
+                "Item of type %s cannot be deleted from the WIMS class." % str(type(item)))
         if not self._saved:
-            raise NotSavedError("Class must be saved before being able to get an user.")
+            raise NotSavedError("Class must be saved before being able to add an item")
         
-        status, user_info = self._api.getuser(self.qclass, self.rclass, quser)
-        if not status:  # pragma: no cover
-            raise AdmRawError(user_info['message'])
-        status, user_password = self._api.getuser(self.qclass, self.rclass, quser, ["password"])
-        if not status:  # pragma: no cover
-            raise AdmRawError(user_password['message'])
-        
-        user_info['password'] = user_password['password']
-        user = User("supervisor", **user_info)
-        user._class = self
-        user._saved = True
-        return user
+        item.save(self)
     
     
-    def add_user(self, user):
-        """Add save a wimsapi.user.User into this WIMS class."""
+    def delitem(self, item, cls=None):
+        """Remove an item from the WIMS class.
+        
+        Item must be either a subclass of wimsapi.item.ClassItemABC or a
+        string. If item is a string, cls must be provided and be a
+        subclass of ClassItemABC which correspond to the item.
+        
+        E.G. for an user : delitem(User(...)) or delitem("quser", User)."""
+        test = ((type(item) is not str and not issubclass(type(item), ClassItemABC))
+                or (cls is not None and not issubclass(cls, ClassItemABC)))
+        if test:
+            raise InvalidItemTypeError(
+                "Item of type %s cannot be deleted from the WIMS class"
+                % str(type(item) if type(item) is not str else cls))
         if not self._saved:
-            raise NotSavedError("Class must be saved before being able to add an user.")
+            raise NotSavedError("Class must be saved before being able to remove an item")
         
-        status, response = self._api.adduser(self.qclass, self.rclass,
-                                             user.quser, user._to_payload())
+        cls = cls or type(item)
+        cls.remove(self, item)
+    
+    
+    def checkitem(self, item, cls=None):
+        """check if an item is in the WIMS class.
         
-        if not status:  # pragma: no cover
-            raise AdmRawError(response['message'])
+        Item must be either a subclass of wimsapi.item.ClassItemABC or a
+        string. If item is a string, cls must be provided and be a
+        subclass of ClassItemABC which correspond to the item.
         
-        user._class = self
-        user._saved = True
+        E.G. for an user : checkitem(User(...)) or checkitem("quser", User)."""
+        test = ((type(item) is not str and not issubclass(type(item), ClassItemABC))
+                or (cls is not None and not issubclass(cls, ClassItemABC)))
+        if test:
+            raise InvalidItemTypeError(
+                "Cannot check if an item of type %s is in a WIMS class"
+                % str(type(item) if type(item) is not str else cls))
+        if not self._saved:
+            raise NotSavedError("Class must be saved before being able to check whether an item "
+                                "exists")
+        
+        cls = cls or type(item)
+        return cls.check(self, item)
+    
+    
+    def getitem(self, identifier, cls):
+        """Return the instance of cls corresponding to identifier in the WIMS
+        class.
+        
+        cls must be a subclass of ClassItemABC which correspond to the item
+        identified by identier."""
+        if not issubclass(cls, ClassItemABC):
+            raise InvalidItemTypeError("Cannot get element of type %s from a WIMS class" % str(cls))
+        if not self._saved:
+            raise NotSavedError("Class must be saved before being able to get an item")
+        
+        return cls.get(self, identifier)
