@@ -286,14 +286,15 @@ class WimsAPITestCase(unittest.TestCase):
         self.assertTrue(status)
         self.assertEqual(response,
                          b'login,password,lastname,firstname,email\n"#","Password","Family name",'
-                         b'"Fi'
-                         b'rst (given) name","email address"\n\n"user","*Nv7lZCTkcYORw","User",'
-                         b'"user"'
-                         b',""\n"anonymous","anonymous","Visiteur","Anonyme",""\n')
-    
-    
-    def test_getexam(self):
-        api = WimsAPI(WIMS_URL, "myself", "toto")
+                         b'"First (given) name","email address"\n\n"quser","password","lastname",'
+                         b'"firstname","mail@mail.com"\n"user","*Nv7lZCTkcYORw","User","user",'
+                         b'""\n"anonymous","anonymous","Visiteur","Anonyme",""\n')
+        
+        
+        def test_getexam(self):
+            
+            
+            api = WimsAPI(WIMS_URL, "myself", "toto")
         status, response = api.getexam(999999, "myclass", 1)
         self.assertTrue(status)
         self.assertEqual(response['exam_title'], "Examen #1")
@@ -346,6 +347,13 @@ class WimsAPITestCase(unittest.TestCase):
         self.assertIn("server_version", response)
     
     
+    def test_getlog(self):
+        api = WimsAPI(WIMS_URL, "myself", "toto")
+        status, response = api.getlog(9001, "myclass", "supervisor")
+        self.assertTrue(status)
+        self.assertIn("user_log", response)
+    
+    
     def test_getmodule(self):
         api = WimsAPI(WIMS_URL, "myself", "toto")
         status, response = api.getmodule('E1/geometry/oefsquare.fr')
@@ -360,29 +368,31 @@ class WimsAPITestCase(unittest.TestCase):
         self.assertEqual(response['exam_scores'], [[]])
     
     
+    def test_getscore_sheet(self):
+        api = WimsAPI(WIMS_URL, "myself", "toto")
+        status, response = api.getscore(9001, "myclass", "supervisor", 1)
+        self.assertTrue(status)
+        self.assertEqual(response['exam_scores'], [[]])
+    
+    
     def test_getscores(self):
         api = WimsAPI(WIMS_URL, "myself", "toto")
         status, response = api.getscores(9001, "myclass", ["login", "password", "name", "email"])
         self.assertTrue(status)
         self.assertEqual(response,
                          b'login;password;lastname;firstname;email\n"#";"Password";"Family '
-                         b'name";"Fi'
-                         b'rst (given) name";"email '
-                         b'address"\n\n"user";"*Nv7lZCTkcYORw";"User";"user"'
-                         b';""\n"anonymous";"anonymous";"Visiteur";"Anonyme";""\n')
+                         b'name";"First (given) name";"email '
+                         b'address"\n\n"quser";"password";"lastname";"firstn'
+                         b'ame";"mail@mail.com"\n"user";"*Nv7lZCTkcYORw";"User";"user";""\n'
+                         b'"anonymous";"anonymous";"Visiteur";"Anonyme";""\n')
     
     
     @unittest.skip("Job not defined in wims yet")
-    def test_getsession(self):
+    def test_getsession(self):  # pragma: no cover
         api = WimsAPI(WIMS_URL, "myself", "toto")
         status, response = api.getsession()
         self.assertTrue(status)
-        self.assertEqual(response,
-                         b'login;password;lastname;firstname;email\n"#";"Password";"Family '
-                         b'name";"Fi'
-                         b'rst (given) name";"email '
-                         b'address"\n\n"user";"*Nv7lZCTkcYORw";"User";"user"'
-                         b';""\n"anonymous";"anonymous";"Visiteur";"Anonyme";""\n')
+        self.assertTrue(False)
     
     
     @unittest.skip("Does not return a valid json")
