@@ -4,12 +4,13 @@ repo_url: https://github.com/qcoumes/wimsapi
 
 nav:
   - Installation: index.md
-  - Class: class.md
-  - User: user.md
-  - Sheet: sheet.md
-  - Exercise: exercise.md
-  - Exam: exam.md
-  - Exceptions: exceptions.md
+  - API:
+    - Class: class.md
+    - User: user.md
+    - Sheet: sheet.md
+    - Exercise: exercise.md
+    - Exam: exam.md
+    - Exceptions: exceptions.md
   - "Low-Level API": api.md
   - "Change log": CHANGES.md
   - License: license.md
