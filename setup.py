@@ -3,8 +3,8 @@
 import codecs
 import os
 
-
 import wimsapi
+
 
 try:
     from setuptools import setup

@@ -9,11 +9,11 @@ requests to the other.
 The connectable server must be declared in a file
 within the directory 'WIMS_HOME/log/classes/.connections/'.
 
-/!\ Warning: output must be set 'ident_type=json' in 'WIMS_HOME/log/classes/.connections/IDENT' for
+/!\ Warning: output must be set 'ident_type=json' and agent must be set to
+'ident_agent=python-requests' in 'WIMS_HOME/log/classes/.connections/IDENT' for
 this API to work properly.
 
 For more informations, see http://wims.unice.fr/wims/?module=adm/raw&job=help"""
-
 
 import json
 import random
@@ -50,8 +50,8 @@ def parse_response(request, verbose=False, return_request=False):
             'code'   : code,
         }
     if response['status'] not in ["ERROR", "OK"]:
-        if not return_request:
-            if verbose:
+        if not return_request:  # pragma: no cover
+            if not verbose:
                 msg = ("Use verbose=True to see the received response content "
                        + "or use return_request=True to get the request object.")
             else:
@@ -540,16 +540,13 @@ class WimsAPI:
         return response['status'] == 'OK', response
     
     
-    def delexo(self, qclass, rclass, qexo, no_build=False, verbose=False, code=None, **kwargs):
+    def delexo(self, qclass, rclass, qexo, verbose=False, code=None, **kwargs):
         """Delete an exo.
         
         Parameters:
             qclass - (int) identifier of the class on the receiving server.
             rclass - (str) identifier of the class on the sending server.
-            qexo   - (str) exo identifier on the receiving server.
-            no_build - (bool) Do not compile the exercise. Improves the speed when there is a lot
-                              of exercices to handle at the same time. Do not forget to call
-                              buildexos() to compile them at the end (defaults to False)"""
+            qexo   - (str) exo identifier on the receiving server."""
         params = {
             **self.params,
             **{
@@ -560,8 +557,6 @@ class WimsAPI:
                 'qexo'  : qexo,
             }
         }
-        if no_build:
-            params['option'] = 'no_build'
         request = requests.post(self.url, data=params, **kwargs)
         response = parse_response(request, verbose)
         return response['status'] == 'OK', response
@@ -578,7 +573,7 @@ class WimsAPI:
         params = {
             **self.params,
             **{
-                'job'   : 'recsheet',
+                'job'   : 'delsheet',
                 'code'  : code if code else random_code(),
                 'qclass': qclass,
                 'rclass': rclass,
@@ -695,8 +690,8 @@ class WimsAPI:
         request = requests.post(self.url, params=params, stream=True, **kwargs)
         response = parse_response(request, return_request=True)
         return (
-            response['status'] == 'OK' if type(response) == dict else True,
-            response if type(response) == dict else request.content
+            response['status'] == 'OK' if type(response) is dict else True,
+            response if type(response) is dict else request.content
         )
     
     
@@ -740,8 +735,8 @@ class WimsAPI:
         request = requests.post(self.url, params=params, stream=True, **kwargs)
         response = parse_response(request, return_request=True)
         return (
-            response['status'] == 'OK' if type(response) == dict else True,
-            response if type(response) == dict else request.content
+            response['status'] == 'OK' if type(response) is dict else True,
+            response if type(response) is dict else request.content
         )
     
     
@@ -798,8 +793,8 @@ class WimsAPI:
         request = requests.post(self.url, params=params, stream=True, **kwargs)
         response = parse_response(request, return_request=True)
         return (
-            response['status'] == 'OK' if type(response) == dict else True,
-            response if type(response) == dict else request.content
+            response['status'] == 'OK' if type(response) is dict else True,
+            response if type(response) is dict else request.content
         )
     
     
@@ -915,8 +910,8 @@ class WimsAPI:
         request = requests.post(self.url, params=params, stream=True, **kwargs)
         response = parse_response(request, return_request=True)
         return (
-            response['status'] == 'OK' if type(response) == dict else True,
-            response if type(response) == dict else request.content
+            response['status'] == 'OK' if type(response) is dict else True,
+            response if type(response) is dict else request.content
         )
     
     
@@ -1019,7 +1014,7 @@ class WimsAPI:
                 'quser' : quser,
             }
         }
-        if qsheet:
+        if qsheet is not None:
             params['qsheet'] = qsheet
         request = requests.post(self.url, data=params, **kwargs)
         response = parse_response(request, verbose)
@@ -1202,8 +1197,8 @@ class WimsAPI:
         request = requests.post(self.url, params=params, stream=True, **kwargs)
         response = parse_response(request, return_request=True)
         return (
-            response['status'] == 'OK' if type(response) == dict else True,
-            response if type(response) == dict else request.content
+            response['status'] == 'OK' if type(response) is dict else True,
+            response if type(response) is dict else request.content
         )
     
     
@@ -1684,6 +1679,7 @@ class WimsAPI:
         }
         if options:
             params['data1'] += '\n' + '\n'.join([str(k) + "=" + str(v) for k, v in options.items()])
+        print(params)
         request = requests.post(self.url, data=params, **kwargs)
         response = parse_response(request, verbose)
         return response['status'] == 'OK', response
