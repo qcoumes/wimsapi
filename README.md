@@ -14,6 +14,7 @@ server through its *adm/raw* extension.
 For more information about *adm/raw*,
 [see its documentation](https://wims.auto.u-psud.fr/wims/wims.cgi?module=adm/raw&job=help)
 
+Here the [documentation of wimsapi](https://wimsapi.readthedocs.io/en/latest/).
 
 ## Installation
 
@@ -123,3 +124,5 @@ u.save()
 new = User("quser", "lastname", "firstname", "password", "mail@mail.com")
 c.additem(new)  # Add the new user to the class.
 ```
+
+For more informations about usage or example : Here the [documentation of wimsapi](https://wimsapi.readthedocs.io/en/latest/).
