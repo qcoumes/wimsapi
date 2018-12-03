@@ -3,8 +3,6 @@
 import codecs
 import os
 
-import wimsapi
-
 
 try:
     from setuptools import setup
@@ -32,7 +30,7 @@ long_description = (
 
 setup(
     name='wimsapi',
-    version=wimsapi.__version__,
+    version=0.3.1,
     description='A Python 3 implementation of WIMS adm/raw module.',
     long_description=long_description,
     long_description_content_type='text/markdown',

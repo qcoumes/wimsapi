@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.3.1
+
+* Fixed buggy import in setup.py
+
+
 ## 0.3.0
 
 * Adding **Classe** higher level API, allowing to manipulate a WIMS' Class.
