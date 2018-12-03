@@ -7,17 +7,20 @@ For more information about *adm/raw*,
 [see its documentation](https://wims.auto.u-psud.fr/wims/wims.cgi?module=adm/raw&job=help)
 
 
+Here the [documentation of wimsapi](https://wimsapi.readthedocs.io/en/latest/).
+
+
 ## Installation
 
 The latest stable version is available on [PyPI](https://pypi.org/project/wimsapi/) :
 
-```
+```bash
 pip install wimsapi
 ```
 
 or from the sources:
 
-```
+```bash
 git clone https://github.com/qcoumes/wimsapi
 cd wimsapi
 python3 setup.py install
@@ -93,4 +96,5 @@ will need :
 * `ident` : Name of the file in `[WIMS_HOME]/log/classes/.connections/`
 * `passwd` : Value of `ident_password` in
              `[WIMS_HOME]/log/classes/.connections/[IDENT]`
-* `rclass` : Value set after the **/** in `class_connections` in `[WIMS_HOME]/log/classes/[CLASS_ID]/.def`
+* `rclass` : Value set after the **/** in 
+             `class_connections` in `[WIMS_HOME]/log/classes/[CLASS_ID]/.def`
