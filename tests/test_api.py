@@ -1,4 +1,6 @@
 import unittest
+from io import BytesIO
+from tarfile import TarError, TarFile
 
 from wimsapi.api import WimsAPI
 
@@ -153,12 +155,12 @@ class WimsAPITestCase(unittest.TestCase):
         self.assertEqual(response['message'], 'class 999999 correctly cleaned')
     
     
-    @unittest.skip("Unstable on WIMS server.")
     def test_copyclass(self):
         api = WimsAPI(WIMS_URL, "myself", "toto")
         status, response = api.copyclass(999999, "myclass")
         self.assertTrue(status)
-        self.assertEqual(response['message'], 'class 999999 correctly copied as ')
+        self.assertIn('new_class', response)
+        api.delclass(response['new_class'], "myclass")
     
     
     def test_delclass(self):
@@ -264,20 +266,23 @@ class WimsAPITestCase(unittest.TestCase):
         self.assertEqual(response[34:49], b"User jdoe added")
     
     
-    @unittest.skip("WIMS' response json is invalid")
     def test_getclassmodif(self):
         api = WimsAPI(WIMS_URL, "myself", "toto")
         status, response = api.getclassmodif(999999, "myclass", '19700101')
         self.assertTrue(status)
-        self.assertEqual(1, 2)
+        self.assertEqual(response['since_date'], '197001010000')
+        self.assertEqual(len(response['modifs']), 19)
     
     
-    @unittest.skip("Binary is invalid, html header present inside")
     def test_getclasstgz(self):
         api = WimsAPI(WIMS_URL, "myself", "toto")
         status, response = api.getclasstgz(999999, "myclass")
         self.assertTrue(status)
-        self.assertEqual(response, b"User jdoe added")
+        
+        try:
+            TarFile.open(fileobj=BytesIO(response), mode="r:gz")
+        except TarError as e:
+            self.fail("Response was not a valid tgz :\n" + str(e))
     
     
     def test_getcsv(self):
@@ -285,8 +290,8 @@ class WimsAPITestCase(unittest.TestCase):
         status, response = api.getcsv(9001, "myclass", ["login", "password", "name", "email"])
         self.assertTrue(status)
         self.assertEqual(type(response), bytes)
-        
-        
+    
+    
     def test_getexam(self):
         api = WimsAPI(WIMS_URL, "myself", "toto")
         status, response = api.getexam(999999, "myclass", 1)
@@ -384,7 +389,6 @@ class WimsAPITestCase(unittest.TestCase):
         self.assertTrue(False)
     
     
-    @unittest.skip("Does not return a valid json")
     def test_getsheet(self):
         api = WimsAPI(WIMS_URL, "myself", "toto")
         status, response = api.getsheet(9001, "myclass", 3)
@@ -535,7 +539,7 @@ class WimsAPITestCase(unittest.TestCase):
         self.assertEqual(response["message"], 'exercices successfully copied')
     
     
-    @unittest.skip("Getting 'unauthorized' from WIMS")
+    @unittest.skip("Job not defined in wims yet")
     def test_putcsv(self):
         api = WimsAPI(WIMS_URL, "myself", "toto")
         status, response = api.putcsv(999999, "myclass", CSV, False)
@@ -543,17 +547,15 @@ class WimsAPITestCase(unittest.TestCase):
         self.assertEqual(response["message"], 'exercices successfully copied')
     
     
-    @unittest.skip("Failing to import module")
     def test_putexo(self):
         api = WimsAPI(WIMS_URL, "myself", "toto")
-        status, response = api.putexo(999999, "myclass", 1, "H3/analysis/oeflinf.fr",
-                                      {
-                                          "exo"       : "fnctlin1", "qnum": "1",
-                                          "scoredelay": "20,50",
-                                          "seedrepeat": "2", "qcmlevel": "1"
-                                      })
+        status, response = api.putexo(999999, "myclass", 1, "H3/analysis/oeflinf.fr", {
+            "exo"       : "fnctlin1", "qnum": "1",
+            "scoredelay": "20,50",
+            "seedrepeat": "2", "qcmlevel": "1"
+        })
         self.assertTrue(status)
-        self.assertEqual(response["message"], 'exercices successfully copied')
+        self.assertEqual(response["message"], 'exercice correctly added in sheet #1')
     
     
     def test_recuser(self):
@@ -577,14 +579,14 @@ class WimsAPITestCase(unittest.TestCase):
         
         status, response = api.recuser(999999, "myclass", "jdoe3")
         self.assertTrue(status)
-        self.assertEqual(response['message'], "job done. TODO : more explicit messages here...")
+        self.assertEqual(response['message'], "User successfully recovered")
     
     
     def test_repairclass(self):
         api = WimsAPI(WIMS_URL, "myself", "toto")
         status, response = api.repairclass(999999, "myclass")
         self.assertTrue(status)
-        self.assertEqual(response['action,'], "checkonly")
+        self.assertEqual(response['action'], "checkonly")
     
     
     def test_sharecontent(self):
