@@ -34,10 +34,10 @@ Two optionnal parameter can be passed to every method of this class:
 ___
  
 Every method return a tuple `(boolean, dictionnary)`, where dictionnary contains at least
-**status**, and **code** keys. **Status** is either a word **'OK'** (which set `boolean` to True),
-or the word `ERROR` (which set the boolean to False).
+**status**, and **code** keys. **Status** is either the word **'OK'** (which set `boolean` to True),
+or the word **'ERROR'** (which set `boolean` to False).
 
-In case the status is **'OK'**, the dictionnary can contains additionnal keys corresponding to the
+In case the status is **'OK'**, the dictionnary can contains additionnals keys corresponding to the
 *adm/raw* response.
 In case the status is **'ERROR'**, key **'message'** contains the nature of the error.
 
