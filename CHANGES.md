@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.3.2
+
+* Fixed `WimsAPI.putexo()`.
+* Updated tests and unskipped some according to latest WIMS version.
+
 ## 0.3.1
 
 * Fixed buggy import in setup.py
