@@ -1678,8 +1678,8 @@ class WimsAPI:
             }
         }
         if options:
-            params['data1'] += '\n' + '\n'.join([str(k) + "=" + str(v) for k, v in options.items()])
-        print(params)
+            params['data1'] += ('\nparams='
+                                + '\n'.join([str(k) + "=" + str(v) for k, v in options.items()]))
         request = requests.post(self.url, data=params, **kwargs)
         response = parse_response(request, verbose)
         return response['status'] == 'OK', response
