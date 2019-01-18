@@ -24,7 +24,7 @@ CLASSIFIERS = [
 dirname = os.path.dirname(__file__)
 long_description = (
     codecs.open(os.path.join(dirname, 'README.md'), encoding='utf-8').read()
-    + '\n\n___'
+    + '\n\n______\n\n'
     + codecs.open(os.path.join(dirname, 'CHANGES.md'), encoding='utf-8').read()
 )
 
