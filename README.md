@@ -1,8 +1,8 @@
 [![Build Status](https://travis-ci.org/qcoumes/wimsapi.svg?branch=master)](https://travis-ci.org/qcoumes/wimsapi)
-[![PyPI Version](https://badge.fury.io/py/wimsapi.svg)](https://badge.fury.io/py/wimsapi)
 [![Coverage Status](https://coveralls.io/repos/github/qcoumes/wimsapi/badge.svg?branch=master)](https://coveralls.io/github/qcoumes/wimsapi?branch=master)
+[![Documentation Status](https://readthedocs.org/projects/wimsapi/badge/?version=master)](https://wimsapi.readthedocs.io/?badge=master)
+[![PyPI Version](https://badge.fury.io/py/wimsapi.svg)](https://badge.fury.io/py/wimsapi)
 [![Python 3.5+](https://img.shields.io/badge/python-3.5+-brightgreen.svg)](#)
-[![Documentation Status](https://readthedocs.org/projects/wimsapi/badge/?version=latest)](https://wimsapi.readthedocs.io/en/latest/?badge=latest)
 [![License MIT](https://img.shields.io/badge/license-MIT-brightgreen.svg)](https://github.com/qcoumes/wimsapi/blob/master/LICENSE)
 
 
