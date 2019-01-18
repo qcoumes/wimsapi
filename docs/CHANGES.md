@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.3.4
+
+* Fix `long_description` in setup.py
+
+
 ## 0.3.3
 
 * `qclass` argument is now optionnal in Class constructor,
