@@ -51,8 +51,8 @@ class ClassTestCase(unittest.TestCase):
         self.assertEqual(c.passwd, "toto")
         self.assertIn("description", c.infos)
         
-        c = Class(999999, "myclass", "A class", "an institution", "mail@mail.com", "password",
-                  self.user)
+        c = Class("myclass", "A class", "an institution", "mail@mail.com", "password",
+                  self.user, qclass=999999)
         with self.assertRaises(NotSavedError):
             c.url
         with self.assertRaises(NotSavedError):
@@ -63,19 +63,19 @@ class ClassTestCase(unittest.TestCase):
             c.infos
         
         with self.assertRaises(ValueError):
-            Class(999999, "myclass", "A class", "an institution", "mail@mail.com", "password",
-                  self.user, lang="Wrong")
+            Class("myclass", "A class", "an institution", "mail@mail.com", "password",
+                  self.user, qclass=999999, lang="Wrong")
         with self.assertRaises(ValueError):
-            Class(999999, "myclass", "A class", "an institution", "mail@mail.com", "password",
-                  self.user, level="Wrong")
+            Class("myclass", "A class", "an institution", "mail@mail.com", "password",
+                  self.user, qclass=999999, level="Wrong")
         with self.assertRaises(ValueError):
-            Class(999999, "myclass", "A class", "an institution", "mail@mail.com", "password",
-                  self.user, date="Wrong")
+            Class("myclass", "A class", "an institution", "mail@mail.com", "password",
+                  self.user, qclass=999999, date="Wrong")
     
     
     def test_save_and_refresh(self):
-        c = Class(999999, "myclass", "A class", "an institution", "mail@mail.com", "password",
-                  self.user)
+        c = Class("myclass", "A class", "an institution", "mail@mail.com", "password",
+                  self.user, qclass=999999)
         
         with self.assertRaises(NotSavedError):
             c.save()
@@ -99,10 +99,21 @@ class ClassTestCase(unittest.TestCase):
         self.assertEqual(c2.institution, "modified")
         self.api.delclass(99999999, "myclass")
     
+    def test_save_without_qclass(self):
+        c = Class("myclass", "A class", "an institution", "mail@mail.com", "password",
+                  self.user)
+        
+        with self.assertRaises(NotSavedError):
+            c.save()
+        
+        c.save(WIMS_URL, "myself", "toto")
+        self.assertIsNotNone(c.qclass)
+        c.delete()
+    
     
     def test_getitem(self):
-        c = Class(999999, "myclass", "A class", "an institution", "mail@mail.com", "password",
-                  self.user)
+        c = Class("myclass", "A class", "an institution", "mail@mail.com", "password",
+                  self.user, qclass=999999)
         
         with self.assertRaises(NotSavedError):
             c.getitem("supervisor", User)
@@ -115,8 +126,8 @@ class ClassTestCase(unittest.TestCase):
     
     
     def test_checkitem(self):
-        c = Class(999999, "myclass", "A class", "an institution", "mail@mail.com", "password",
-                  self.user)
+        c = Class("myclass", "A class", "an institution", "mail@mail.com", "password",
+                  self.user, qclass=999999)
         unknown = User("unknown", "last", "first", "pass", "mail2@mail.com")
         
         with self.assertRaises(NotSavedError):
@@ -132,8 +143,8 @@ class ClassTestCase(unittest.TestCase):
     
     
     def test___contains__(self):
-        c = Class(999999, "myclass", "A class", "an institution", "mail@mail.com", "password",
-                  self.user)
+        c = Class("myclass", "A class", "an institution", "mail@mail.com", "password",
+                  self.user, qclass=999999)
         unknown = User("unknown", "last", "first", "pass", "mail2@mail.com")
         
         with self.assertRaises(NotSavedError):
@@ -145,8 +156,8 @@ class ClassTestCase(unittest.TestCase):
     
     
     def test_additem(self):
-        c = Class(999999, "myclass", "A class", "an institution", "mail@mail.com", "password",
-                  self.user)
+        c = Class("myclass", "A class", "an institution", "mail@mail.com", "password",
+                  self.user, qclass=999999)
         u = User("quser", "last", "first", "pass", "mail2@mail.com")
         
         with self.assertRaises(NotSavedError):
@@ -164,8 +175,8 @@ class ClassTestCase(unittest.TestCase):
     
     
     def test_delitem(self):
-        c = Class(999999, "myclass", "A class", "an institution", "mail@mail.com", "password",
-                  self.user)
+        c = Class("myclass", "A class", "an institution", "mail@mail.com", "password",
+                  self.user, qclass=999999)
         u = User("quser", "last", "first", "pass", "mail2@mail.com")
         u2 = User("quser2", "last", "first", "pass", "mail2@mail.com")
         
@@ -188,8 +199,8 @@ class ClassTestCase(unittest.TestCase):
     
     
     def test_delete(self):
-        c = Class(999999, "myclass", "A class", "an institution", "mail@mail.com", "password",
-                  self.user)
+        c = Class("myclass", "A class", "an institution", "mail@mail.com", "password",
+                  self.user, qclass=999999)
         
         with self.assertRaises(NotSavedError):
             c.delete()

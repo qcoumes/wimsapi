@@ -110,12 +110,14 @@ class WimsAPI:
         return self.params['passwd']
     
     
-    def addclass(self, qclass, rclass, class_info, supervisor_info, verbose=False, code=None,
+    def addclass(self, rclass, class_info, supervisor_info, qclass=None, verbose=False, code=None,
                  **kwargs):
         """Add a class on the receiving server.
         
+        if provided, qclass will be the identifier of the newly created WIMS class. The identifier
+        is randomly chosen if qclass is not provided.
+        
         Parameters:
-            qclass - (int) identifier of the class on the receiving server.
             rclass - (str) identifier of the class on the sending server.
             class_info - (dict) properties of the new class, following keys may be present:
                 Mandatory:
@@ -147,17 +149,19 @@ class WimsAPI:
                     photourl - (str) url of an user picture
                     participate - (str) list classes (if in a class group) where user participates
                     agreecgu - (str) Boolean indicating if user accepted CGU
-                    regprop1, regprop2, ... regprop5 - (str) custom properties"""
+                    regprop1, regprop2, ... regprop5 - (str) custom properties
+            qclass - (int) if provided, identifier of the newly created WIMS class. The identifier
+                           is randomly chosen if not provided."""
         params = {
             **self.params,
             **{
                 'job'   : 'addclass',
                 'code'  : code if code else random_code(),
-                'qclass': qclass,
                 'rclass': rclass,
                 'data1' : '\n'.join([str(k) + "=" + str(v) for k, v in class_info.items()]),
                 'data2' : '\n'.join([str(k) + "=" + str(v) for k, v in supervisor_info.items()]),
-            }
+            },
+            **({'qclass': qclass} if qclass is not None else {})
         }
         request = requests.post(self.url, data=params, **kwargs)
         response = parse_response(request, verbose)

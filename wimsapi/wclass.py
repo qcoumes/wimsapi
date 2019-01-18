@@ -45,13 +45,16 @@ def one_year_later():
 class Class:
     """This class is used to represent a WIMS' class.
     
+    If provided, qclass will be the identifier of the newly created WIMS class when this instance
+    is saved. The identifier is randomly chosen if qclass is not provided.
+    
     Parameters:
-        qclass - (int) identifier of the class on the receiving server.
         rclass - (str) identifier of the class on the sending server.
         name - (str) name of the class.
         institution - (str) name of the institution.
         email - (str) contact email address.
         password - (str) password for user registration.
+        qclass - (int) identifier of the class on the receiving server.
         supervisor - (wimsapi.user.User) An WIMS user instance representing the supervisor.
         lang - (str) class language (en, fr, es, it, etc).
         expiration - (str) class expiration date (yyyymmdd, defaults to one year later).
@@ -64,8 +67,8 @@ class Class:
         css - (str) css file (must be existing css on the WIMS server)."""
     
     
-    def __init__(self, qclass, rclass, name, institution, email, password, supervisor, lang="en",
-                 date=None, limit=30, level="H4", secure='all', bgcolor='', refcolor='',
+    def __init__(self, rclass, name, institution, email, password, supervisor, qclass=None,
+                 lang="en", date=None, limit=30, level="H4", secure='all', bgcolor='', refcolor='',
                  css='', **kwargs):
         if lang not in LANG:
             raise ValueError("lang must be one of wimsapi.class.LANG")
@@ -178,8 +181,10 @@ class Class:
         if self._saved:
             status, response = self._api.modclass(self.qclass, self.rclass, payload, verbose=True)
         else:
-            status, response = self._api.addclass(self.qclass, self.rclass, payload,
-                                                  self.supervisor._to_payload(), verbose=True)
+            status, response = self._api.addclass(
+                self.rclass, payload, self.supervisor._to_payload(), self.qclass, verbose=True
+            )
+            self.qclass = response['class_id']
             self.supervisor.quser = "supervisor"
         
         if not status:  # pragma: no cover
@@ -239,8 +244,8 @@ class Class:
         class_info['supervisor'] = supervisor
         class_info['name'] = class_info['description']
         class_info['password'] = class_password['password']
-        
-        c = cls(qclass, **class_info)
+        class_info['qclass'] = qclass
+        c = cls(**class_info)
         c._api = api
         c._saved = True
         return c

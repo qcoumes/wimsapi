@@ -17,8 +17,8 @@ class UserTestCase(unittest.TestCase):
         """Create an API and an User to use through the tests."""
         cls.api = WimsAPI(WIMS_URL, "myself", "toto")
         cls.user = User("supervisor", "last", "first", "pass", "mail@mail.com")
-        cls.clas = Class(999999, "myclass", "A class", "an institution", "mail@mail.com",
-                         "password", cls.user)
+        cls.clas = Class("myclass", "A class", "an institution", "mail@mail.com",
+                         "password", cls.user, qclass=999999)
         cls.api.delclass(999999, "myclass")
     
     
@@ -72,8 +72,8 @@ class UserTestCase(unittest.TestCase):
     def test_check(self):
         self.clas.save(WIMS_URL, "myself", "toto")
         u = User("Test", "test", "test", "pass", "mail@mail.com")
-        c = Class(999999, "myclass", "A class", "an institution", "mail@mail.com", "password",
-                  self.user)
+        c = Class("myclass", "A class", "an institution", "mail@mail.com", "password",
+                  self.user, qclass=999999)
         
         with self.assertRaises(NotSavedError):
             User.check(c, u)
@@ -107,8 +107,8 @@ class UserTestCase(unittest.TestCase):
     
     def test_remove(self):
         self.clas.save(WIMS_URL, "myself", "toto")
-        c = Class(999999, "myclass", "A class", "an institution", "mail@mail.com", "password",
-                  self.user)
+        c = Class("myclass", "A class", "an institution", "mail@mail.com", "password",
+                  self.user, qclass=999999)
         u = User("Test", "test", "test", "pass", "mail@mail.com")
         
         with self.assertRaises(NotSavedError):

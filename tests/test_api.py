@@ -32,10 +32,9 @@ class WimsAPITestCase(unittest.TestCase):
         self.assertEqual(api.passwd, "toto")
     
     
-    def test_0_addclass(self):
+    def test_0_addclass_id(self):
         api = WimsAPI(WIMS_URL, "myself", "toto")
         status, response = api.addclass(
-            999999,
             "myclass",
             {
                 'description': "Test class",
@@ -50,10 +49,41 @@ class WimsAPITestCase(unittest.TestCase):
                 "lastname" : "Doe",
                 "firstname": "Jhon",
                 "password" : "password"
-            }
+            },
+            999999
         )
         self.assertTrue(status)
         self.assertEqual(response['message'], "class 999999 correctly added")
+        self.assertEqual(response['class_id'], "999999")
+    
+    
+    def test_0_addclass_random(self):
+        api = WimsAPI(WIMS_URL, "myself", "toto")
+        status, response = api.addclass(
+            "myclass",
+            {
+                'description': "Test class",
+                "institution": "Test institution",
+                "supervisor" : "Test supervisor",
+                "email"      : "Test@mail.com",
+                "password"   : "password",
+                "lang"       : "fr",
+                "limit"      : 500
+            },
+            {
+                "lastname" : "Doe",
+                "firstname": "Jhon",
+                "password" : "password"
+            },
+        )
+        self.assertTrue(status)
+        self.assertIn('class_id', response)
+        class_id = response['class_id']
+        self.assertEqual(response['message'], "class %s correctly added" % class_id)
+        status, response = api.delclass(class_id, "myclass")
+        if not status:
+            self.fail("Could not delete class of id %s. This class must be deleted before testing."
+                      % class_id)
     
     
     def test_addexam(self):
@@ -166,7 +196,6 @@ class WimsAPITestCase(unittest.TestCase):
     def test_delclass(self):
         api = WimsAPI(WIMS_URL, "myself", "toto")
         status, response = api.addclass(
-            999666,
             "myclass",
             {
                 'description': "Test class",
@@ -180,7 +209,8 @@ class WimsAPITestCase(unittest.TestCase):
                 "lastname" : "Doe",
                 "firstname": "Jhon",
                 "password" : "password"
-            }
+            },
+            999666
         )
         self.assertTrue(status)
         self.assertEqual(response['message'], "class 999666 correctly added")
@@ -592,7 +622,6 @@ class WimsAPITestCase(unittest.TestCase):
     def test_sharecontent(self):
         api = WimsAPI(WIMS_URL, "myself", "toto")
         status, response = api.addclass(
-            999990,
             "myclass",
             {
                 'description': "Test class",
@@ -607,7 +636,8 @@ class WimsAPITestCase(unittest.TestCase):
                 "lastname" : "Doe",
                 "firstname": "Jhon",
                 "password" : "password"
-            }
+            },
+            999990
         )
         self.assertTrue(status)
         self.assertEqual(response['message'], "class 999990 correctly added")

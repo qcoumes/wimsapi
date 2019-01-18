@@ -29,13 +29,13 @@ saved.
 
 Where:
 
-* qclass - (int) identifier of the class on the receiving server.
 * rclass - (str) identifier of the class on the sending server.
 * name - (str) name of the class.
 * institution - (str) name of the institution.
 * email - (str) contact email address.
 * password - (str) password for user registration.
 * supervisor - (wimsapi.user.User) An WIMS user instance representing the supervisor.
+* qclass - (int) identifier of the class on the receiving server.
 * lang - (str) class language (en, fr, es, it, etc).
 * expiration - (str) class expiration date (yyyymmdd, defaults to one year later).
 * limit - (str) limit of number of participants (defaults to 30).
@@ -46,6 +46,8 @@ Where:
 * refcolor - (str) menu background color.
 * css - (str) css file (must be existing css on the WIMS server)."""
 
+if provided, qclass will be the identifier of the newly created WIMS class when this instance
+is saved. The identifier is randomly chosen by the WIMS server if qclass is not provided.
 
 ___
 
@@ -84,7 +86,7 @@ If the **Class** has been instatiated through its constructor, and not with
 the server's url, ident, and passwd (see [configuration](index.md#configuration)) :
 
 ```python
-c = Class(999999, "myclass", "Title", "Institution", "mail@mail.com", "password",  user)
+c = Class("myclass", "Title", "Institution", "mail@mail.com", "password",  user)
 c.save("https://wims.unice.fr/wims/wims.cgi", "myself", "toto")
 c.institution = "Another institution"
 c.save()
