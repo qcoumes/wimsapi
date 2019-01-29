@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.3.5
+
+* Fix missing `self.lang = lang` in **Class**' `__init__`
+
+
+# Changelog
+
 ## 0.3.4
 
 * Fix `long_description` in setup.py

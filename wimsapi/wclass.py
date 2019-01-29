@@ -89,6 +89,7 @@ class Class:
         self.email = email
         self.password = password
         self.supervisor = supervisor
+        self.lang = lang
         self.date = date if date is not None else one_year_later()
         self.limit = limit
         self.level = level
