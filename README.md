@@ -125,4 +125,14 @@ new = User("quser", "lastname", "firstname", "password", "mail@mail.com")
 c.additem(new)  # Add the new user to the class.
 ```
 
-For more informations about usage or example : Here the [documentation of wimsapi](https://wimsapi.readthedocs.io/en/latest/).
+For more informations about usage or example : Here the complete [documentation of wimsapi](https://wimsapi.readthedocs.io/en/latest/).
+
+
+## Testing
+
+To test *wimsapi*, you will need a running WIMS' server. If needed, you can set up one quickly with docker using the DockerFile [here](https://github.com/qcoumes/docker-wims-minimal), following the *README* steps.
+
+The default URL used for tests is `http://localhost:7777/wims/wims.cgi`, you can override it with the environment variable `WIMS_URL`. For instance:
+```bash
+WIMS_URL=http://mywims.com/wims/wims.cgi pytest
+```
