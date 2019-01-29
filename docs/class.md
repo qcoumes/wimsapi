@@ -16,7 +16,7 @@ To create a new instance, you'll need an [User](user.md) to use as a supervisor.
 from wimsapi import Class, User
 
 user = User("quser", "lastname", "firstname", "password", "mail@mail.com")
-c = Class(9999, "rclass", "Title", "Institution", "mail@mail.com", "password", user)
+c = Class("rclass", "Title", "Institution", "mail@mail.com", "password", user)
 ```
 
 **Note:** The quser of the [User](user.md) used to create the supervisor does
@@ -25,7 +25,7 @@ saved.
 
 **Class** can also take a lot of optionnal argument:
 
-> `Class(qclass, rclass, name, institution, email, password, supervisor, lang="en",  date=None, limit=30, level="H4", secure='all', bgcolor='', refcolor='', css='')`
+> `Class(rclass, name, institution, email, password, supervisor, qclass=None, lang="en",  date=None, limit=30, level="H4", secure='all', bgcolor='', refcolor='', css='')`
 
 Where:
 
