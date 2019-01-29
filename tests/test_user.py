@@ -1,3 +1,4 @@
+import os
 import unittest
 
 from wimsapi.api import WimsAPI
@@ -6,7 +7,7 @@ from wimsapi.wclass import Class
 from wimsapi.exceptions import AdmRawError, NotSavedError
 
 
-WIMS_URL = "http://localhost:7777/wims/wims.cgi"
+WIMS_URL = os.getenv("WIMS_URL") or "http://localhost:7777/wims/wims.cgi"
 
 
 

@@ -1,4 +1,5 @@
 import datetime
+import os
 import unittest
 from unittest import mock
 
@@ -8,7 +9,7 @@ from wimsapi.api import WimsAPI
 from wimsapi.exceptions import AdmRawError, NotSavedError, InvalidItemTypeError
 
 
-WIMS_URL = "http://localhost:7777/wims/wims.cgi"
+WIMS_URL = os.getenv("WIMS_URL") or "http://localhost:7777/wims/wims.cgi"
 
 
 

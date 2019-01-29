@@ -1,3 +1,4 @@
+import os
 import unittest
 from io import BytesIO
 from tarfile import TarError, TarFile
@@ -5,7 +6,7 @@ from tarfile import TarError, TarFile
 from wimsapi.api import WimsAPI
 
 
-WIMS_URL = "http://localhost:7777/wims/wims.cgi"
+WIMS_URL = os.getenv("WIMS_URL") or "http://localhost:7777/wims/wims.cgi"
 
 CSV = """login,password,name,lastname,firstname,email,regnum
 desc,desc,desc,desc,desc,desc,desc
