@@ -42,6 +42,10 @@ class ClassItemABC(ABC):  # pragma: no cover
     
     
     @abstractmethod
-    def save(self, wclass):
-        """Adds this item in wclass."""
+    def save(self, wclass, check_exists=True):
+        """Saves this item in wclass.
+        
+        If check_exists is True, the api will check if an item with the same ID
+        exists on the WIMS' server. If it exists, save will instead modify this
+        item instead of trying to create new one."""
         pass

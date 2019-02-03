@@ -263,7 +263,7 @@ class Class:
         if not self._saved:
             raise NotSavedError("Class must be saved before being able to add an item")
         
-        item.save(self)
+        item.save(self, check_exists=False)
     
     
     def delitem(self, item, cls=None):

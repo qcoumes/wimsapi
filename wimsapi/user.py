@@ -90,7 +90,7 @@ class User(ClassItemABC):
         return {k: v for k, v in self.__dict__.items() if k not in ['quser', '_api', '_class']}
     
     
-    def save(self, wclass=None):
+    def save(self, wclass=None, check_exists=True):
         """Save the User in the given class.
         
         wclass is an instance of wimsapi.Class. The argument is optionnal
