@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.3.6
+
+* Fix response check in wclass.save()
+
+
 ## 0.3.5
 
 * Fix missing `self.lang = lang` in **Class**' `__init__`
