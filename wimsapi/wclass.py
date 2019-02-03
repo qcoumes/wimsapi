@@ -181,15 +181,16 @@ class Class:
         
         if self._saved:
             status, response = self._api.modclass(self.qclass, self.rclass, payload, verbose=True)
+            if not status:  # pragma: no cover
+                raise AdmRawError(response['message'])
         else:
             status, response = self._api.addclass(
                 self.rclass, payload, self.supervisor._to_payload(), self.qclass, verbose=True
             )
+            if not status:  # pragma: no cover
+                raise AdmRawError(response['message'])
             self.qclass = response['class_id']
             self.supervisor.quser = "supervisor"
-        
-        if not status:  # pragma: no cover
-            raise AdmRawError(response['message'])
         
         self._saved = True
     
