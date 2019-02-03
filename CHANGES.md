@@ -2,7 +2,12 @@
 
 ## 0.3.6
 
-* Fix response check in wclass.save()
+* Added `check_exists=True` parameter to item's save method.  
+    If check_exists is True, the api will check if an item with the same ID
+    exists on the WIMS' server. If it exists, save will instead modify this
+    item instead of trying to create new one.  
+    `wclass.additem()` will now use `check_exists=False`.
+* Fix response check in `wclass.save()`
 
 
 ## 0.3.5
