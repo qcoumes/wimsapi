@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.3.7
+
+* `check_exists` is now used properly
+
+
 ## 0.3.6
 
 * Added `check_exists=True` parameter to item's save method.  
