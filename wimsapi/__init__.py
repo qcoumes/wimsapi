@@ -8,4 +8,4 @@ from .exceptions import AdmRawError, NotSavedError, WimsAPIError, InvalidItemTyp
 
 name = "wimsapi"
 __title__ = 'wimsapi'
-__version__ = VERSION = '0.3.7'
+__version__ = VERSION = '0.3.8'

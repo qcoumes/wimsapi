@@ -103,10 +103,10 @@ class User(ClassItemABC):
 
         wclass = wclass or self._class
         
-        if not wclass._saved and check_exists:
+        if not wclass._saved:
             raise NotSavedError("Class must be saved before being able to save an user")
         
-        if wclass is not None:
+        if wclass is not None and check_exists:
             self._saved = wclass.checkitem(self)
         
         if self._saved:

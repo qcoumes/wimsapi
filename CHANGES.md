@@ -1,6 +1,7 @@
 # Changelog
 
-## 0.3.7
+
+## 0.3.7 & 0.3.8
 
 * `check_exists` is now used properly
 
