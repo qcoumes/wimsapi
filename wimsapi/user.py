@@ -33,6 +33,7 @@ class User(ClassItemABC):
                  regprop3="", regprop4="", regprop5="", **kwargs):
         super().__init__()
         self._class = None
+        self._saved = False
         self.wclass = False
         self.quser = quser
         self.lastname = lastname
