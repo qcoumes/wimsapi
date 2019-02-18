@@ -68,17 +68,17 @@ class Class:
     
     
     def __init__(self, rclass, name, institution, email, password, supervisor, qclass=None,
-                 lang="en", date=None, limit=30, level="H4", secure='all', bgcolor='', refcolor='',
-                 css='', **kwargs):
+                 lang="en", expiration=None, limit=30, level="H4", secure='all', bgcolor='',
+                 refcolor='', css='', **kwargs):
         if lang not in LANG:
             raise ValueError("lang must be one of wimsapi.class.LANG")
         if level not in LEVEL:
             raise ValueError("level must be in wimsapi.class.LEVEL")
         try:
-            if date is not None:
-                datetime.datetime.strptime(date, "%Y%m%d")
+            if expiration is not None:
+                datetime.datetime.strptime(expiration, "%Y%m%d")
         except ValueError:
-            raise ValueError("Given date not in the format 'yyyymmdd'")
+            raise ValueError("Given expiration not in the format 'yyyymmdd'")
         
         self._api = None
         self._saved = False
@@ -90,7 +90,7 @@ class Class:
         self.password = password
         self.supervisor = supervisor
         self.lang = lang
-        self.date = date if date is not None else one_year_later()
+        self.expiration = expiration if expiration is not None else one_year_later()
         self.limit = limit
         self.level = level
         self.secure = secure

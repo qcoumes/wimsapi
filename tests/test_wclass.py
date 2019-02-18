@@ -71,7 +71,7 @@ class ClassTestCase(unittest.TestCase):
                   self.user, qclass=999999, level="Wrong")
         with self.assertRaises(ValueError):
             Class("myclass", "A class", "an institution", "mail@mail.com", "password",
-                  self.user, qclass=999999, date="Wrong")
+                  self.user, qclass=999999, expiration="Wrong")
     
     
     def test_save_and_refresh(self):

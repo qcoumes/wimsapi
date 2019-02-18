@@ -25,7 +25,7 @@ saved.
 
 **Class** can also take a lot of optionnal argument:
 
-> `Class(rclass, name, institution, email, password, supervisor, qclass=None, lang="en",  date=None, limit=30, level="H4", secure='all', bgcolor='', refcolor='', css='')`
+> `Class(rclass, name, institution, email, password, supervisor, qclass=None, lang="en",  expiration=None, limit=30, level="H4", secure='all', bgcolor='', refcolor='', css='')`
 
 Where:
 
