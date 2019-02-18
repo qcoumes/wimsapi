@@ -76,8 +76,8 @@ class Class:
             raise ValueError("level must be in wimsapi.class.LEVEL")
         try:
             if expiration is not None:
-                datetime.datetime.strptime(expiration, "%Y%m%d")
-        except ValueError:
+                datetime.datetime.strftime(expiration, "%Y%m%d")
+        except (ValueError, TypeError):
             raise ValueError("Given expiration not in the format 'yyyymmdd'")
         
         self._api = None
