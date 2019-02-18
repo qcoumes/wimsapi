@@ -4,6 +4,8 @@
 ## 0.3.9
 
 * Renamed Class member `date` to `expiration` to match the *ADM/RAW* argument.
+* `Class.limit` is now an *int* when retrieving the class from a *WIMS* server.
+
 
 ## 0.3.7 & 0.3.8
 
