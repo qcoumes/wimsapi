@@ -1,5 +1,32 @@
 # Changelog
 
+
+## 0.3.9
+
+* Renamed Class member `date` to `expiration` to match the *ADM/RAW* argument.
+
+## 0.3.7 & 0.3.8
+
+* `check_exists` is now used properly
+
+
+## 0.3.6
+
+* Added `check_exists=True` parameter to item's save method.  
+    If check_exists is True, the api will check if an item with the same ID
+    exists on the WIMS' server. If it exists, save will instead modify this
+    item instead of trying to create new one.  
+    `wclass.additem()` will now use `check_exists=False`.
+* Fix response check in `wclass.save()`
+
+
+## 0.3.5
+
+* Fix missing `self.lang = lang` in **Class**' `__init__`
+
+
+# Changelog
+
 ## 0.3.4
 
 * Fix `long_description` in setup.py
