@@ -5,7 +5,7 @@
 
 * Renamed Class member `date` to `expiration` to match the *ADM/RAW* argument.
 * `Class.limit` is now an *int* when retrieving the class from a *WIMS* server.
-
+* Now propagate exception if expiration in Class `__init__` is not `yyyymmdd`.
 
 ## 0.3.7 & 0.3.8
 
