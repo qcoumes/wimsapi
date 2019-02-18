@@ -91,7 +91,7 @@ class Class:
         self.supervisor = supervisor
         self.lang = lang
         self.expiration = expiration if expiration is not None else one_year_later()
-        self.limit = limit
+        self.limit = int(limit)
         self.level = level
         self.secure = secure
         self.bgcolor = bgcolor
