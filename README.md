@@ -1,5 +1,5 @@
 [![Build Status](https://travis-ci.org/qcoumes/wimsapi.svg?branch=master)](https://travis-ci.org/qcoumes/wimsapi)
-[![Coverage Status](https://coveralls.io/repos/github/qcoumes/wimsapi/badge.svg?branch=master)](https://coveralls.io/github/qcoumes/wimsapi?branch=master)
+[![codecov](https://codecov.io/gh/qcoumes/wimsapi/branch/master/graph/badge.svg)](https://codecov.io/gh/qcoumes/wimsapi)
 [![Documentation Status](https://readthedocs.org/projects/wimsapi/badge/?version=master)](https://wimsapi.readthedocs.io/?badge=master)
 [![PyPI Version](https://badge.fury.io/py/wimsapi.svg)](https://badge.fury.io/py/wimsapi)
 [![Python 3.5+](https://img.shields.io/badge/python-3.5+-brightgreen.svg)](#)
