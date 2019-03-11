@@ -271,7 +271,7 @@ class Class:
         subclass of ClassItemABC which correspond to the item.
         
         E.G. for an user : delitem(User(...)) or delitem("quser", User)."""
-        test = ((type(item) is not str and not issubclass(type(item), ClassItemABC))
+        test = ((not isinstance(item, str) and not issubclass(type(item), ClassItemABC))
                 or (cls is not None and not issubclass(cls, ClassItemABC)))
         if test:
             raise InvalidItemTypeError(
@@ -292,7 +292,7 @@ class Class:
         subclass of ClassItemABC which correspond to the item.
         
         E.G. for an user : checkitem(User(...)) or checkitem("quser", User)."""
-        test = ((type(item) is not str and not issubclass(type(item), ClassItemABC))
+        test = ((not isinstance(item, str) and not issubclass(type(item), ClassItemABC))
                 or (cls is not None and not issubclass(cls, ClassItemABC)))
         if test:
             raise InvalidItemTypeError(
