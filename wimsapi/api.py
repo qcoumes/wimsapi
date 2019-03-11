@@ -914,8 +914,8 @@ class WimsAPI:
         request = requests.post(self.url, params=params, stream=True, **kwargs)
         response = parse_response(request, return_request=True)
         return (
-            response['status'] == 'OK' if type(response) is dict else True,
-            response if type(response) is dict else request.content
+            response['status'] == 'OK' if isinstance(response, dict) else True,
+            response if isinstance(response, dict) else request.content
         )
     
     
@@ -1201,8 +1201,8 @@ class WimsAPI:
         request = requests.post(self.url, params=params, stream=True, **kwargs)
         response = parse_response(request, return_request=True)
         return (
-            response['status'] == 'OK' if type(response) is dict else True,
-            response if type(response) is dict else request.content
+            response['status'] == 'OK' if isinstance(response, dict) else True,
+            response if isinstance(response, dict) else request.content
         )
     
     
