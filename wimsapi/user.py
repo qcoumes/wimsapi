@@ -150,7 +150,7 @@ class User(ClassItemABC):
             raise NotSavedError("Class must be saved before being able to check whether an user "
                                 "exists")
         
-        quser = user.quser if type(user) is cls else user
+        quser = user.quser if isinstance(user, cls) else user
         status, response = wclass._api.checkuser(wclass.qclass, wclass.rclass, quser, verbose=True)
         msg = 'user %s not in this class (%s)' % (str(quser), str(wclass.qclass))
         if not status and msg not in response['message']:  # pragma: no cover
@@ -170,7 +170,7 @@ class User(ClassItemABC):
         if not wclass._saved:
             raise NotSavedError("Class must be saved before being able to remove an user")
         
-        quser = user.quser if type(user) is cls else user
+        quser = user.quser if isinstance(user, cls) else user
         status, response = wclass._api.deluser(wclass.qclass, wclass.rclass, quser, verbose=True)
         if not status:  # pragma: no cover
             raise AdmRawError(response['message'])
