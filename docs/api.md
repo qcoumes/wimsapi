@@ -273,9 +273,10 @@ Delete users (but supervisor) and all work done by students on the specified cla
 * rclass - (str) identifier of the class on the sending server.
 
 
+## copyclass
+**`copyclass(self, qclass, rclass, verbose=False, code=None, **kwargs)`**
 
-copyclass(self, qclass, rclass, verbose=False, code=None, **kwargs)`**
-    Copy a class. Do not copy users or work done by students.
+Copy a class. Do not copy users or work done by students.
      
 ***Parameters:***
 
