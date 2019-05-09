@@ -294,7 +294,7 @@ class WimsAPITestCase(unittest.TestCase):
         api = WimsAPI(WIMS_URL, "myself", "toto")
         status, response = api.getclassfile(999999, "myclass", '.log')
         self.assertTrue(status)
-        self.assertEqual(response[34:49], b"User jdoe added")
+        self.assertEqual(response[34:49], b"User jdoe creat")
     
     
     def test_getclassmodif(self):
@@ -503,7 +503,7 @@ class WimsAPITestCase(unittest.TestCase):
         api = WimsAPI(WIMS_URL, "myself", "toto")
         status, response = api.listexos(9001, "myclass")
         self.assertTrue(status)
-        self.assertEqual(response["exocount"], 114)
+        self.assertGreaterEqual(response["exocount"], 114)
     
     
     def test_listlinks(self):
@@ -525,7 +525,7 @@ class WimsAPITestCase(unittest.TestCase):
         api = WimsAPI(WIMS_URL, "myself", "toto")
         status, response = api.listsheets(9001, "myclass")
         self.assertTrue(status)
-        self.assertEqual(response["nbsheet"], "11")
+        self.assertGreaterEqual(response["nbsheet"], "11")
     
     
     def test_modclass(self):
@@ -562,12 +562,20 @@ class WimsAPITestCase(unittest.TestCase):
         self.assertFalse(status)
         self.assertEqual(response["message"], 'COMPILATION ERROR No statement defined.')
     
+        status, response = api.movexo(9001, 999999, "myclass", 3)
+        self.assertFalse(status)
+        self.assertEqual(response["message"], 'COMPILATION ERROR No statement defined.')
+    
     
     def test_movexos(self):
         api = WimsAPI(WIMS_URL, "myself", "toto")
         status, response = api.movexos(9001, 999999, "myclass", True)
         self.assertTrue(status)
         self.assertEqual(response["message"], 'exercices successfully copied')
+        
+        status, response = api.movexos(9001, 999999, "myclass")
+        self.assertTrue(status)
+        self.assertEqual(response["message"], 'exercices successfully moved')
     
     
     @unittest.skip("Job not defined in wims yet")

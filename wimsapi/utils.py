@@ -1,5 +1,6 @@
 import datetime
 
+
 def one_year_later():
     """Give the date one year later from now in the format yyyymmdd."""
     d = datetime.date.today()
