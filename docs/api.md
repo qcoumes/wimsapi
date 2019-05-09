@@ -391,8 +391,9 @@ Download the file <filename> of the specified class.
      
 ***Parameters:***
 
+* qclass - (str) identifier of the class on the receiving server.
 * rclass - (str) identifier of the class on the sending server.
-* quser  - (str) user identifier on the receiving server.
+* filename - (str) path to the file relative to `log/classes/[qclass]/`.
 
 
 ## getclassmodif
