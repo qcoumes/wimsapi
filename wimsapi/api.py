@@ -241,19 +241,31 @@ class WimsAPI:
                     description - (str) description of the sheet (defaults to "sheet n#")
                     expiration - (str) expiration date (yyyymmdd) defaults to one year later
                     sheetmode - (str) the mode of the sheet:
-                                    0 : pending (default)
-                                    1 : active
-                                    2 : expired
-                                    3 : expired + hidden
-                    weight - (str) weight of the sheet in class score
-                    formula - (str) How the score is calculated for this sheet (0 to 6)
-                    indicator - (str) what indicator will be used in the score formula (0 to 2)
+                        0 : pending (default)
+                        1 : active
+                        2 : expired
+                        3 : expired + hidden
+                    weight - (int) weight of the sheet in the class score (default to 1), use 0 if
+                        you want this sheet's score to be ignored.
+                    formula - (str) How the score is calculated for this sheet (0 to 6,
+                                    default to 2)
+                        0 : Very lenient: maximum between percentage and quality.
+                        1 : Quality is not taken into account. You get maximum of
+                            grade once all the required work is done.
+                        2 : Quality has only slight effect over the grade.
+                        3 : More effect of quality.
+                        4 : To have a grade of 10, you must gather all require
+                            points (100%) without making any error (quality=10).
+                        5 : Unfinished work is over-punished.
+                        6 : Any mistake is over-punished.
+                    indicator - (str) what indicator will be used in the score formula (0 to 2,
+                        default to 1)
                     contents - (str) the contents for the multi-line file to be created.
-                                  The semicolons (;) in this parameter will be
-                                  interpreted as new lines. Equal characters (=) must
-                                  be replaced by the character AT (@).
-                                  There is no check made, so the integrity of the
-                                  contents is up to you only! (defaults to "")"""
+                        The semicolons (;) in this parameter will be
+                        interpreted as new lines. Equal characters (=) must
+                        be replaced by the character AT (@).
+                        There is no check made, so the integrity of the
+                        contents is up to you only! (defaults to "")"""
         params = {
             **self.params,
             **{
@@ -681,8 +693,10 @@ class WimsAPI:
         """Download the file <filename> of the specified class.
         
         Parameters:
+            qclass - (str) identifier of the class on the receiving server.
             rclass - (str) identifier of the class on the sending server.
-            quser  - (str) user identifier on the receiving server."""
+            filename - (str) path to the file relative to 'log/classes/[qclass]/'.
+            """
         params = {
             **self.params,
             **{
@@ -1149,8 +1163,7 @@ class WimsAPI:
         
         Existing properties are: firstname, lastname, email, comments, regnum, photourl,
         participate, password, courses, classes, supervise, supervisable, external_auth,
-        agreecgu, regprop1,
-        regprop2, regprop3, regprop4, regprop5
+        agreecgu, regprop1, regprop2, regprop3, regprop4, regprop5
         
         Parameters:
             qclass - (int) identifier of the class on the receiving server.
