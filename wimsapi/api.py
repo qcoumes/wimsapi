@@ -9,7 +9,7 @@ requests to the other.
 The connectable server must be declared in a file
 within the directory 'WIMS_HOME/log/classes/.connections/'.
 
-/!\ Warning: output must be set 'ident_type=json' and agent must be set to
+Warning: output must be set 'ident_type=json' and agent must be set to
 'ident_agent=python-requests' in 'WIMS_HOME/log/classes/.connections/IDENT' for
 this API to work properly.
 
@@ -35,7 +35,7 @@ def parse_response(request, verbose=False, return_request=False):
     The goal is that the response is always the same, whether the output type of the WIMS server is
     set to JSON or WIMS.
     
-    /!\ Warning: output must be set 'ident_type=json' in 'WIMS_HOME/log/classes/.connections/IDENT'
+    Warning: output must be set 'ident_type=json' in 'WIMS_HOME/log/classes/.connections/IDENT'
     for this API to work properly."""
     try:
         response = request.json()
@@ -89,7 +89,7 @@ class WimsAPI:
     the dictionnary can also contains more keys.
     In case the status is ERROR, key 'message' contains the nature of the error.
     
-    /!\ Warning: output must be set 'ident_type=json' in 'WIMS_HOME/log/classes/.connections/IDENT'
+    Warning: output must be set 'ident_type=json' in 'WIMS_HOME/log/classes/.connections/IDENT'
     for this API to work properly.
     
     For more informations, see http://wims.unice.fr/wims/?module=adm/raw&job=help"""
@@ -102,11 +102,13 @@ class WimsAPI:
     
     @property
     def ident(self):
+        """Returns the ident used by this instance of WimsAPI."""
         return self.params['ident']
     
     
     @property
     def passwd(self):
+        """Returns the passwd used by this instance of WimsAPI."""
         return self.params['passwd']
     
     
@@ -744,10 +746,10 @@ class WimsAPI:
         )
     
     
-    def getcsv(self, qclass, rclass, options, format='csv', code=None, **kwargs):
+    def getcsv(self, qclass, rclass, options, frmt='csv', code=None, **kwargs):
         """Get data of the class, under the form of a csv/tsv/xls spreatsheet file.
         
-        The parameter 'format' may be used to specify the desired output format
+        The parameter 'frmt' may be used to specify the desired output frmt
         (csv or tsv, defaults to csv).
         
         The parameter 'options' should contain a list of desired data columns.
@@ -771,7 +773,7 @@ class WimsAPI:
             manuals     : manual1+manual2+...
             manual1, manual2, ...: first, second, ... teacher-entered scores.
 
-        The output content (below the status line in WIMS format) is a csv/tsv
+        The output content (below the status line in WIMS frmt) is a csv/tsv
         spreadsheet table. The first row of the table contains
         the names of the fields. The second row gives short
         descriptions of each field. The third row is blank.
@@ -781,7 +783,7 @@ class WimsAPI:
             qclass  - (int) identifier of the class on the receiving server.
             rclass  - (str) identifier of the class on the sending server.
             options - (list) list of desired data columns.
-            format  - (str) output format ('csv', 'tsv' or 'xls', defaults to csv)"""
+            frmt  - (str) output frmt ('csv', 'tsv' or 'xls', defaults to csv)"""
         params = {
             **self.params,
             **{
@@ -789,7 +791,7 @@ class WimsAPI:
                 'code'  : code if code else random_code(),
                 'qclass': qclass,
                 'rclass': rclass,
-                'format': format,
+                'frmt': frmt,
             }
         }
         if options:
@@ -1029,7 +1031,7 @@ class WimsAPI:
         """Call getcsv() method with format='xls'.
         
         For more informations, see WimsAPI.getcsv() documentation."""
-        return self.getcsv(qclass, rclass, options, format='xls', code=code,
+        return self.getcsv(qclass, rclass, options, frmt='xls', code=code,
                            **kwargs)
     
     
@@ -1458,6 +1460,7 @@ class WimsAPI:
     
     
     def modexosheet(self, verbose=False, code=None, **kwargs):
+        """Not yet implemented."""
         pass  # TODO
     
     
@@ -1603,7 +1606,6 @@ class WimsAPI:
         return response['status'] == 'OK', response
     
     
-    # FIXME getting 'unauthorized'
     def putcsv(self, qclass, rclass, csv, file=True, verbose=False, code=None, **kwargs):
         """Put data into the class.
         
@@ -1732,6 +1734,7 @@ class WimsAPI:
     
     
     def search(self, verbose=False, code=None, **kwargs):
+        """Not yet implemented."""
         pass  # TODO
     
     
@@ -1782,4 +1785,5 @@ class WimsAPI:
     
     
     def update(self, verbose=False, code=None, **kwargs):
+        """Not yet implemented."""
         pass  # TODO
