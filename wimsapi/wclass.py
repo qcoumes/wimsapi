@@ -4,6 +4,7 @@ from wimsapi.api import WimsAPI
 from wimsapi.exceptions import AdmRawError, InvalidItemTypeError, NotSavedError
 from wimsapi.item import ClassItemABC
 from wimsapi.user import User
+from wimsapi.utils import one_year_later
 
 
 LANG = [
@@ -32,13 +33,6 @@ LEVEL = [
     "U1", "U2", "U3", "U4", "U5",
     "G", "R",
 ]
-
-
-
-def one_year_later():
-    """Give the date one year later from now in the format yyyymmdd."""
-    d = datetime.date.today()
-    return d.replace(year=d.year + 1).strftime("%Y%m%d")
 
 
 
@@ -188,6 +182,7 @@ class Class:
                 raise AdmRawError(response['message'])
             self.qclass = response['class_id']
             self.supervisor.quser = "supervisor"
+        
         
         self._saved = True
     
