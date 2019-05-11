@@ -7,9 +7,9 @@ class ClassItemABC(ABC):  # pragma: no cover
     of actually modifying wimsapi.class.Class."""
     
     
-    @staticmethod
+    @classmethod
     @abstractmethod
-    def check(wclass, item):
+    def check(cls, wclass, item):
         """Returns True if item is in wclass, False otherwise.
         
         Item can be either an instance of the corresponding item, or
@@ -20,9 +20,9 @@ class ClassItemABC(ABC):  # pragma: no cover
         pass
     
     
-    @staticmethod
+    @classmethod
     @abstractmethod
-    def remove(wclass, item):
+    def remove(cls, wclass, item):
         """Deletes item from wclass.
 
         Item can be either an instance of the corresponding item, or
@@ -48,4 +48,11 @@ class ClassItemABC(ABC):  # pragma: no cover
         If check_exists is True, the api will check if an item with the same ID
         exists on the WIMS' server. If it exists, save will instead modify this
         item instead of trying to create new one."""
+        pass
+    
+    
+    @classmethod
+    @abstractmethod
+    def list(cls, wclass):
+        """List every item from wclass."""
         pass

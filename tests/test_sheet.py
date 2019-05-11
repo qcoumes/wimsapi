@@ -34,10 +34,11 @@ class SheetTestCase(unittest.TestCase):
         self.assertEqual(s.exo_count, 0)
         with self.assertRaises(NotSavedError):
             s.infos
-
+        
         self.clas.save(WIMS_URL, "myself", "toto")
         s.save(self.clas)
         self.assertIn("sheet_title", s.infos)
+    
     
     def test_get_exception(self):
         with self.assertRaises(NotSavedError):
@@ -121,3 +122,36 @@ class SheetTestCase(unittest.TestCase):
         Sheet.remove(self.clas, s)
         with self.assertRaises(AdmRawError):
             Sheet.get(self.clas, s.qsheet)  # Should raise the exception
+    
+    
+    def test_list(self):
+        s1 = Sheet("First", "First one")
+        s2 = Sheet("Second", "Second one")
+        s3 = Sheet("Third", "Third one")
+        
+        self.clas.save(WIMS_URL, "myself", "toto")
+        self.clas.additem(s1)
+        self.clas.additem(s2)
+        self.clas.additem(s3)
+        
+        self.assertListEqual(
+            sorted([s1, s2, s3], key=lambda i: i.qsheet),
+            sorted(Sheet.list(self.clas), key=lambda i: i.qsheet)
+        )
+    
+    
+    def test_eq(self):
+        s1 = Sheet("First", "First one")
+        s2 = Sheet("Second", "Second one")
+        s3 = Sheet("Third", "Third one")
+        
+        self.clas.save(WIMS_URL, "myself", "toto")
+        self.clas.additem(s1)
+        self.clas.additem(s2)
+        
+        self.assertEqual(s1, self.clas.getitem(s1.qsheet, Sheet))
+        self.assertNotEqual(s2, self.clas.getitem(s1.qsheet, Sheet))
+        self.assertNotEqual(s2, 1)
+        
+        with self.assertRaises(NotSavedError):
+            s1 == s3

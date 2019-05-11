@@ -78,6 +78,14 @@ class User(ClassItemABC):
         return user_info
     
     
+    def __eq__(self, other):
+        if isinstance(other, self.__class__):
+            if not self.wclass or not other.wclass:
+                raise NotSavedError("Cannot test equality between unsaved users")
+            return self.refresh().quser == other.refresh().quser
+        return False
+    
+    
     def refresh(self):
         """Refresh this instance of a WIMS User from the server itself."""
         if not self.wclass:
@@ -86,6 +94,8 @@ class User(ClassItemABC):
         new = User.get(self._class, self.quser)
         self.__class__ = new.__class__
         self.__dict__ = new.__dict__
+        
+        return self
     
     
     def _to_payload(self):
@@ -106,7 +116,7 @@ class User(ClassItemABC):
         if not wclass and not self._class:
             raise NotSavedError("wclass must be provided if this user has neither been imported "
                                 "from a WIMS class nor saved once yet")
-
+        
         wclass = wclass or self._class
         
         if not wclass._saved:
@@ -200,3 +210,8 @@ class User(ClassItemABC):
         user._class = wclass
         user.wclass = True
         return user
+    
+    
+    @classmethod
+    def list(cls, wclass):
+        return [cls.get(wclass, quser) for quser in wclass.infos["userlist"]]

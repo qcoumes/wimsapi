@@ -45,9 +45,9 @@ def parse_response(request, verbose=False, return_request=False):
         if ' ' in status:
             status, code = status.split(' ', maxsplit=1)
         response = {
-            'status' : status,
+            'status':  status,
             'message': message if '\n' not in message else message[:-1],
-            'code'   : code,
+            'code':    code,
         }
     if response['status'] not in ["ERROR", "OK"]:
         if not return_request:  # pragma: no cover
@@ -157,11 +157,11 @@ class WimsAPI:
         params = {
             **self.params,
             **{
-                'job'   : 'addclass',
-                'code'  : code if code else random_code(),
+                'job':    'addclass',
+                'code':   code if code else random_code(),
                 'rclass': rclass,
-                'data1' : '\n'.join([str(k) + "=" + str(v) for k, v in class_info.items()]),
-                'data2' : '\n'.join([str(k) + "=" + str(v) for k, v in supervisor_info.items()]),
+                'data1':  '\n'.join([str(k) + "=" + str(v) for k, v in class_info.items()]),
+                'data2':  '\n'.join([str(k) + "=" + str(v) for k, v in supervisor_info.items()]),
             },
             **({'qclass': qclass} if qclass is not None else {})
         }
@@ -185,11 +185,11 @@ class WimsAPI:
         params = {
             **self.params,
             **{
-                'job'   : 'addexam',
-                'code'  : code if code else random_code(),
+                'job':    'addexam',
+                'code':   code if code else random_code(),
                 'qclass': qclass,
                 'rclass': rclass,
-                'data1' : '\n'.join([str(k) + "=" + str(v) for k, v in exam_info.items()]),
+                'data1':  '\n'.join([str(k) + "=" + str(v) for k, v in exam_info.items()]),
             }
         }
         request = requests.post(self.url, data=params, **kwargs)
@@ -212,12 +212,12 @@ class WimsAPI:
         params = {
             **self.params,
             **{
-                'job'   : 'addexo',
-                'code'  : code if code else random_code(),
+                'job':    'addexo',
+                'code':   code if code else random_code(),
                 'qclass': qclass,
                 'rclass': rclass,
-                'qexo'  : qexo,
-                'data1' : exo_src,
+                'qexo':   qexo,
+                'data1':  exo_src,
             }
         }
         if no_build:
@@ -269,11 +269,11 @@ class WimsAPI:
         params = {
             **self.params,
             **{
-                'job'   : 'addsheet',
-                'code'  : code if code else random_code(),
+                'job':    'addsheet',
+                'code':   code if code else random_code(),
                 'qclass': qclass,
                 'rclass': rclass,
-                'data1' : '\n'.join([str(k) + "=" + str(v) for k, v in sheet_info.items()]),
+                'data1':  '\n'.join([str(k) + "=" + str(v) for k, v in sheet_info.items()]),
             }
         }
         request = requests.post(self.url, data=params, **kwargs)
@@ -310,12 +310,12 @@ class WimsAPI:
         params = {
             **self.params,
             **{
-                'job'   : 'adduser',
-                'code'  : code if code else random_code(),
+                'job':    'adduser',
+                'code':   code if code else random_code(),
                 'qclass': qclass,
                 'rclass': rclass,
-                'quser' : quser,
-                'data1' : '\n'.join([str(k) + "=" + str(v) for k, v in user_info.items()]),
+                'quser':  quser,
+                'data1':  '\n'.join([str(k) + "=" + str(v) for k, v in user_info.items()]),
             }
         }
         request = requests.post(self.url, data=params, **kwargs)
@@ -345,11 +345,11 @@ class WimsAPI:
         params = {
             **self.params,
             **{
-                'job'   : 'authuser',
-                'code'  : code if code else random_code(),
+                'job':    'authuser',
+                'code':   code if code else random_code(),
                 'qclass': qclass,
                 'rclass': rclass,
-                'quser' : quser,
+                'quser':  quser,
             }
         }
         if hashlogin:
@@ -368,8 +368,8 @@ class WimsAPI:
         params = {
             **self.params,
             **{
-                'job'   : 'buildexos',
-                'code'  : code if code else random_code(),
+                'job':    'buildexos',
+                'code':   code if code else random_code(),
                 'qclass': qclass,
                 'rclass': rclass,
             }
@@ -388,8 +388,8 @@ class WimsAPI:
         params = {
             **self.params,
             **{
-                'job'   : 'checkclass',
-                'code'  : code if code else random_code(),
+                'job':    'checkclass',
+                'code':   code if code else random_code(),
                 'qclass': qclass,
                 'rclass': rclass,
             }
@@ -409,11 +409,11 @@ class WimsAPI:
         params = {
             **self.params,
             **{
-                'job'   : 'checkexam',
-                'code'  : code if code else random_code(),
+                'job':    'checkexam',
+                'code':   code if code else random_code(),
                 'qclass': qclass,
                 'rclass': rclass,
-                'qexam' : qexam,
+                'qexam':  qexam,
             }
         }
         request = requests.post(self.url, data=params, **kwargs)
@@ -442,8 +442,8 @@ class WimsAPI:
         params = {
             **self.params,
             **{
-                'job'   : 'checksheet',
-                'code'  : code if code else random_code(),
+                'job':    'checksheet',
+                'code':   code if code else random_code(),
                 'qclass': qclass,
                 'rclass': rclass,
                 'qsheet': qsheet,
@@ -464,11 +464,11 @@ class WimsAPI:
         params = {
             **self.params,
             **{
-                'job'   : 'checkuser',
-                'code'  : code if code else random_code(),
+                'job':    'checkuser',
+                'code':   code if code else random_code(),
                 'qclass': qclass,
                 'rclass': rclass,
-                'quser' : quser,
+                'quser':  quser,
             }
         }
         request = requests.post(self.url, data=params, **kwargs)
@@ -485,8 +485,8 @@ class WimsAPI:
         params = {
             **self.params,
             **{
-                'job'   : 'cleanclass',
-                'code'  : code if code else random_code(),
+                'job':    'cleanclass',
+                'code':   code if code else random_code(),
                 'qclass': qclass,
                 'rclass': rclass,
             }
@@ -505,8 +505,8 @@ class WimsAPI:
         params = {
             **self.params,
             **{
-                'job'   : 'copyclass',
-                'code'  : code if code else random_code(),
+                'job':    'copyclass',
+                'code':   code if code else random_code(),
                 'qclass': qclass,
                 'rclass': rclass,
             }
@@ -525,8 +525,8 @@ class WimsAPI:
         params = {
             **self.params,
             **{
-                'job'   : 'delclass',
-                'code'  : code if code else random_code(),
+                'job':    'delclass',
+                'code':   code if code else random_code(),
                 'qclass': qclass,
                 'rclass': rclass,
             }
@@ -546,11 +546,11 @@ class WimsAPI:
         params = {
             **self.params,
             **{
-                'job'   : 'delexam',
-                'code'  : code if code else random_code(),
+                'job':    'delexam',
+                'code':   code if code else random_code(),
                 'qclass': qclass,
                 'rclass': rclass,
-                'qexam' : qexam,
+                'qexam':  qexam,
             }
         }
         request = requests.post(self.url, data=params, **kwargs)
@@ -568,11 +568,11 @@ class WimsAPI:
         params = {
             **self.params,
             **{
-                'job'   : 'delexo',
-                'code'  : code if code else random_code(),
+                'job':    'delexo',
+                'code':   code if code else random_code(),
                 'qclass': qclass,
                 'rclass': rclass,
-                'qexo'  : qexo,
+                'qexo':   qexo,
             }
         }
         request = requests.post(self.url, data=params, **kwargs)
@@ -591,8 +591,8 @@ class WimsAPI:
         params = {
             **self.params,
             **{
-                'job'   : 'delsheet',
-                'code'  : code if code else random_code(),
+                'job':    'delsheet',
+                'code':   code if code else random_code(),
                 'qclass': qclass,
                 'rclass': rclass,
                 'qsheet': qsheet,
@@ -613,11 +613,11 @@ class WimsAPI:
         params = {
             **self.params,
             **{
-                'job'   : 'deluser',
-                'code'  : code if code else random_code(),
+                'job':    'deluser',
+                'code':   code if code else random_code(),
                 'qclass': qclass,
                 'rclass': rclass,
-                'quser' : quser,
+                'quser':  quser,
             }
         }
         request = requests.post(self.url, data=params, **kwargs)
@@ -645,8 +645,8 @@ class WimsAPI:
         params = {
             **self.params,
             **{
-                'job'   : 'getclass',
-                'code'  : code if code else random_code(),
+                'job':    'getclass',
+                'code':   code if code else random_code(),
                 'qclass': qclass,
                 'rclass': rclass,
             }
@@ -678,10 +678,10 @@ class WimsAPI:
         params = {
             **self.params,
             **{
-                'job'   : 'getclassesuser',
-                'code'  : code if code else random_code(),
+                'job':    'getclassesuser',
+                'code':   code if code else random_code(),
                 'rclass': rclass,
-                'quser' : quser,
+                'quser':  quser,
             }
         }
         request = requests.post(self.url, data=params, **kwargs)
@@ -700,8 +700,8 @@ class WimsAPI:
         params = {
             **self.params,
             **{
-                'job'   : 'getclassfile',
-                'code'  : code if code else random_code(),
+                'job':    'getclassfile',
+                'code':   code if code else random_code(),
                 'rclass': rclass,
                 'qclass': qclass,
                 'option': filename,
@@ -725,11 +725,11 @@ class WimsAPI:
         params = {
             **self.params,
             **{
-                'job'   : 'getclassmodif',
-                'code'  : code if code else random_code(),
+                'job':    'getclassmodif',
+                'code':   code if code else random_code(),
                 'rclass': rclass,
                 'qclass': qclass,
-                'data1' : date,
+                'data1':  date,
             }
         }
         request = requests.post(self.url, data=params, **kwargs)
@@ -746,8 +746,8 @@ class WimsAPI:
         params = {
             **self.params,
             **{
-                'job'   : 'getclasstgz',
-                'code'  : code if code else random_code(),
+                'job':    'getclasstgz',
+                'code':   code if code else random_code(),
                 'rclass': rclass,
                 'qclass': qclass,
             }
@@ -801,11 +801,11 @@ class WimsAPI:
         params = {
             **self.params,
             **{
-                'job'   : 'getcsv',
-                'code'  : code if code else random_code(),
+                'job':    'getcsv',
+                'code':   code if code else random_code(),
                 'qclass': qclass,
                 'rclass': rclass,
-                'frmt': frmt,
+                'frmt':   frmt,
             }
         }
         if options:
@@ -828,11 +828,11 @@ class WimsAPI:
         params = {
             **self.params,
             **{
-                'job'   : 'getexam',
-                'code'  : code if code else random_code(),
+                'job':    'getexam',
+                'code':   code if code else random_code(),
                 'qclass': qclass,
                 'rclass': rclass,
-                'qexam' : qexam,
+                'qexam':  qexam,
             }
         }
         request = requests.post(self.url, data=params, **kwargs)
@@ -851,12 +851,12 @@ class WimsAPI:
         params = {
             **self.params,
             **{
-                'job'   : 'getexamlog',
-                'code'  : code if code else random_code(),
+                'job':    'getexamlog',
+                'code':   code if code else random_code(),
                 'qclass': qclass,
                 'rclass': rclass,
-                'quser' : quser,
-                'qexam' : qexam,
+                'quser':  quser,
+                'qexam':  qexam,
             }
         }
         request = requests.post(self.url, data=params, **kwargs)
@@ -874,11 +874,11 @@ class WimsAPI:
         params = {
             **self.params,
             **{
-                'job'   : 'getexamscores',
-                'code'  : code if code else random_code(),
+                'job':    'getexamscores',
+                'code':   code if code else random_code(),
                 'qclass': qclass,
                 'rclass': rclass,
-                'qexam' : qexam,
+                'qexam':  qexam,
             }
         }
         request = requests.post(self.url, data=params, **kwargs)
@@ -897,12 +897,12 @@ class WimsAPI:
         params = {
             **self.params,
             **{
-                'job'   : 'getexo',
-                'code'  : code if code else random_code(),
+                'job':    'getexo',
+                'code':   code if code else random_code(),
                 'qclass': qclass,
                 'rclass': rclass,
                 'qsheet': qsheet,
-                'qexo'  : qexo,
+                'qexo':   qexo,
             }
         }
         request = requests.post(self.url, data=params, **kwargs)
@@ -920,11 +920,11 @@ class WimsAPI:
         params = {
             **self.params,
             **{
-                'job'   : 'getexofile',
-                'code'  : code if code else random_code(),
+                'job':    'getexofile',
+                'code':   code if code else random_code(),
                 'qclass': qclass,
                 'rclass': rclass,
-                'qexo'  : qexo,
+                'qexo':   qexo,
             }
         }
         request = requests.post(self.url, params=params, stream=True, **kwargs)
@@ -946,12 +946,12 @@ class WimsAPI:
         params = {
             **self.params,
             **{
-                'job'   : 'getexosheet',
-                'code'  : code if code else random_code(),
+                'job':    'getexosheet',
+                'code':   code if code else random_code(),
                 'qclass': qclass,
                 'rclass': rclass,
                 'qsheet': qsheet,
-                'qexo'  : qexo,
+                'qexo':   qexo,
             }
         }
         request = requests.post(self.url, data=params, **kwargs)
@@ -964,7 +964,7 @@ class WimsAPI:
         params = {
             **self.params,
             **{
-                'job' : 'getinfoserver',
+                'job':  'getinfoserver',
                 'code': code if code else random_code(),
             }
         }
@@ -983,11 +983,11 @@ class WimsAPI:
         params = {
             **self.params,
             **{
-                'job'   : 'getlog',
-                'code'  : code if code else random_code(),
+                'job':    'getlog',
+                'code':   code if code else random_code(),
                 'qclass': qclass,
                 'rclass': rclass,
-                'quser' : quser,
+                'quser':  quser,
             }
         }
         request = requests.post(self.url, data=params, **kwargs)
@@ -1003,8 +1003,8 @@ class WimsAPI:
         params = {
             **self.params,
             **{
-                'job'   : 'getmodule',
-                'code'  : code if code else random_code(),
+                'job':    'getmodule',
+                'code':   code if code else random_code(),
                 'option': module,
             }
         }
@@ -1027,11 +1027,11 @@ class WimsAPI:
         params = {
             **self.params,
             **{
-                'job'   : 'getscore',
-                'code'  : code if code else random_code(),
+                'job':    'getscore',
+                'code':   code if code else random_code(),
                 'qclass': qclass,
                 'rclass': rclass,
-                'quser' : quser,
+                'quser':  quser,
             }
         }
         if qsheet is not None:
@@ -1054,8 +1054,8 @@ class WimsAPI:
         params = {
             **self.params,
             **{
-                'job'  : 'getsession',
-                'code' : code if code else random_code(),
+                'job':   'getsession',
+                'code':  code if code else random_code(),
                 'data1': data1,
             }
         }
@@ -1081,8 +1081,8 @@ class WimsAPI:
         params = {
             **self.params,
             **{
-                'job'   : 'getsheet',
-                'code'  : code if code else random_code(),
+                'job':    'getsheet',
+                'code':   code if code else random_code(),
                 'qclass': qclass,
                 'rclass': rclass,
                 'qsheet': qsheet,
@@ -1105,8 +1105,8 @@ class WimsAPI:
         params = {
             **self.params,
             **{
-                'job'   : 'getsheetscores',
-                'code'  : code if code else random_code(),
+                'job':    'getsheetscores',
+                'code':   code if code else random_code(),
                 'qclass': qclass,
                 'rclass': rclass,
                 'qsheet': qsheet,
@@ -1127,8 +1127,8 @@ class WimsAPI:
         params = {
             **self.params,
             **{
-                'job'   : 'getsheetstats',
-                'code'  : code if code else random_code(),
+                'job':    'getsheetstats',
+                'code':   code if code else random_code(),
                 'qclass': qclass,
                 'rclass': rclass,
                 'qsheet': qsheet,
@@ -1146,7 +1146,7 @@ class WimsAPI:
         params = {
             **self.params,
             **{
-                'job' : 'gettime',
+                'job':  'gettime',
                 'code': code if code else random_code(),
             }
         }
@@ -1173,11 +1173,11 @@ class WimsAPI:
         params = {
             **self.params,
             **{
-                'job'   : 'getuser',
-                'code'  : code if code else random_code(),
+                'job':    'getuser',
+                'code':   code if code else random_code(),
                 'qclass': qclass,
                 'rclass': rclass,
-                'quser' : quser,
+                'quser':  quser,
             }
         }
         if options:
@@ -1203,14 +1203,14 @@ class WimsAPI:
         params = {
             **self.params,
             **{
-                'job'    : 'lightpopup',
-                'code'   : code if code else random_code(),
-                'qclass' : qclass,
-                'rclass' : rclass,
-                'quser'  : quser,
+                'job':     'lightpopup',
+                'code':    code if code else random_code(),
+                'qclass':  qclass,
+                'rclass':  rclass,
+                'quser':   quser,
                 'session': session,
-                'emod'   : exercice,
-                'option' : 'about' if about else 'noabout',
+                'emod':    exercice,
+                'option':  'about' if about else 'noabout',
             }
         }
         request = requests.post(self.url, params=params, stream=True, **kwargs)
@@ -1233,13 +1233,13 @@ class WimsAPI:
         params = {
             **self.params,
             **{
-                'job'   : 'linkexo',
-                'code'  : code if code else random_code(),
+                'job':    'linkexo',
+                'code':   code if code else random_code(),
                 'qclass': qclass,
                 'rclass': rclass,
                 'qsheet': qsheet,
-                'qexo'  : qexo,
-                'qexam' : qexam,
+                'qexo':   qexo,
+                'qexam':  qexam,
             }
         }
         request = requests.post(self.url, data=params, **kwargs)
@@ -1259,12 +1259,12 @@ class WimsAPI:
         params = {
             **self.params,
             **{
-                'job'   : 'linksheet',
-                'code'  : code if code else random_code(),
+                'job':    'linksheet',
+                'code':   code if code else random_code(),
                 'qclass': qclass,
                 'rclass': rclass,
                 'qsheet': qsheet,
-                'qexam' : qexam,
+                'qexam':  qexam,
             }
         }
         request = requests.post(self.url, data=params, **kwargs)
@@ -1291,8 +1291,8 @@ class WimsAPI:
         params = {
             **self.params,
             **{
-                'job'   : 'listclasses',
-                'code'  : code if code else random_code(),
+                'job':    'listclasses',
+                'code':   code if code else random_code(),
                 'rclass': rclass,
             }
         }
@@ -1310,8 +1310,8 @@ class WimsAPI:
         params = {
             **self.params,
             **{
-                'job'   : 'listexams',
-                'code'  : code if code else random_code(),
+                'job':    'listexams',
+                'code':   code if code else random_code(),
                 'qclass': qclass,
                 'rclass': rclass,
             }
@@ -1330,8 +1330,8 @@ class WimsAPI:
         params = {
             **self.params,
             **{
-                'job'   : 'listexos',
-                'code'  : code if code else random_code(),
+                'job':    'listexos',
+                'code':   code if code else random_code(),
                 'qclass': qclass,
                 'rclass': rclass,
             }
@@ -1353,12 +1353,12 @@ class WimsAPI:
         params = {
             **self.params,
             **{
-                'job'   : 'listlinks',
-                'code'  : code if code else random_code(),
+                'job':    'listlinks',
+                'code':   code if code else random_code(),
                 'qclass': qclass,
                 'rclass': rclass,
                 'qsheet': qsheet,
-                'qexam' : qexam,
+                'qexam':  qexam,
             }
         }
         request = requests.post(self.url, data=params, **kwargs)
@@ -1376,8 +1376,8 @@ class WimsAPI:
         params = {
             **self.params,
             **{
-                'job'   : 'listmodules',
-                'code'  : code if code else random_code(),
+                'job':    'listmodules',
+                'code':   code if code else random_code(),
                 'option': level,
             }
         }
@@ -1395,8 +1395,8 @@ class WimsAPI:
         params = {
             **self.params,
             **{
-                'job'   : 'listsheets',
-                'code'  : code if code else random_code(),
+                'job':    'listsheets',
+                'code':   code if code else random_code(),
                 'qclass': qclass,
                 'rclass': rclass,
             }
@@ -1431,11 +1431,11 @@ class WimsAPI:
         params = {
             **self.params,
             **{
-                'job'   : 'modclass',
-                'code'  : code if code else random_code(),
+                'job':    'modclass',
+                'code':   code if code else random_code(),
                 'qclass': qclass,
                 'rclass': rclass,
-                'data1' : '\n'.join([str(k) + "=" + str(v) for k, v in class_info.items()]),
+                'data1':  '\n'.join([str(k) + "=" + str(v) for k, v in class_info.items()]),
             }
         }
         request = requests.post(self.url, data=params, **kwargs)
@@ -1459,12 +1459,12 @@ class WimsAPI:
         params = {
             **self.params,
             **{
-                'job'   : 'modexam',
-                'code'  : code if code else random_code(),
+                'job':    'modexam',
+                'code':   code if code else random_code(),
                 'qclass': qclass,
                 'rclass': rclass,
-                'qexam' : qexam,
-                'data1' : '\n'.join([str(k) + "=" + str(v) for k, v in exam_info.items()]),
+                'qexam':  qexam,
+                'data1':  '\n'.join([str(k) + "=" + str(v) for k, v in exam_info.items()]),
             }
         }
         request = requests.post(self.url, data=params, **kwargs)
@@ -1506,12 +1506,12 @@ class WimsAPI:
         params = {
             **self.params,
             **{
-                'job'   : 'modsheet',
-                'code'  : code if code else random_code(),
+                'job':    'modsheet',
+                'code':   code if code else random_code(),
                 'qclass': qclass,
                 'rclass': rclass,
                 'qsheet': qsheet,
-                'data1' : '\n'.join([str(k) + "=" + str(v) for k, v in sheet_info.items()]),
+                'data1':  '\n'.join([str(k) + "=" + str(v) for k, v in sheet_info.items()]),
             }
         }
         request = requests.post(self.url, data=params, **kwargs)
@@ -1547,12 +1547,12 @@ class WimsAPI:
         params = {
             **self.params,
             **{
-                'job'   : 'moduser',
-                'code'  : code if code else random_code(),
+                'job':    'moduser',
+                'code':   code if code else random_code(),
                 'qclass': qclass,
                 'rclass': rclass,
-                'quser' : quser,
-                'data1' : '\n'.join([str(k) + "=" + str(v) for k, v in user_info.items()]),
+                'quser':  quser,
+                'data1':  '\n'.join([str(k) + "=" + str(v) for k, v in user_info.items()]),
             }
         }
         request = requests.post(self.url, data=params, **kwargs)
@@ -1576,12 +1576,12 @@ class WimsAPI:
         params = {
             **self.params,
             **{
-                'job'   : 'movexo',
-                'code'  : code if code else random_code(),
+                'job':    'movexo',
+                'code':   code if code else random_code(),
                 'qclass': qclass,
                 'rclass': rclass,
                 'qsheet': qsheet,
-                'data1' : qclass2,
+                'data1':  qclass2,
             }
         }
         if copy:
@@ -1605,11 +1605,11 @@ class WimsAPI:
         params = {
             **self.params,
             **{
-                'job'   : 'movexos',
-                'code'  : code if code else random_code(),
+                'job':    'movexos',
+                'code':   code if code else random_code(),
                 'qclass': qclass,
                 'rclass': rclass,
-                'data1' : qclass2,
+                'data1':  qclass2,
             }
         }
         if copy:
@@ -1657,11 +1657,11 @@ class WimsAPI:
         params = {
             **self.params,
             **{
-                'job'   : 'putcsv',
-                'code'  : code if code else random_code(),
+                'job':    'putcsv',
+                'code':   code if code else random_code(),
                 'qclass': qclass,
                 'rclass': rclass,
-                'data1' : csv,
+                'data1':  csv,
             }
         }
         request = requests.post(self.url, data=params, **kwargs)
@@ -1688,12 +1688,12 @@ class WimsAPI:
         params = {
             **self.params,
             **{
-                'job'   : 'putexo',
-                'code'  : code if code else random_code(),
+                'job':    'putexo',
+                'code':   code if code else random_code(),
                 'qclass': qclass,
                 'rclass': rclass,
                 'qsheet': qsheet,
-                'data1' : 'module=' + module,
+                'data1':  'module=' + module,
             }
         }
         if options:
@@ -1714,11 +1714,11 @@ class WimsAPI:
         params = {
             **self.params,
             **{
-                'job'   : 'recuser',
-                'code'  : code if code else random_code(),
+                'job':    'recuser',
+                'code':   code if code else random_code(),
                 'qclass': qclass,
                 'rclass': rclass,
-                'quser' : quser,
+                'quser':  quser,
             }
         }
         request = requests.post(self.url, data=params, **kwargs)
@@ -1735,8 +1735,8 @@ class WimsAPI:
         params = {
             **self.params,
             **{
-                'job'   : 'repairclass',
-                'code'  : code if code else random_code(),
+                'job':    'repairclass',
+                'code':   code if code else random_code(),
                 'qclass': qclass,
                 'rclass': rclass,
             }
@@ -1766,12 +1766,12 @@ class WimsAPI:
         params = {
             **self.params,
             **{
-                'job'   : 'sharecontent',
-                'code'  : code if code else random_code(),
+                'job':    'sharecontent',
+                'code':   code if code else random_code(),
                 'qclass': qclass,
                 'rclass': rclass,
                 'option': ','.join(options),
-                'data1' : qclass2,
+                'data1':  qclass2,
             }
         }
         request = requests.post(self.url, data=params, **kwargs)
@@ -1787,8 +1787,8 @@ class WimsAPI:
         params = {
             **self.params,
             **{
-                'job'  : 'testexo',
-                'code' : code if code else random_code(),
+                'job':   'testexo',
+                'code':  code if code else random_code(),
                 'data1': exo_src,
             }
         }

@@ -120,3 +120,36 @@ class UserTestCase(unittest.TestCase):
         User.remove(self.clas, u)
         with self.assertRaises(AdmRawError):
             User.get(self.clas, u.quser)  # Should raise the exception
+    
+    
+    def test_list(self):
+        u1 = User("Test1", "test", "test", "pass", "mail@mail.com")
+        u2 = User("Test2", "test", "test", "pass", "mail@mail.com")
+        u3 = User("Test3", "test", "test", "pass", "mail@mail.com")
+        
+        self.clas.save(WIMS_URL, "myself", "toto")
+        self.clas.additem(u1)
+        self.clas.additem(u2)
+        self.clas.additem(u3)
+        
+        self.assertListEqual(
+            sorted([u1, u2, u3], key=lambda i: i.quser),
+            sorted(User.list(self.clas), key=lambda i: i.quser)
+        )
+    
+    
+    def test_eq(self):
+        u1 = User("Test1", "test", "test", "pass", "mail@mail.com")
+        u2 = User("Test2", "test", "test", "pass", "mail@mail.com")
+        u3 = User("Test3", "test", "test", "pass", "mail@mail.com")
+        
+        self.clas.save(WIMS_URL, "myself", "toto")
+        self.clas.additem(u1)
+        self.clas.additem(u2)
+        
+        self.assertEqual(u1, self.clas.getitem(u1.quser, User))
+        self.assertNotEqual(u2, self.clas.getitem(u1.quser, User))
+        self.assertNotEqual(u2, 1)
+        
+        with self.assertRaises(NotSavedError):
+            u1 == u3

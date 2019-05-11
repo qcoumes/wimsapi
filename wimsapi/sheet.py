@@ -83,6 +83,15 @@ class Sheet(ClassItemABC):
         return sheet_info
     
     
+    def __eq__(self, other):
+        if isinstance(other, self.__class__):
+            if not self.wclass or not other.wclass:
+                raise NotSavedError("Cannot test equality between unsaved sheets")
+            return self.refresh().qsheet == other.refresh().qsheet
+        
+        return False
+    
+    
     def refresh(self):
         """Refresh this instance of a WIMS Sheet from the server itself."""
         if not self.wclass:
@@ -91,6 +100,8 @@ class Sheet(ClassItemABC):
         new = Sheet.get(self._class, self.qsheet)
         self.__class__ = new.__class__
         self.__dict__ = new.__dict__
+        
+        return self
     
     
     def _to_payload(self):
@@ -211,3 +222,12 @@ class Sheet(ClassItemABC):
         sheet._class = wclass
         sheet.wclass = True
         return sheet
+    
+    
+    @classmethod
+    def list(cls, wclass):
+        status, response = wclass._api.listsheets(wclass.qclass, wclass.rclass, verbose=True)
+        if not status:  # pragma: no cover
+            raise AdmRawError(response['message'])
+        
+        return [cls.get(wclass, qsheet) for qsheet in response["sheetlist"]]
