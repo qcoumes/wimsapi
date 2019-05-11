@@ -192,7 +192,7 @@ class Sheet(ClassItemABC):
 
         E.G. either Sheet.remove(wclass, 1) or Sheet.remove(wclass, Sheet(...))"""
         if not wclass._saved:
-            raise NotSavedError("Class must be saved before being able to remove an sheet")
+            raise NotSavedError("Class must be saved before being able to remove a sheet")
         
         qsheet = sheet.qsheet if type(sheet) is cls else sheet
         status, response = wclass._api.delsheet(wclass.qclass, wclass.rclass, qsheet, verbose=True)
@@ -204,7 +204,7 @@ class Sheet(ClassItemABC):
     def get(cls, wclass, qsheet):
         """Returns an instance of Sheet corresponding to qsheet in wclass."""
         if not wclass._saved:
-            raise NotSavedError("Class must be saved before being able to get an sheet")
+            raise NotSavedError("Class must be saved before being able to get a sheet")
         
         status, sheet_info = wclass._api.getsheet(wclass.qclass, wclass.rclass, qsheet,
                                                   verbose=True)
