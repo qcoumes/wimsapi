@@ -81,7 +81,7 @@ c.institution = "Another institution"
 c.save()
 ```
 
-If the **Class** has been instatiated through its constructor, and not with
+If the **Class** has been instantiated through its constructor, and not with
 `Class.get()` method, and has not been saved yet, you will need to provide
 the server's url, ident, and passwd (see [configuration](index.md#configuration)) :
 
@@ -121,6 +121,13 @@ c = Class.get("https://wims.unice.fr/wims/wims.cgi", "myself", "toto", 9999, "my
 c.delete()
 ```
 
+## List classes of a server
+You can obtain the list of every classes of a server using a particular *rclass* with :
+`Class.list(url, ident, passwd, rclass)`
+
+```python
+Class.list("https://wims.unice.fr/wims/wims.cgi", "myself", "toto", "myclass")
+```
 
 ## More Data
 
@@ -236,4 +243,17 @@ You can also use `item in class` operator, where item is an instance of
 ```python
 user in c # True
 unknown in c # False
+```
+
+### List items of a class
+
+You can list every item in a *WIMS* class with the method `listitem(cls)`.
+`cls` must be the python's class corresponding to the item to be listed.
+
+This method returns a list of instances of `cls`.
+
+```python
+c = Class.get("https://wims.unice.fr/wims/wims.cgi", "myself", "toto", 9999, "myclass")
+users = c.listitem(User)
+sheets = c.listitem(Sheet)
 ```
