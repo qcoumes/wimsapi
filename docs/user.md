@@ -26,7 +26,7 @@ user = User("quser", "lastname", "firstname", "password", "mail@mail.com")
 
 **User** can also take a lot of optionnal argument:
 
-> `Class(quser, lastname, firstname, password, email="", comments="", regnum="", photourl="", participate="", courses="", classes="", supervise="", supervisable="no", external_auth="", agreecgu="yes", regprop1="", regprop2="", regprop3="", regprop4="", regprop5="")`
+> `User(quser, lastname, firstname, password, email="", comments="", regnum="", photourl="", participate="", courses="", classes="", supervise="", supervisable="no", external_auth="", agreecgu="yes", regprop1="", regprop2="", regprop3="", regprop4="", regprop5="")`
 
 Where:
 
@@ -86,7 +86,7 @@ u.firstname = "Newname"
 u.save()
 ```
 
-If the **Class** has been instatiated through its constructor, and not with
+If the **User** has been instantiated through its constructor, and not with
 one of the `get` method, and has not been saved yet, you will need to provide
 a [Class](class.md) which had already been saved on the server.
 
@@ -122,20 +122,21 @@ u.save()  # Only save changes on c2
 
 ## Reloading an instance
 
-To reflect server-side changes on an instance of **Class**, use `refresh()` :
+To reflect server-side changes on an instance of **User**, use `refresh()` :
 
 ```python
+supervisor.firstname = "Jhon"
 c = Class(9999, "myclass", "Title", "Institution", "mail@mail.com", "password",  supervisor)
 c.save("https://wims.unice.fr/wims/wims.cgi", "myself", "toto")
 
-c2 = Class.get("https://wims.unice.fr/wims/wims.cgi", "myself", "toto", 9999, "myclass")
+supervisor2 = c.getitem("supervisor", User)
 
-c.institution = "Another institution"
-c.save()
+supervisor2.firstname = "James"
+supervisor2.save()
 
-c2.institution # "Institution"
-c2.refresh()
-c2.institution # "Another institution"
+supervisor.institution # "Jhon"
+supervisor.refresh()
+supervisor.institution # "James"
 ```
 
 
@@ -145,9 +146,9 @@ possibility:
 
 * `u.delete()`
 * `User.delete(c, u)`
-* `User.delete(c, "quser")` where `"quser" == u.quser"`
+* `User.delete(c, "quser")` where `"quser" == u.quser`
 * `c.delitem(u)`
-* `c.delitem("quser", User)` where `"quser" == u.quser"`
+* `c.delitem("quser", User)` where `"quser" == u.quser`
 
 
 ## Check if an user exists in a WIMS class
@@ -156,9 +157,10 @@ To check whether **User** `u` is in a [Class](class.md) `c`, you have once again
 a lot of possibility:
 
 * `User.check(c, u)`
-* `User.check(c, "quser")` where `"quser" == u.quser"`
+* `User.check(c, "quser")` where `"quser" == u.quser`
 * `c.checkitem(u)`
-* `c.checkitem("quser", User)` where `"quser" == u.quser"`
+* `c.checkitem("quser", User)` where `"quser" == u.quser`
+* `u in c`
 
 All of these methods return `True` if the user exists in the class,
 `False` otherwise.
@@ -167,7 +169,7 @@ All of these methods return `True` if the user exists in the class,
 
 You can acceed to the user fullname with `user.fullname`.
 
-Once the **Class** has been saved you can acceed the additionnal fields `infos`
+Once the **User** has been saved you can acceed the additionnal fields `infos`
 and `wclass` which is the instance of [Class](class.md) this user is saved on:
 
 ```python

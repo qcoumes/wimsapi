@@ -3,10 +3,11 @@ import os
 import unittest
 from unittest import mock
 
+from wimsapi.api import WimsAPI
+from wimsapi.exceptions import AdmRawError, InvalidItemTypeError, NotSavedError
+from wimsapi.sheet import Sheet
 from wimsapi.user import User
 from wimsapi.wclass import Class, one_year_later
-from wimsapi.api import WimsAPI
-from wimsapi.exceptions import AdmRawError, NotSavedError, InvalidItemTypeError
 
 
 WIMS_URL = os.getenv("WIMS_URL") or "http://localhost:7777/wims/wims.cgi"
@@ -99,6 +100,7 @@ class ClassTestCase(unittest.TestCase):
         c2.refresh()
         self.assertEqual(c2.institution, "modified")
         self.api.delclass(99999999, "myclass")
+    
     
     def test_save_without_qclass(self):
         c = Class("myclass", "A class", "an institution", "mail@mail.com", "password",
@@ -212,3 +214,68 @@ class ClassTestCase(unittest.TestCase):
         c.delete()
         with self.assertRaises(AdmRawError):
             Class.get(WIMS_URL, "myself", "toto", c.qclass, c.rclass)  # Should raise the exception
+    
+    
+    def test_list(self):
+        c1 = Class("rclass", "A class", "an institution", "mail@mail.com", "password", self.user)
+        c2 = Class("rclass", "A class", "an institution", "mail@mail.com", "password", self.user)
+        c3 = Class("rclass", "A class", "an institution", "mail@mail.com", "password", self.user)
+        
+        c1.save(WIMS_URL, "myself", "toto")
+        c2.save(WIMS_URL, "myself", "toto")
+        c3.save(WIMS_URL, "myself", "toto")
+        
+        self.assertListEqual(
+            sorted([c1, c2, c3], key=lambda i: i.qclass),
+            sorted(Class.list(WIMS_URL, "myself", "toto", "rclass"), key=lambda i: i.qclass)
+        )
+        
+        c1.delete()
+        c2.delete()
+        c3.delete()
+    
+    
+    def test_eq(self):
+        c1 = Class("rclass", "A class", "an institution", "mail@mail.com", "password", self.user)
+        c2 = Class("rclass", "A class", "an institution", "mail@mail.com", "password", self.user)
+        c3 = Class("rclass", "A class", "an institution", "mail@mail.com", "password", self.user)
+        
+        with self.assertRaises(NotSavedError):
+            c1 == c3
+        
+        c1.save(WIMS_URL, "myself", "toto")
+        c2.save(WIMS_URL, "myself", "toto")
+        c3.save(WIMS_URL, "myself", "toto")
+        
+        self.assertEqual(c1, Class.get(WIMS_URL, "myself", "toto", c1.qclass, c1.rclass))
+        self.assertNotEqual(c2, Class.get(WIMS_URL, "myself", "toto", c1.qclass, c1.rclass))
+        self.assertNotEqual(c2, 1)
+        
+        c1.delete()
+        c2.delete()
+        c3.delete()
+    
+    
+    def test_listitem(self):
+        c = Class("rclass", "A class", "an institution", "mail@mail.com", "password",
+                  self.user, qclass=999999)
+        
+        with self.assertRaises(NotSavedError):
+            c.listitem(Sheet)
+        with self.assertRaises(InvalidItemTypeError):
+            c.listitem(int)
+        
+        s1 = Sheet("First", "First one")
+        s2 = Sheet("Second", "Second one")
+        s3 = Sheet("Third", "Third one")
+        
+        c.save(WIMS_URL, "myself", "toto")
+        c.additem(s1)
+        c.additem(s2)
+        c.additem(s3)
+        
+        self.assertListEqual(
+            sorted([s1, s2, s3], key=lambda i: i.qsheet),
+            sorted(c.listitem(Sheet), key=lambda i: i.qsheet))
+        
+        c.delete()

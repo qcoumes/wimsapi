@@ -4,6 +4,7 @@ from wimsapi.api import WimsAPI
 from wimsapi.exceptions import AdmRawError, InvalidItemTypeError, NotSavedError
 from wimsapi.item import ClassItemABC
 from wimsapi.user import User
+from wimsapi.utils import one_year_later
 
 
 LANG = [
@@ -32,13 +33,6 @@ LEVEL = [
     "U1", "U2", "U3", "U4", "U5",
     "G", "R",
 ]
-
-
-
-def one_year_later():
-    """Give the date one year later from now in the format yyyymmdd."""
-    d = datetime.date.today()
-    return d.replace(year=d.year + 1).strftime("%Y%m%d")
 
 
 
@@ -106,6 +100,14 @@ class Class:
             return self.checkitem(item)
         
         return NotImplemented  # pragma: no cover
+    
+    
+    def __eq__(self, other):
+        if isinstance(other, self.__class__):
+            if not self._api or not other._api:
+                raise NotSavedError("Cannot test equality between unsaved classes")
+            return self.refresh().qclass == other.refresh().qclass
+        return False
     
     
     def _to_payload(self):
@@ -212,6 +214,8 @@ class Class:
         new = Class.get(self.url, self.ident, self.passwd, self.qclass, self.rclass)
         self.__class__ = new.__class__
         self.__dict__ = new.__dict__
+        
+        return self
     
     
     @classmethod
@@ -248,6 +252,18 @@ class Class:
         c._api = api
         c._saved = True
         return c
+    
+    
+    @classmethod
+    def list(cls, url, ident, passwd, rclass):
+        api = WimsAPI(url, ident, passwd)
+        status, response = api.listclasses(rclass, verbose=True)
+        if not status:  # pragma: no cover
+            raise AdmRawError(response['message'])
+        
+        qclasses = [c['qclass'] for c in response["classes_list"]]
+        
+        return [cls.get(url, ident, passwd, qclass, rclass) for qclass in qclasses]
     
     
     def additem(self, item):
@@ -318,3 +334,16 @@ class Class:
             raise NotSavedError("Class must be saved before being able to get an item")
         
         return cls.get(self, identifier)
+    
+    
+    def listitem(self, cls):
+        """Return all the instances of cls in, this WIMS class.
+        
+        cls must be a subclass of ClassItemABC"""
+        if not issubclass(cls, ClassItemABC):
+            raise InvalidItemTypeError(
+                "Cannot list element of type %s from a WIMS class" % str(cls))
+        if not self._saved:
+            raise NotSavedError("Class must be saved  before being able to list items")
+        
+        return cls.list(self)

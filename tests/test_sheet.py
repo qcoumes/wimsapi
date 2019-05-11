@@ -3,6 +3,7 @@ import unittest
 
 from wimsapi.api import WimsAPI
 from wimsapi.exceptions import AdmRawError, NotSavedError
+from wimsapi.sheet import Sheet
 from wimsapi.user import User
 from wimsapi.wclass import Class
 
@@ -11,7 +12,7 @@ WIMS_URL = os.getenv("WIMS_URL") or "http://localhost:7777/wims/wims.cgi"
 
 
 
-class UserTestCase(unittest.TestCase):
+class SheetTestCase(unittest.TestCase):
     
     @classmethod
     def setUpClass(cls):
@@ -29,127 +30,128 @@ class UserTestCase(unittest.TestCase):
     
     
     def test_init_and_properties(self):
-        c = Class.get(WIMS_URL, "myself", "toto", 9001, "myclass")
-        u = User.get(c, "supervisor")
-        self.assertIn("firstname", u.infos)
-        
-        u = User("supervisor", "last", "first", "pass", "mail@mail.com")
-        self.assertEqual(u.fullname, "First Last")
+        s = Sheet("Title", "Description")
+        self.assertEqual(s.exo_count, 0)
         with self.assertRaises(NotSavedError):
-            u.infos
+            s.infos
+        
+        self.clas.save(WIMS_URL, "myself", "toto")
+        s.save(self.clas)
+        self.assertIn("sheet_title", s.infos)
     
     
     def test_get_exception(self):
         with self.assertRaises(NotSavedError):
-            User.get(self.clas, "supervisor")
+            Sheet.get(self.clas, 1)
         
         self.clas.save(WIMS_URL, "myself", "toto")
         with self.assertRaises(AdmRawError) as cm:
-            User.get(self.clas, "unknown")
+            Sheet.get(self.clas, 50)
         self.assertIn("WIMS' server responded with an ERROR:", str(cm.exception))
     
     
     def test_save_and_refresh(self):
         self.clas.save(WIMS_URL, "myself", "toto")
-        u = User("Test", "test", "test", "pass", "mail@mail.com")
+        s = Sheet("Title", "Description")
         
         with self.assertRaises(NotSavedError):
-            u.refresh()
+            s.refresh()
         
-        u.save(self.clas)
+        s.save(self.clas)
         
-        u2 = User.get(self.clas, u.quser)
-        self.assertEqual(u2.firstname, "test")
+        s2 = Sheet.get(self.clas, s.qsheet)
+        self.assertEqual(s2.title, "Title")
         
-        u.firstname = "modified"
-        u.save()
+        s.title = "modified"
+        s.save()
         
-        self.assertEqual(u.firstname, "modified")
-        self.assertEqual(u2.firstname, "test")
-        u2.refresh()
-        self.assertEqual(u2.firstname, "modified")
+        self.assertEqual(s.title, "modified")
+        self.assertEqual(s2.title, "Title")
+        s2.refresh()
+        self.assertEqual(s2.title, "modified")
     
     
     def test_check(self):
         self.clas.save(WIMS_URL, "myself", "toto")
-        u = User("Test", "test", "test", "pass", "mail@mail.com")
+        s = Sheet("Title", "Description")
         c = Class("myclass", "A class", "an institution", "mail@mail.com", "password",
                   self.user, qclass=999999)
         
         with self.assertRaises(NotSavedError):
-            User.check(c, u)
+            Sheet.check(c, s)
         
-        self.assertFalse(User.check(self.clas, u))
-        self.clas.additem(u)
-        self.assertTrue(User.check(self.clas, u))
+        self.assertFalse(Sheet.check(self.clas, s))
+        self.clas.additem(s)
+        self.assertTrue(Sheet.check(self.clas, s))
     
     
     def test_save_exceptions(self):
+        s = Sheet("Title", "Description")
         with self.assertRaises(NotSavedError):
-            self.user.save()
+            s.save()
         
         with self.assertRaises(NotSavedError):
-            self.user.save(self.clas)
+            s.save(self.clas)
     
     
     def test_delete(self):
         self.clas.save(WIMS_URL, "myself", "toto")
-        u = User("Test", "test", "test", "pass", "mail@mail.com")
+        s = Sheet("Title", "Description")
         
         with self.assertRaises(NotSavedError):
-            u.delete()
+            s.delete()
         
-        u.save(self.clas)
-        User.get(self.clas, u.quser)  # Ok
-        u.delete()
+        s.save(self.clas)
+        Sheet.get(self.clas, s.qsheet)  # Ok
+        s.delete()
         with self.assertRaises(AdmRawError):
-            User.get(self.clas, u.quser)  # Should raise the exception
+            Sheet.get(self.clas, s.qsheet)  # Should raise the exception
     
     
     def test_remove(self):
         self.clas.save(WIMS_URL, "myself", "toto")
         c = Class("myclass", "A class", "an institution", "mail@mail.com", "password",
                   self.user, qclass=999999)
-        u = User("Test", "test", "test", "pass", "mail@mail.com")
+        s = Sheet("Title", "Description")
         
         with self.assertRaises(NotSavedError):
-            u.remove(c, u)
+            s.remove(c, s)
         
-        u.save(self.clas)
-        User.get(self.clas, u.quser)  # Ok
-        User.remove(self.clas, u)
+        s.save(self.clas)
+        Sheet.get(self.clas, s.qsheet)  # Ok
+        Sheet.remove(self.clas, s)
         with self.assertRaises(AdmRawError):
-            User.get(self.clas, u.quser)  # Should raise the exception
+            Sheet.get(self.clas, s.qsheet)  # Should raise the exception
     
     
     def test_list(self):
-        u1 = User("Test1", "test", "test", "pass", "mail@mail.com")
-        u2 = User("Test2", "test", "test", "pass", "mail@mail.com")
-        u3 = User("Test3", "test", "test", "pass", "mail@mail.com")
+        s1 = Sheet("First", "First one")
+        s2 = Sheet("Second", "Second one")
+        s3 = Sheet("Third", "Third one")
         
         self.clas.save(WIMS_URL, "myself", "toto")
-        self.clas.additem(u1)
-        self.clas.additem(u2)
-        self.clas.additem(u3)
+        self.clas.additem(s1)
+        self.clas.additem(s2)
+        self.clas.additem(s3)
         
         self.assertListEqual(
-            sorted([u1, u2, u3], key=lambda i: i.quser),
-            sorted(User.list(self.clas), key=lambda i: i.quser)
+            sorted([s1, s2, s3], key=lambda i: i.qsheet),
+            sorted(Sheet.list(self.clas), key=lambda i: i.qsheet)
         )
     
     
     def test_eq(self):
-        u1 = User("Test1", "test", "test", "pass", "mail@mail.com")
-        u2 = User("Test2", "test", "test", "pass", "mail@mail.com")
-        u3 = User("Test3", "test", "test", "pass", "mail@mail.com")
+        s1 = Sheet("First", "First one")
+        s2 = Sheet("Second", "Second one")
+        s3 = Sheet("Third", "Third one")
         
         self.clas.save(WIMS_URL, "myself", "toto")
-        self.clas.additem(u1)
-        self.clas.additem(u2)
+        self.clas.additem(s1)
+        self.clas.additem(s2)
         
-        self.assertEqual(u1, self.clas.getitem(u1.quser, User))
-        self.assertNotEqual(u2, self.clas.getitem(u1.quser, User))
-        self.assertNotEqual(u2, 1)
+        self.assertEqual(s1, self.clas.getitem(s1.qsheet, Sheet))
+        self.assertNotEqual(s2, self.clas.getitem(s1.qsheet, Sheet))
+        self.assertNotEqual(s2, 1)
         
         with self.assertRaises(NotSavedError):
-            u1 == u3
+            s1 == s3

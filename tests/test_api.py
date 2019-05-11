@@ -40,16 +40,16 @@ class WimsAPITestCase(unittest.TestCase):
             {
                 'description': "Test class",
                 "institution": "Test institution",
-                "supervisor" : "Test supervisor",
-                "email"      : "Test@mail.com",
-                "password"   : "password",
-                "lang"       : "fr",
-                "limit"      : 500
+                "supervisor":  "Test supervisor",
+                "email":       "Test@mail.com",
+                "password":    "password",
+                "lang":        "fr",
+                "limit":       500
             },
             {
-                "lastname" : "Doe",
+                "lastname":  "Doe",
                 "firstname": "Jhon",
-                "password" : "password"
+                "password":  "password"
             },
             999999
         )
@@ -65,16 +65,16 @@ class WimsAPITestCase(unittest.TestCase):
             {
                 'description': "Test class",
                 "institution": "Test institution",
-                "supervisor" : "Test supervisor",
-                "email"      : "Test@mail.com",
-                "password"   : "password",
-                "lang"       : "fr",
-                "limit"      : 500
+                "supervisor":  "Test supervisor",
+                "email":       "Test@mail.com",
+                "password":    "password",
+                "lang":        "fr",
+                "limit":       500
             },
             {
-                "lastname" : "Doe",
+                "lastname":  "Doe",
                 "firstname": "Jhon",
-                "password" : "password"
+                "password":  "password"
             },
         )
         self.assertTrue(status)
@@ -114,9 +114,9 @@ class WimsAPITestCase(unittest.TestCase):
             "myclass",
             "jdoe",
             {
-                "lastname" : "Doe",
+                "lastname":  "Doe",
                 "firstname": "Jhon",
-                "password" : "password"
+                "password":  "password"
             }
         )
         self.assertTrue(status)
@@ -201,15 +201,15 @@ class WimsAPITestCase(unittest.TestCase):
             {
                 'description': "Test class",
                 "institution": "Test institution",
-                "supervisor" : "Test supervisor",
-                "email"      : "Test@mail.com",
-                "password"   : "password",
-                "lang"       : "fr"
+                "supervisor":  "Test supervisor",
+                "email":       "Test@mail.com",
+                "password":    "password",
+                "lang":        "fr"
             },
             {
-                "lastname" : "Doe",
+                "lastname":  "Doe",
                 "firstname": "Jhon",
-                "password" : "password"
+                "password":  "password"
             },
             999666
         )
@@ -256,9 +256,9 @@ class WimsAPITestCase(unittest.TestCase):
             "myclass",
             "jdoe2",
             {
-                "lastname" : "Doe",
+                "lastname":  "Doe",
                 "firstname": "Jhon",
-                "password" : "password"
+                "password":  "password"
             }
         )
         self.assertTrue(status)
@@ -294,7 +294,7 @@ class WimsAPITestCase(unittest.TestCase):
         api = WimsAPI(WIMS_URL, "myself", "toto")
         status, response = api.getclassfile(999999, "myclass", '.log')
         self.assertTrue(status)
-        self.assertEqual(response[34:49], b"User jdoe added")
+        self.assertEqual(response[34:49], b"User jdoe creat")
     
     
     def test_getclassmodif(self):
@@ -503,7 +503,7 @@ class WimsAPITestCase(unittest.TestCase):
         api = WimsAPI(WIMS_URL, "myself", "toto")
         status, response = api.listexos(9001, "myclass")
         self.assertTrue(status)
-        self.assertEqual(response["exocount"], 114)
+        self.assertGreaterEqual(response["exocount"], 114)
     
     
     def test_listlinks(self):
@@ -525,7 +525,7 @@ class WimsAPITestCase(unittest.TestCase):
         api = WimsAPI(WIMS_URL, "myself", "toto")
         status, response = api.listsheets(9001, "myclass")
         self.assertTrue(status)
-        self.assertEqual(response["nbsheet"], "11")
+        self.assertGreaterEqual(response["nbsheet"], "11")
     
     
     def test_modclass(self):
@@ -561,6 +561,10 @@ class WimsAPITestCase(unittest.TestCase):
         status, response = api.movexo(9001, 999999, "myclass", 2, True)
         self.assertFalse(status)
         self.assertEqual(response["message"], 'COMPILATION ERROR No statement defined.')
+        
+        status, response = api.movexo(9001, 999999, "myclass", 3)
+        self.assertFalse(status)
+        self.assertEqual(response["message"], 'COMPILATION ERROR No statement defined.')
     
     
     def test_movexos(self):
@@ -568,6 +572,10 @@ class WimsAPITestCase(unittest.TestCase):
         status, response = api.movexos(9001, 999999, "myclass", True)
         self.assertTrue(status)
         self.assertEqual(response["message"], 'exercices successfully copied')
+        
+        status, response = api.movexos(9001, 999999, "myclass")
+        self.assertTrue(status)
+        self.assertEqual(response["message"], 'exercices successfully moved')
     
     
     @unittest.skip("Job not defined in wims yet")
@@ -581,7 +589,7 @@ class WimsAPITestCase(unittest.TestCase):
     def test_putexo(self):
         api = WimsAPI(WIMS_URL, "myself", "toto")
         status, response = api.putexo(999999, "myclass", 1, "H3/analysis/oeflinf.fr", {
-            "exo"       : "fnctlin1", "qnum": "1",
+            "exo":        "fnctlin1", "qnum": "1",
             "scoredelay": "20,50",
             "seedrepeat": "2", "qcmlevel": "1"
         })
@@ -596,9 +604,9 @@ class WimsAPITestCase(unittest.TestCase):
             "myclass",
             "jdoe3",
             {
-                "lastname" : "Doe",
+                "lastname":  "Doe",
                 "firstname": "Jhon",
-                "password" : "password"
+                "password":  "password"
             }
         )
         self.assertTrue(status)
@@ -627,16 +635,16 @@ class WimsAPITestCase(unittest.TestCase):
             {
                 'description': "Test class",
                 "institution": "Test institution",
-                "supervisor" : "Test supervisor",
-                "email"      : "Test@mail.com",
-                "password"   : "password",
-                "lang"       : "fr",
-                "limit"      : 500
+                "supervisor":  "Test supervisor",
+                "email":       "Test@mail.com",
+                "password":    "password",
+                "lang":        "fr",
+                "limit":       500
             },
             {
-                "lastname" : "Doe",
+                "lastname":  "Doe",
                 "firstname": "Jhon",
-                "password" : "password"
+                "password":  "password"
             },
             999990
         )

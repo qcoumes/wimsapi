@@ -19,8 +19,7 @@ class User(ClassItemABC):
         courses - (str) special for portal.
         classes - (str) special for portal.
         supervise - (str) List classes where teacher are administator.
-        supervisable - (str) yes/no ; give right to the user to supervise a class
-                             (default to 'no').
+        supervisable - (str) yes/no ; give right to the user to supervise a class (default to 'no').
         external_auth - (str) login for external_auth.
         agreecgu - (str) yes/ no ; if yes, the user will not be asked when he enters
                          for the first time to agree the cgu (default to "yes").
@@ -67,6 +66,7 @@ class User(ClassItemABC):
         """Return all the informations hosted on the WIMS server about this user."""
         if not self._class:
             raise NotSavedError("infos is not defined until the user has been saved once")
+        
         status, user_info = self._class._api.getuser(
             self._class.qclass, self._class.rclass, self.quser, verbose=True)
         if not status:  # pragma: no cover
@@ -74,7 +74,16 @@ class User(ClassItemABC):
         
         for k in ['status', 'code', 'job']:
             del user_info[k]
+        
         return user_info
+    
+    
+    def __eq__(self, other):
+        if isinstance(other, self.__class__):
+            if not self.wclass or not other.wclass:
+                raise NotSavedError("Cannot test equality between unsaved users")
+            return self.refresh().quser == other.refresh().quser
+        return False
     
     
     def refresh(self):
@@ -85,10 +94,12 @@ class User(ClassItemABC):
         new = User.get(self._class, self.quser)
         self.__class__ = new.__class__
         self.__dict__ = new.__dict__
+        
+        return self
     
     
     def _to_payload(self):
-        return {k: v for k, v in self.__dict__.items() if k not in ['quser', '_api', '_class']}
+        return {k: v for k, v in self.__dict__.items() if k not in ['quser', '_class', '_saved']}
     
     
     def save(self, wclass=None, check_exists=True):
@@ -97,11 +108,15 @@ class User(ClassItemABC):
         wclass is an instance of wimsapi.Class. The argument is optionnal
         if the user has already been saved or fetched from a Class, it
         will default to the last Class used to saved or the Class from which
-        the user was fetched."""
+        the user was fetched.
+        
+        If check_exists is True, the api will check if an user with the same ID
+        exists on the WIMS' server. If it exists, save will instead modify this
+        user instead of trying to create new one."""
         if not wclass and not self._class:
             raise NotSavedError("wclass must be provided if this user has neither been imported "
                                 "from a WIMS class nor saved once yet")
-
+        
         wclass = wclass or self._class
         
         if not wclass._saved:
@@ -163,7 +178,7 @@ class User(ClassItemABC):
     def remove(cls, wclass, user):
         """Remove the user from wclass.
 
-        user can be either an instance of User, or string corresponding to the identifier (quser)
+        user can be either an instance of User, or a string corresponding to the identifier (quser)
         of the User in the WIMS class.
 
         E.G. either User.remove(wclass, "quser") or User.remove(wclass, User(...))"""
@@ -195,3 +210,8 @@ class User(ClassItemABC):
         user._class = wclass
         user.wclass = True
         return user
+    
+    
+    @classmethod
+    def list(cls, wclass):
+        return [cls.get(wclass, quser) for quser in wclass.infos["userlist"]]
