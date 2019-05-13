@@ -214,4 +214,4 @@ class User(ClassItemABC):
     
     @classmethod
     def list(cls, wclass):
-        return [cls.get(wclass, quser) for quser in wclass.infos["userlist"]]
+        return [cls.get(wclass, quser) for quser in wclass.infos["userlist"] if quser != '']

@@ -230,4 +230,4 @@ class Sheet(ClassItemABC):
         if not status:  # pragma: no cover
             raise AdmRawError(response['message'])
         
-        return [cls.get(wclass, qsheet) for qsheet in response["sheetlist"]]
+        return [cls.get(wclass, qsheet) for qsheet in response["sheetlist"] if qsheet != '']

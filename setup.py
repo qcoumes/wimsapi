@@ -30,7 +30,7 @@ long_description = (
 
 setup(
     name='wimsapi',
-    version="0.4.0",
+    version="0.4.1",
     description='A Python 3 implementation of WIMS adm/raw module.',
     long_description=long_description,
     long_description_content_type='text/markdown',
