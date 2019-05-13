@@ -130,6 +130,12 @@ class SheetTestCase(unittest.TestCase):
         s3 = Sheet("Third", "Third one")
         
         self.clas.save(WIMS_URL, "myself", "toto")
+
+        self.assertListEqual(
+            [],
+            Sheet.list(self.clas)
+        )
+        
         self.clas.additem(s1)
         self.clas.additem(s2)
         self.clas.additem(s3)

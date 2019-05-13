@@ -258,8 +258,10 @@ class Class:
     def list(cls, url, ident, passwd, rclass):
         api = WimsAPI(url, ident, passwd)
         status, response = api.listclasses(rclass, verbose=True)
-        if not status:  # pragma: no cover
-            raise AdmRawError(response['message'])
+        if not status:
+            if "there is no class allowed for this server" in response['message']:
+                return []
+            raise AdmRawError(response['message'])  # pragma: no cover
         
         qclasses = [c['qclass'] for c in response["classes_list"]]
         

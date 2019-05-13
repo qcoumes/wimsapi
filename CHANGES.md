@@ -1,6 +1,11 @@
 # Changelog
 
 
+### 0.4.1
+
+* Listing functions now return an empty list when needed
+
+
 ## 0.4.0
 
 * Added new item : `Sheet`

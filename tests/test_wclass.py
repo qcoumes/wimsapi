@@ -229,6 +229,11 @@ class ClassTestCase(unittest.TestCase):
             sorted([c1, c2, c3], key=lambda i: i.qclass),
             sorted(Class.list(WIMS_URL, "myself", "toto", "rclass"), key=lambda i: i.qclass)
         )
+
+        self.assertListEqual(
+            [],
+            Class.list(WIMS_URL, "myself", "toto", "unknown_rclass")
+        )
         
         c1.delete()
         c2.delete()
@@ -270,6 +275,9 @@ class ClassTestCase(unittest.TestCase):
         s3 = Sheet("Third", "Third one")
         
         c.save(WIMS_URL, "myself", "toto")
+
+        self.assertListEqual([], c.listitem(Sheet))
+        
         c.additem(s1)
         c.additem(s2)
         c.additem(s3)

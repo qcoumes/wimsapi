@@ -128,6 +128,12 @@ class UserTestCase(unittest.TestCase):
         u3 = User("Test3", "test", "test", "pass", "mail@mail.com")
         
         self.clas.save(WIMS_URL, "myself", "toto")
+
+        self.assertListEqual(
+            [],
+            User.list(self.clas)
+        )
+        
         self.clas.additem(u1)
         self.clas.additem(u2)
         self.clas.additem(u3)
