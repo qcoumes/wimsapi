@@ -63,7 +63,7 @@ class Class:
     
     def __init__(self, rclass, name, institution, email, password, supervisor, qclass=None,
                  lang="en", expiration=None, limit=30, level="H4", secure='all', bgcolor='',
-                 refcolor='', css='', **kwargs):
+                 refcolor='', css='', cloningpwd='', **kwargs):
         if lang not in LANG:
             raise ValueError("lang must be one of wimsapi.class.LANG")
         if level not in LEVEL:
@@ -88,6 +88,7 @@ class Class:
         self.bgcolor = bgcolor
         self.refcolor = refcolor
         self.css = css
+        self.cloningpwd = cloningpwd
     
     
     def __contains__(self, item):
@@ -188,10 +189,11 @@ class Class:
             )
             if not status:  # pragma: no cover
                 raise AdmRawError(response['message'])
+            self._saved = True
             self.qclass = response['class_id']
             self.supervisor.quser = "supervisor"
-        
-        self._saved = True
+            self.supervisor._saved = True
+            self.supervisor._class = self
     
     
     def delete(self):
@@ -251,11 +253,15 @@ class Class:
         c = cls(**class_info)
         c._api = api
         c._saved = True
+        c.supervisor._saved = True
+        c.supervisor._class = c
         return c
     
     
     @classmethod
     def list(cls, url, ident, passwd, rclass):
+        """Return all the instances of Class of the given WIMS server (url)
+        using ident and rclass."""
         api = WimsAPI(url, ident, passwd)
         status, response = api.listclasses(rclass, verbose=True)
         if not status:
