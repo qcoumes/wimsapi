@@ -82,8 +82,14 @@ class User(ClassItemABC):
         if isinstance(other, self.__class__):
             if not self.wclass or not other.wclass:
                 raise NotSavedError("Cannot test equality between unsaved users")
-            return self.refresh().quser == other.refresh().quser
+            return self.quser == other.quser and self._class == other._class
         return False
+    
+    
+    def __hash__(self):
+        if not self.wclass:
+            raise NotSavedError("Unsaved User cannot be hashed")
+        return hash((self._class.qclass, self.quser))
     
     
     def refresh(self):

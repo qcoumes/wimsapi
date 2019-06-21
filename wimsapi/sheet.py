@@ -87,9 +87,14 @@ class Sheet(ClassItemABC):
         if isinstance(other, self.__class__):
             if not self.wclass or not other.wclass:
                 raise NotSavedError("Cannot test equality between unsaved sheets")
-            return self.refresh().qsheet == other.refresh().qsheet
-        
+            return self.qsheet == other.qsheet and self._class == other._class
         return False
+    
+    
+    def __hash__(self):
+        if not self.wclass:
+            raise NotSavedError("Unsaved User cannot be hashed")
+        return hash((self._class.qclass, self.qsheet))
     
     
     def refresh(self):

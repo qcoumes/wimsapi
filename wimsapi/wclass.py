@@ -107,8 +107,14 @@ class Class:
         if isinstance(other, self.__class__):
             if not self._api or not other._api:
                 raise NotSavedError("Cannot test equality between unsaved classes")
-            return self.refresh().qclass == other.refresh().qclass
+            return self.qclass == other.qclass and self.url == other.url
         return False
+    
+    
+    def __hash__(self):
+        if not self._api:
+            raise NotSavedError("Unsaved classes cannot be hashed")
+        return hash((self.qclass, self.url))
     
     
     def _to_payload(self):
