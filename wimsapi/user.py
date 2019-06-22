@@ -58,6 +58,7 @@ class User(ClassItemABC):
     
     @property
     def fullname(self):
+        """Return the titled firstname and lastname of this User"""
         return (self.firstname + " " + self.lastname).title()
     
     
@@ -79,6 +80,7 @@ class User(ClassItemABC):
     
     
     def __eq__(self, other):
+        """Users have to come from the same class and have the same quser to be equal."""
         if isinstance(other, self.__class__):
             if not self.wclass or not other.wclass:
                 raise NotSavedError("Cannot test equality between unsaved users")
@@ -220,4 +222,5 @@ class User(ClassItemABC):
     
     @classmethod
     def list(cls, wclass):
+        """Returns a list of every User of wclass."""
         return [cls.get(wclass, quser) for quser in wclass.infos["userlist"] if quser != '']

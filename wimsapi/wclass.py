@@ -104,6 +104,7 @@ class Class:
     
     
     def __eq__(self, other):
+        """Classes have to come from the same server and have the same qclass to be equal."""
         if isinstance(other, self.__class__):
             if not self._api or not other._api:
                 raise NotSavedError("Cannot test equality between unsaved classes")

@@ -84,6 +84,7 @@ class Sheet(ClassItemABC):
     
     
     def __eq__(self, other):
+        """Sheets have to come from the same server and have the same qsheet to be equal."""
         if isinstance(other, self.__class__):
             if not self.wclass or not other.wclass:
                 raise NotSavedError("Cannot test equality between unsaved sheets")
@@ -231,6 +232,7 @@ class Sheet(ClassItemABC):
     
     @classmethod
     def list(cls, wclass):
+        """Returns a list of every Sheet of wclass."""
         status, response = wclass._api.listsheets(wclass.qclass, wclass.rclass, verbose=True)
         if not status:  # pragma: no cover
             raise AdmRawError(response['message'])
