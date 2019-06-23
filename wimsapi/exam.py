@@ -18,7 +18,8 @@ class Exam(ClassItemABC):
         attempts - (int) number of possible attempts for this exam (defaults to 1)"""
     
     
-    def __init__(self, title, description=None, expiration=None, duration=60, attempts=1, **kwargs):
+    def __init__(self, title=None, description=None, expiration=None, duration=60, attempts=1,
+                 **kwargs):
         if expiration is not None:
             datetime.datetime.strptime(expiration, "%Y%m%d")
         
@@ -123,7 +124,7 @@ class Exam(ClassItemABC):
         if not status:
             raise AdmRawError(response['message'])
         
-        self.qexam = response['exam_id'] if "exam_id" in response else response["query_exam"]
+        self.qexam = response['exam_id'] if "exam_id" in response else response["queryexam"]
         self._class = wclass
         self.wclass = True
     
@@ -196,7 +197,7 @@ class Exam(ClassItemABC):
         duplicate = dict(exam_info)
         for k, v in duplicate.items():
             if k.startswith("exam_"):
-                exam_info[k[6:]] = v
+                exam_info[k[5:]] = v
         exam_info["exammode"] = exam_info["exam_status"]
         
         exam = Exam(**exam_info)
