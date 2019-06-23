@@ -38,7 +38,7 @@ class Sheet(ClassItemABC):
             of the contents is up to you only! (defaults to "")"""
     
     
-    def __init__(self, title, description=None, expiration=None, sheetmode=0, weight=1,
+    def __init__(self, title=None, description=None, expiration=None, sheetmode=0, weight=1,
                  formula=2, indicator=1, contents="", **kwargs):
         if expiration is not None:
             datetime.datetime.strptime(expiration, "%Y%m%d")
@@ -146,7 +146,7 @@ class Sheet(ClassItemABC):
         if not status:
             raise AdmRawError(response['message'])
         
-        self.qsheet = response['sheet_id'] if "sheet_id" in response else response["query_sheet"]
+        self.qsheet = response['sheet_id'] if "sheet_id" in response else response["querysheet"]
         self._class = wclass
         self.wclass = True
     
