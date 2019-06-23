@@ -108,7 +108,7 @@ class Class:
         if isinstance(other, self.__class__):
             if not self._api or not other._api:
                 raise NotSavedError("Cannot test equality between unsaved classes")
-            return self.qclass == other.qclass and self.url == other.url
+            return str(self.qclass) == str(other.qclass) and self.url == other.url
         return False
     
     
@@ -161,7 +161,7 @@ class Class:
         if not self._api:
             raise NotSavedError("infos is not defined until the WIMS class is saved once")
         status, class_info = self._api.getclass(self.qclass, self.rclass, verbose=True)
-        if not status:  # pragma: no cover
+        if not status:
             raise AdmRawError(class_info['message'])
         
         for k in ['status', 'code', 'job']:
@@ -188,13 +188,13 @@ class Class:
         
         if self._saved:
             status, response = self._api.modclass(self.qclass, self.rclass, payload, verbose=True)
-            if not status:  # pragma: no cover
+            if not status:
                 raise AdmRawError(response['message'])
         else:
             status, response = self._api.addclass(
                 self.rclass, payload, self.supervisor._to_payload(), self.qclass, verbose=True
             )
-            if not status:  # pragma: no cover
+            if not status:
                 raise AdmRawError(response['message'])
             self._saved = True
             self.qclass = response['class_id']
@@ -209,7 +209,7 @@ class Class:
             raise NotSavedError("Can't delete unsaved class")
         
         status, response = self._api.delclass(self.qclass, self.rclass, verbose=True)
-        if not status:  # pragma: no cover
+        if not status:
             raise AdmRawError(response['message'])
         
         self._saved = False
@@ -234,20 +234,20 @@ class Class:
         api = WimsAPI(url, ident, passwd)
         
         status, class_info = api.getclass(qclass, rclass, verbose=True)
-        if not status:  # pragma: no cover
+        if not status:
             raise AdmRawError(class_info['message'])
         
         status, class_password = api.getclass(qclass, rclass, verbose=True)
-        if not status:  # pragma: no cover
+        if not status:
             raise AdmRawError(class_password['message'])
         
         status, supervisor_info = api.getuser(qclass, rclass, "supervisor", verbose=True)
-        if not status:  # pragma: no cover
+        if not status:
             raise AdmRawError(supervisor_info['message'])
         
         status, password_info = api.getuser(qclass, rclass, "supervisor", ["password"],
                                             verbose=True)
-        if not status:  # pragma: no cover
+        if not status:
             raise AdmRawError(password_info['message'])
         
         supervisor_info['password'] = password_info['password']

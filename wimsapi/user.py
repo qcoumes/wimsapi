@@ -70,7 +70,7 @@ class User(ClassItemABC):
         
         status, user_info = self._class._api.getuser(
             self._class.qclass, self._class.rclass, self.quser, verbose=True)
-        if not status:  # pragma: no cover
+        if not status:
             raise AdmRawError(user_info['message'])
         
         for k in ['status', 'code', 'job']:
@@ -140,7 +140,7 @@ class User(ClassItemABC):
             status, response = wclass._api.adduser(
                 wclass.qclass, wclass.rclass, self.quser, self._to_payload(), verbose=True)
         
-        if not status:  # pragma: no cover
+        if not status:
             raise AdmRawError(response['message'])
         
         self._class = wclass
@@ -154,7 +154,7 @@ class User(ClassItemABC):
         
         status, response = self._class._api.deluser(self._class.qclass, self._class.rclass,
                                                     self.quser, verbose=True)
-        if not status:  # pragma: no cover
+        if not status:
             raise AdmRawError(response['message'])
         
         self.wclass = False
@@ -195,7 +195,7 @@ class User(ClassItemABC):
         
         quser = user.quser if isinstance(user, cls) else user
         status, response = wclass._api.deluser(wclass.qclass, wclass.rclass, quser, verbose=True)
-        if not status:  # pragma: no cover
+        if not status:
             raise AdmRawError(response['message'])
     
     
@@ -206,11 +206,11 @@ class User(ClassItemABC):
             raise NotSavedError("Class must be saved before being able to get an user")
         
         status, user_info = wclass._api.getuser(wclass.qclass, wclass.rclass, quser, verbose=True)
-        if not status:  # pragma: no cover
+        if not status:
             raise AdmRawError(user_info['message'])
         status, user_password = wclass._api.getuser(wclass.qclass, wclass.rclass, quser,
                                                     ["password"], verbose=True)
-        if not status:  # pragma: no cover
+        if not status:
             raise AdmRawError(user_password['message'])
         
         user_info['password'] = user_password['password']

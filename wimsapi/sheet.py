@@ -74,7 +74,7 @@ class Sheet(ClassItemABC):
         
         status, sheet_info = self._class._api.getsheet(
             self._class.qclass, self._class.rclass, self.qsheet, verbose=True)
-        if not status:  # pragma: no cover
+        if not status:
             raise AdmRawError(sheet_info['message'])
         
         for k in ['status', 'code', 'job']:
@@ -88,7 +88,7 @@ class Sheet(ClassItemABC):
         if isinstance(other, self.__class__):
             if not self.wclass or not other.wclass:
                 raise NotSavedError("Cannot test equality between unsaved sheets")
-            return self.qsheet == other.qsheet and self._class == other._class
+            return str(self.qsheet) == str(other.qsheet) and self._class == other._class
         return False
     
     
@@ -144,7 +144,7 @@ class Sheet(ClassItemABC):
             status, response = wclass._api.addsheet(
                 wclass.qclass, wclass.rclass, self._to_payload(), verbose=True)
         
-        if not status:  # pragma: no cover
+        if not status:
             raise AdmRawError(response['message'])
         
         self.qsheet = response['sheet_id'] if "sheet_id" in response else response["querysheet"]
@@ -159,7 +159,7 @@ class Sheet(ClassItemABC):
         
         status, response = self._class._api.delsheet(self._class.qclass, self._class.rclass,
                                                      self.qsheet, verbose=True)
-        if not status:  # pragma: no cover
+        if not status:
             raise AdmRawError(response['message'])
         
         self.wclass = False
@@ -202,7 +202,7 @@ class Sheet(ClassItemABC):
         
         qsheet = sheet.qsheet if type(sheet) is cls else sheet
         status, response = wclass._api.delsheet(wclass.qclass, wclass.rclass, qsheet, verbose=True)
-        if not status:  # pragma: no cover
+        if not status:
             raise AdmRawError(response['message'])
     
     
@@ -214,7 +214,7 @@ class Sheet(ClassItemABC):
         
         status, sheet_info = wclass._api.getsheet(wclass.qclass, wclass.rclass, qsheet,
                                                   verbose=True)
-        if not status:  # pragma: no cover
+        if not status:
             raise AdmRawError(sheet_info['message'])
         
         duplicate = dict(sheet_info)
@@ -234,7 +234,7 @@ class Sheet(ClassItemABC):
     def list(cls, wclass):
         """Returns a list of every Sheet of wclass."""
         status, response = wclass._api.listsheets(wclass.qclass, wclass.rclass, verbose=True)
-        if not status:  # pragma: no cover
+        if not status:
             raise AdmRawError(response['message'])
         
         return [cls.get(wclass, qsheet) for qsheet in response["sheetlist"] if qsheet != '']
