@@ -22,7 +22,7 @@ class User(ClassItemABC):
         supervisable - (str) yes/no ; give right to the user to supervise a class (default to 'no').
         external_auth - (str) login for external_auth.
         agreecgu - (str) yes/ no ; if yes, the user will not be asked when he enters
-                         for the first time to agree the cgu (default to "yes").
+            for the first time to agree the cgu (default to "yes").
         regprop[1..5] - (str) custom variables."""
     
     

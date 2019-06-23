@@ -9,37 +9,36 @@ from wimsapi.utils import one_year_later
 
 class Sheet(ClassItemABC):
     """This class is used to represent a WIMS' Worksheet.
-
-    title - (str) name of the sheet (defaults to "sheet n#")
-    description - (str) description of the sheet (defaults to "sheet n#")
-    expiration - (str) expiration date (yyyymmdd) defaults to one year later
-    sheetmode - (str) the mode of the sheet:
-                          0 : pending (default)
-                          1 : active
-                          2 : expired
-                          3 : expired + hidden
-    weight - (int) weight of the sheet in the class score (default to 1), use 0 if you want this
-                   sheet's score to be ignored.
-    formula - (str) How the score is calculated for this sheet (0 to 6, default to 2)
-                        0 : Very lenient: maximum between percentage and quality.
-                        1 : Quality is not taken into account. You get maximum of grade once all
-                            the required work is done.
-                        2 : Quality has only slight effect over the grade.
-                        3 : More effect of quality.
-                        4 : To have a grade of 10, you must gather all required points (100%)
-                            without making any error (quality=10).
-                        5 : Unfinished work is over-punished.
-                        6 : Any mistake is over-punished.
-    indicator - (str) what indicator will be used in the score formula (0 to 2, default to 1)
-    contents - (str) the contents for the multi-line file to be created.
-                  The semicolons (;) in this parameter will be
-                  interpreted as new lines. Equal characters (=) must
-                  be replaced by the character AT (@).
-                  There is no check made, so the integrity of the
-                  contents is up to you only! (defaults to "")"""
+    
+    Parameters:
+        title - (str) name of the sheet (defaults to "sheet n#")
+        description - (str) description of the sheet (defaults to "sheet n#")
+        expiration - (str) expiration date (yyyymmdd) defaults to one year later
+        sheetmode - (str) the mode of the sheet:
+            0 : pending (default)
+            1 : active
+            2 : expired
+            3 : expired + hidden
+        weight - (int) weight of the sheet in the class score (default to 1), use 0 if you want this
+            sheet's score to be ignored.
+        formula - (str) How the score is calculated for this sheet (0 to 6, default to 2)
+            0 : Very lenient: maximum between percentage and quality.
+            1 : Quality is not taken into account. You get maximum of grade once all
+                the required work is done.
+            2 : Quality has only slight effect over the grade.
+            3 : More effect of quality.
+            4 : To have a grade of 10, you must gather all required points (100%)
+                without making any error (quality=10).
+            5 : Unfinished work is over-punished.
+            6 : Any mistake is over-punished.
+        indicator - (str) what indicator will be used in the score formula (0 to 2, default to 1)
+        contents - (str) the contents for the multi-line file to be created.
+            The semicolons (;) in this parameter will be interpreted as new lines. Equal characters
+            (=) must be replaced by the character AT (@). There is no check made, so the integrity
+            of the contents is up to you only! (defaults to "")"""
     
     
-    def __init__(self, title, description, expiration=None, sheetmode=0, weight=1,
+    def __init__(self, title, description=None, expiration=None, sheetmode=0, weight=1,
                  formula=2, indicator=1, contents="", **kwargs):
         if expiration is not None:
             datetime.datetime.strptime(expiration, "%Y%m%d")
@@ -147,7 +146,7 @@ class Sheet(ClassItemABC):
         if not status:
             raise AdmRawError(response['message'])
         
-        self.qsheet = response['sheet_id'] if "sheet_id" in response else response["querysheet"]
+        self.qsheet = response['sheet_id'] if "sheet_id" in response else response["query_sheet"]
         self._class = wclass
         self.wclass = True
     
