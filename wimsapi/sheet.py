@@ -177,7 +177,7 @@ class Sheet(ClassItemABC):
             raise NotSavedError("Class must be saved before being able to check whether a sheet "
                                 "exists")
         
-        sheet = sheet.qsheet if type(sheet) is cls else sheet
+        sheet = sheet.qsheet if isinstance(sheet, cls) else sheet
         status, response = wclass._api.checksheet(wclass.qclass, wclass.rclass, sheet,
                                                   verbose=True)
         msg = ('element #%s of type sheet does not exist in this class (%s)'
@@ -199,7 +199,7 @@ class Sheet(ClassItemABC):
         if not wclass._saved:
             raise NotSavedError("Class must be saved before being able to remove a sheet")
         
-        qsheet = sheet.qsheet if type(sheet) is cls else sheet
+        qsheet = sheet.qsheet if isinstance(sheet, cls) else sheet
         status, response = wclass._api.delsheet(wclass.qclass, wclass.rclass, qsheet, verbose=True)
         if not status:
             raise AdmRawError(response['message'])

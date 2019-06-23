@@ -307,7 +307,7 @@ class Class:
         if test:
             raise InvalidItemTypeError(
                 "Item of type %s cannot be deleted from the WIMS class"
-                % str(type(item) if type(item) is not str else cls))
+                % str(type(item) if not isinstance(item, str) else cls))
         if not self._saved:
             raise NotSavedError("Class must be saved before being able to remove an item")
         
@@ -328,7 +328,7 @@ class Class:
         if test:
             raise InvalidItemTypeError(
                 "Cannot check if an item of type %s is in a WIMS class"
-                % str(type(item) if type(item) is not str else cls))
+                % str(type(item) if not isinstance(item, str) else cls))
         if not self._saved:
             raise NotSavedError("Class must be saved before being able to check whether an item "
                                 "exists")

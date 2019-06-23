@@ -155,7 +155,7 @@ class Exam(ClassItemABC):
             raise NotSavedError("Class must be saved before being able to check whether a exam "
                                 "exists")
         
-        exam = exam.qexam if type(exam) is cls else exam
+        exam = exam.qexam if isinstance(exam, cls) else exam
         status, response = wclass._api.checkexam(wclass.qclass, wclass.rclass, exam,
                                                  verbose=True)
         msg = ('element #%s of type exam does not exist in this class (%s)'
@@ -177,7 +177,7 @@ class Exam(ClassItemABC):
         if not wclass._saved:
             raise NotSavedError("Class must be saved before being able to remove a exam")
         
-        qexam = exam.qexam if type(exam) is cls else exam
+        qexam = exam.qexam if isinstance(exam, cls) else exam
         status, response = wclass._api.delexam(wclass.qclass, wclass.rclass, qexam, verbose=True)
         if not status:
             raise AdmRawError(response['message'])
