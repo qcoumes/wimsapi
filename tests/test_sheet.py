@@ -32,11 +32,9 @@ class SheetTestCase(unittest.TestCase):
     def test_init_and_properties(self):
         s = Sheet("Title", "Description")
         self.assertEqual(s.exo_count, 0)
-        with self.assertRaises(NotSavedError):
-            s.infos
-        
+        self.assertRaises(NotSavedError, lambda: s.infos)
         self.clas.save(WIMS_URL, "myself", "toto")
-        s.save(self.clas)
+        self.clas.additem(s)
         self.assertIn("sheet_title", s.infos)
     
     
@@ -159,5 +157,4 @@ class SheetTestCase(unittest.TestCase):
         self.assertNotEqual(s2, self.clas.getitem(s1.qsheet, Sheet))
         self.assertNotEqual(s2, 1)
         
-        with self.assertRaises(NotSavedError):
-            s1 == s3
+        self.assertRaises(NotSavedError, lambda: s1 == s3)

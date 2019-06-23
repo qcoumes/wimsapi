@@ -26,6 +26,8 @@ class UserTestCase(unittest.TestCase):
     def tearDown(self):
         self.api.delclass(999999, "myclass")
         self.clas._saved = False
+        self.user._saved = False
+        self.user._class = None
     
     
     def test_init_and_properties(self):
