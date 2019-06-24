@@ -28,10 +28,11 @@ LANG = [
 ]
 
 LEVEL = [
-    "E1", "E2", "E3", "E4", "E5", "E6",
-    "H1", "H2", "H3", "H4", "H5", "H6",
-    "U1", "U2", "U3", "U4", "U5",
-    "G", "R",
+    "K1", "K2", "K3",                    # Kindergarten
+    "E1", "E2", "E3", "E4", "E5", "E6",  # Elementary school
+    "H1", "H2", "H3", "H4", "H5", "H6",  # High school
+    "U1", "U2", "U3", "U4", "U5",        # University
+    "G", "R",                            # Graduate, Researcher
 ]
 
 
