@@ -1,5 +1,5 @@
-from wimsapi.exceptions import AdmRawError, NotSavedError
-from wimsapi.item import ClassItemABC
+from .exceptions import AdmRawError, NotSavedError
+from .item import ClassItemABC
 
 
 

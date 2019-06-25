@@ -1,10 +1,10 @@
 import datetime
 
-from wimsapi.api import WimsAPI
-from wimsapi.exceptions import AdmRawError, InvalidItemTypeError, NotSavedError
-from wimsapi.item import ClassItemABC
-from wimsapi.user import User
-from wimsapi.utils import one_year_later
+from .api import WimsAPI
+from .exceptions import AdmRawError, InvalidItemTypeError, NotSavedError
+from .item import ClassItemABC
+from .user import User
+from .utils import one_year_later
 
 
 LANG = [
