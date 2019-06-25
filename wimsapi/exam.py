@@ -1,9 +1,11 @@
 import datetime
 import sys
 
-from wimsapi import AdmRawError, NotSavedError
-from wimsapi.item import ClassItemABC
-from wimsapi.utils import one_year_later
+from .user import User
+from .score import ExamScore
+from .exceptions import AdmRawError, NotSavedError
+from .item import ClassItemABC
+from .utils import one_year_later
 
 
 
@@ -215,3 +217,26 @@ class Exam(ClassItemABC):
             raise AdmRawError(response['message'])
         
         return [cls.get(wclass, qexam) for qexam in response["examlist"] if qexam != '']
+    
+    
+    def scores(self, quser=None):
+        """Returns a list of ExamScore for every user. If quser is given returns only its
+        ExamScore."""
+        if not self.wclass:
+            raise NotSavedError("Class must be saved before being able to retrieve scores")
+        if quser is not None:  # Checks that quser exists
+            self._class.checkitem(quser, User)
+        
+        status, response = self._class._api.getexamscores(self._class.qclass, self._class.rclass,
+                                                          self.qexam, verbose=True)
+        if not status:
+            raise AdmRawError(response['message'])
+        
+        scores = []
+        for data in response["data_scores"]:
+            if quser is not None and data['id'] != quser:
+                continue
+            user = self._class.getitem(data['id'], User)
+            scores.append(ExamScore(self, user, data["score"], data["attempts"]))
+        
+        return scores[0] if quser is not None else scores

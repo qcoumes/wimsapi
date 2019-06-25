@@ -1,9 +1,11 @@
 import datetime
 import sys
 
-from wimsapi.exceptions import AdmRawError, NotSavedError
-from wimsapi.item import ClassItemABC
-from wimsapi.utils import one_year_later
+from .score import ExerciseScore, SheetScore
+from .user import User
+from .exceptions import AdmRawError, NotSavedError
+from .item import ClassItemABC
+from .utils import one_year_later
 
 
 
@@ -237,3 +239,53 @@ class Sheet(ClassItemABC):
             raise AdmRawError(response['message'])
         
         return [cls.get(wclass, qsheet) for qsheet in response["sheetlist"] if qsheet != '']
+    
+    
+    def scores(self, quser=None):
+        """Returns a list of SheetScore for every user. If quser is given returns only its
+        SheetScore."""
+        if not self.wclass:
+            raise NotSavedError("Class must be saved before being able to retrieve scores")
+        if quser is not None:  # Checks that quser exists
+            self._class.checkitem(quser, User)
+        
+        status, response = self._class._api.getsheetscores(self._class.qclass, self._class.rclass,
+                                                           self.qsheet, verbose=True)
+        if not status:
+            raise AdmRawError(response['message'])
+        
+        scores = []
+        exo_count = len(response["weights"])
+        for data in response["data_scores"]:
+            if quser is not None and data['id'] != quser:
+                continue
+            
+            user = self._class.getitem(data['id'], User)
+            sheet_params = {
+                "sheet":     self,
+                "user":      user,
+                "score":     -1,
+                "quality":   data["user_quality"],
+                "cumul":     data["user_percent"],
+                "best":      data["user_best"],
+                "acquired":  data["user_level"],
+                "weight":    self.weight,
+                "exercises": [],
+            }
+            for i in range(exo_count):
+                exo_params = {
+                    "exo":      None,
+                    "user":     user,
+                    "quality":  data["mean_detail"][i],
+                    "cumul":    data["got_detail"][i],
+                    "best":     data["best_detail"][i],
+                    "acquired": data["level_detail"][i],
+                    "last":     data["last_detail"][i],
+                    "tries":    data["try_detail"][i],
+                    "weight":   response["weights"][i],
+                }
+                sheet_params["exercises"].append(ExerciseScore(**exo_params))
+            
+            scores.append(SheetScore(**sheet_params))
+        
+        return scores[0] if quser is not None else scores

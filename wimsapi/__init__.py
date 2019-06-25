@@ -1,7 +1,7 @@
 from .api import WimsAPI
 from .exam import Exam
 from .exceptions import AdmRawError, InvalidItemTypeError, NotSavedError, WimsAPIError
-from .score import ExerciseScore, SheetScore
+from .score import ExerciseScore, SheetScore, ExamScore
 from .sheet import Sheet
 from .user import User
 from .wclass import Class
