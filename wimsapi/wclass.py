@@ -28,11 +28,11 @@ LANG = [
 ]
 
 LEVEL = [
-    "K1", "K2", "K3",                    # Kindergarten
+    "K1", "K2", "K3",  # Kindergarten
     "E1", "E2", "E3", "E4", "E5", "E6",  # Elementary school
     "H1", "H2", "H3", "H4", "H5", "H6",  # High school
-    "U1", "U2", "U3", "U4", "U5",        # University
-    "G", "R",                            # Graduate, Researcher
+    "U1", "U2", "U3", "U4", "U5",  # University
+    "G", "R",  # Graduate, Researcher
 ]
 
 
@@ -168,6 +168,21 @@ class Class:
         for k in ['status', 'code', 'job']:
             del class_info[k]
         return class_info
+    
+    
+    @classmethod
+    def check(cls, url, ident, passwd, qclass, rclass):
+        """Returns True if the class <qclass> exists and allows connection with ident and
+        rclass, False otherwise."""
+        w = WimsAPI(url, ident, passwd)
+        status, response = w.checkclass(qclass, rclass, verbose=True)
+        
+        msg1 = 'class %s not existing' % str(qclass)
+        msg2 = 'connection refused by requested class (%s)' % str(qclass)
+        if not status and response['message'] not in [msg1, msg2]:  # pragma: no cover
+            raise AdmRawError(response['message'])
+        
+        return status
     
     
     def save(self, url=None, ident=None, passwd=None):
