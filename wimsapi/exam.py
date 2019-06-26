@@ -1,10 +1,10 @@
 import datetime
 import sys
 
-from .user import User
-from .score import ExamScore
 from .exceptions import AdmRawError, NotSavedError
 from .item import ClassItemABC
+from .score import ExamScore
+from .user import User
 from .utils import one_year_later
 
 
@@ -219,13 +219,17 @@ class Exam(ClassItemABC):
         return [cls.get(wclass, qexam) for qexam in response["examlist"] if qexam != '']
     
     
-    def scores(self, quser=None):
-        """Returns a list of ExamScore for every user. If quser is given returns only its
-        ExamScore."""
+    def scores(self, user=None):
+        """Returns a list of ExamScore for every user. If user is given returns only its
+        SheetScore.
+        
+        user can either be an instance of wimsapi.User or its quser."""
         if not self.wclass:
-            raise NotSavedError("Class must be saved before being able to retrieve scores")
-        if quser is not None:  # Checks that quser exists
-            self._class.checkitem(quser, User)
+            raise NotSavedError("Sheet must be saved before being able to retrieve scores")
+        
+        quser = user.quser if isinstance(user, User) else user
+        if quser is not None and not self._class.checkitem(quser, User):  # Checks that quser exists
+            raise ValueError("User '%s' does not exists in class '%s'" % (user, self._class.qclass))
         
         status, response = self._class._api.getexamscores(self._class.qclass, self._class.rclass,
                                                           self.qexam, verbose=True)

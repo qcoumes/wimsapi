@@ -1,14 +1,31 @@
 import os
+import subprocess
 import unittest
 
+from wimsapi import ExamScore
 from wimsapi.api import WimsAPI
-from wimsapi.exceptions import AdmRawError, NotSavedError
 from wimsapi.exam import Exam
+from wimsapi.exceptions import AdmRawError, NotSavedError
 from wimsapi.user import User
 from wimsapi.wclass import Class
 
 
 WIMS_URL = os.getenv("WIMS_URL") or "http://localhost:7777/wims/wims.cgi"
+
+
+
+def command(cmd):
+    p = subprocess.Popen(
+        cmd,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        shell=True
+    )
+    out, err = p.communicate()
+    if p.returncode:
+        raise RuntimeError(
+            "Return code : " + str(p.returncode) + " - " + err.decode() + out.decode())
+    return p.returncode, out.decode().strip(), err.decode()
 
 
 
@@ -158,3 +175,34 @@ class ExamTestCase(unittest.TestCase):
         self.assertNotEqual(s2, 1)
         
         self.assertRaises(NotSavedError, lambda: s1 == s3)
+    
+    
+    def test_scores(self):
+        # Put a dummy class with existing scores if not already added
+        qclass = 6948902
+        if not Class.check(self.api.url, self.api.ident, self.api.passwd, qclass, "myclass"):
+            archive = os.path.join(os.path.dirname(__file__), "resources/6948902.tgz")
+            command("docker cp %s wims:/home/wims/log/classes/" % archive)
+            command('docker exec wims bash -c '
+                    '"tar -xzf /home/wims/log/classes/6948902.tgz -C /home/wims/log/classes/"')
+            command('docker exec wims bash -c "chmod 644 /home/wims/log/classes/6948902/.def"')
+            command('docker exec wims bash -c "chown wims:wims /home/wims/log/classes/6948902 -R"')
+            command('docker exec wims bash -c "rm /home/wims/log/classes/6948902.tgz"')
+            command("docker exec wims bash -c "
+                    "\"echo ':6948902,20200626,Institution,test,en,0,H4,dmi,S S,+myself/myclass+,' "
+                    '>> /home/wims/log/classes/.index"')
+        
+        with self.assertRaises(NotSavedError):
+            Exam().scores()
+        
+        c = Class.get(self.api.url, self.api.ident, self.api.passwd, qclass, "myclass")
+        e = c.getitem(1, Exam)
+        u = c.getitem("qcoumes", User)
+        
+        score = ExamScore(e, u, 6.67, 1)
+        
+        self.assertEqual(e.scores("qcoumes"), score)
+        self.assertEqual(e.scores(), [score])
+        
+        with self.assertRaises(ValueError):
+            e.scores("unknown")

@@ -429,7 +429,7 @@ class WimsAPITestCase(unittest.TestCase):
     
     def test_getsheetscores(self):
         api = WimsAPI(WIMS_URL, "myself", "toto")
-        status, response = api.getsheetscores(9001, "myclass", 3)
+        status, response = api.getsheetscores(9001, "myclass", 3, verbose=True)
         self.assertTrue(status)
         self.assertIn('data_scores', response)
     
