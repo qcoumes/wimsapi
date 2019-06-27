@@ -280,7 +280,7 @@ class Sheet(ClassItemABC):
             raise AdmRawError(response['message'])
         
         scores = []
-        exo_count = len(response["exo_weights"])
+        exo_count = len(response["exo_weights" if "exo_weights" in response else "weights"])
         for data in response["data_scores"]:
             if quser is not None and data['id'] != quser:
                 continue
