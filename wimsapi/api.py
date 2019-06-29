@@ -1049,21 +1049,6 @@ class WimsAPI:
                            **kwargs)
     
     
-    def getsession(self, data1='adm/createxo', verbose=False, code=None, **kwargs):
-        """Open a WIMS session and return its ID"""
-        params = {
-            **self.params,
-            **{
-                'job':   'getsession',
-                'code':  code if code else random_code(),
-                'data1': data1,
-            }
-        }
-        request = requests.post(self.url, data=params, **kwargs)
-        response = parse_response(request, verbose)
-        return response['status'] == 'OK', response
-    
-    
     def getsheet(self, qclass, rclass, qsheet, options=None, verbose=False, code=None, **kwargs):
         """Get the properties of a sheet (of a class).
         

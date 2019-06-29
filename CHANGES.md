@@ -1,6 +1,20 @@
 # Changelog
 
 
+## 0.5.0
+
+* Added classes `Exam` and `ExamScore`, `ExerciseScore` and `SheetScore`
+to store scores
+
+* `Sheet` / `Exam`:
+    * Title and description are now optionnal in constructor.
+    * Added method `scores(user=None)` to retrieve the score of one or every user.
+
+* Added class method `check()` to `Class` to check wheter a class exists or not.
+
+* Better `__eq__` and `__hash__` for every class.
+
+
 ### 0.4.1
 
 * Listing functions now return an empty list when needed

@@ -1,5 +1,5 @@
-from wimsapi.exceptions import AdmRawError, NotSavedError
-from wimsapi.item import ClassItemABC
+from .exceptions import AdmRawError, NotSavedError
+from .item import ClassItemABC
 
 
 
@@ -22,7 +22,7 @@ class User(ClassItemABC):
         supervisable - (str) yes/no ; give right to the user to supervise a class (default to 'no').
         external_auth - (str) login for external_auth.
         agreecgu - (str) yes/ no ; if yes, the user will not be asked when he enters
-                         for the first time to agree the cgu (default to "yes").
+            for the first time to agree the cgu (default to "yes").
         regprop[1..5] - (str) custom variables."""
     
     
@@ -58,6 +58,7 @@ class User(ClassItemABC):
     
     @property
     def fullname(self):
+        """Return the titled firstname and lastname of this User"""
         return (self.firstname + " " + self.lastname).title()
     
     
@@ -69,7 +70,7 @@ class User(ClassItemABC):
         
         status, user_info = self._class._api.getuser(
             self._class.qclass, self._class.rclass, self.quser, verbose=True)
-        if not status:  # pragma: no cover
+        if not status:
             raise AdmRawError(user_info['message'])
         
         for k in ['status', 'code', 'job']:
@@ -79,11 +80,18 @@ class User(ClassItemABC):
     
     
     def __eq__(self, other):
+        """Users have to come from the same class and have the same quser to be equal."""
         if isinstance(other, self.__class__):
             if not self.wclass or not other.wclass:
                 raise NotSavedError("Cannot test equality between unsaved users")
-            return self.refresh().quser == other.refresh().quser
+            return self.quser == other.quser and self._class == other._class
         return False
+    
+    
+    def __hash__(self):
+        if not self.wclass:
+            raise NotSavedError("Unsaved User cannot be hashed")
+        return hash((self._class.qclass, self.quser))
     
     
     def refresh(self):
@@ -132,7 +140,7 @@ class User(ClassItemABC):
             status, response = wclass._api.adduser(
                 wclass.qclass, wclass.rclass, self.quser, self._to_payload(), verbose=True)
         
-        if not status:  # pragma: no cover
+        if not status:
             raise AdmRawError(response['message'])
         
         self._class = wclass
@@ -146,7 +154,7 @@ class User(ClassItemABC):
         
         status, response = self._class._api.deluser(self._class.qclass, self._class.rclass,
                                                     self.quser, verbose=True)
-        if not status:  # pragma: no cover
+        if not status:
             raise AdmRawError(response['message'])
         
         self.wclass = False
@@ -187,7 +195,7 @@ class User(ClassItemABC):
         
         quser = user.quser if isinstance(user, cls) else user
         status, response = wclass._api.deluser(wclass.qclass, wclass.rclass, quser, verbose=True)
-        if not status:  # pragma: no cover
+        if not status:
             raise AdmRawError(response['message'])
     
     
@@ -198,11 +206,11 @@ class User(ClassItemABC):
             raise NotSavedError("Class must be saved before being able to get an user")
         
         status, user_info = wclass._api.getuser(wclass.qclass, wclass.rclass, quser, verbose=True)
-        if not status:  # pragma: no cover
+        if not status:
             raise AdmRawError(user_info['message'])
         status, user_password = wclass._api.getuser(wclass.qclass, wclass.rclass, quser,
                                                     ["password"], verbose=True)
-        if not status:  # pragma: no cover
+        if not status:
             raise AdmRawError(user_password['message'])
         
         user_info['password'] = user_password['password']
@@ -214,4 +222,5 @@ class User(ClassItemABC):
     
     @classmethod
     def list(cls, wclass):
+        """Returns a list of every User of wclass."""
         return [cls.get(wclass, quser) for quser in wclass.infos["userlist"] if quser != '']

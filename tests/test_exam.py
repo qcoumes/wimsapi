@@ -2,12 +2,11 @@ import os
 import subprocess
 import unittest
 
-from wimsapi import ExerciseScore, SheetScore
+from wimsapi import ExamScore
 from wimsapi.api import WimsAPI
+from wimsapi.exam import Exam
 from wimsapi.exceptions import AdmRawError, NotSavedError
-from wimsapi.sheet import Sheet
 from wimsapi.user import User
-from wimsapi.utils import default
 from wimsapi.wclass import Class
 
 
@@ -30,7 +29,7 @@ def command(cmd):
 
 
 
-class SheetTestCase(unittest.TestCase):
+class ExamTestCase(unittest.TestCase):
     
     @classmethod
     def setUpClass(cls):
@@ -48,40 +47,40 @@ class SheetTestCase(unittest.TestCase):
     
     
     def test_init_and_properties(self):
-        s = Sheet("Title", "Description")
-        self.assertEqual(s.exo_count, 0)
-        self.assertRaises(NotSavedError, lambda: s.infos)
+        e = Exam("Title", "Description")
+        self.assertEqual(e.exo_count, 0)
+        self.assertRaises(NotSavedError, lambda: e.infos)
         self.clas.save(WIMS_URL, "myself", "toto")
-        self.clas.additem(s)
-        self.assertIn("sheet_title", s.infos)
+        self.clas.additem(e)
+        self.assertIn("exam_title", e.infos)
     
     
     def test_get_exception(self):
         with self.assertRaises(NotSavedError):
-            Sheet.get(self.clas, 1)
+            Exam.get(self.clas, 1)
         
         self.clas.save(WIMS_URL, "myself", "toto")
         with self.assertRaises(AdmRawError) as cm:
-            Sheet.get(self.clas, 50)
+            Exam.get(self.clas, 50)
         self.assertIn("WIMS' server responded with an ERROR:", str(cm.exception))
     
     
     def test_save_and_refresh(self):
         self.clas.save(WIMS_URL, "myself", "toto")
-        s = Sheet("Title", "Description")
+        e = Exam("Title", "Description")
         
         with self.assertRaises(NotSavedError):
-            s.refresh()
+            e.refresh()
         
-        s.save(self.clas)
+        e.save(self.clas)
         
-        s2 = Sheet.get(self.clas, s.qsheet)
+        s2 = Exam.get(self.clas, e.qexam)
         self.assertEqual(s2.title, "Title")
         
-        s.title = "modified"
-        s.save()
+        e.title = "modified"
+        e.save()
         
-        self.assertEqual(s.title, "modified")
+        self.assertEqual(e.title, "modified")
         self.assertEqual(s2.title, "Title")
         s2.refresh()
         self.assertEqual(s2.title, "modified")
@@ -89,67 +88,67 @@ class SheetTestCase(unittest.TestCase):
     
     def test_check(self):
         self.clas.save(WIMS_URL, "myself", "toto")
-        s = Sheet("Title", "Description")
+        e = Exam("Title", "Description")
         c = Class("myclass", "A class", "an institution", "mail@mail.com", "password",
                   self.user, qclass=999999)
         
         with self.assertRaises(NotSavedError):
-            Sheet.check(c, s)
+            Exam.check(c, e)
         
-        self.assertFalse(Sheet.check(self.clas, s))
-        self.clas.additem(s)
-        self.assertTrue(Sheet.check(self.clas, s))
+        self.assertFalse(Exam.check(self.clas, e))
+        self.clas.additem(e)
+        self.assertTrue(Exam.check(self.clas, e))
     
     
     def test_save_exceptions(self):
-        s = Sheet("Title", "Description")
+        e = Exam("Title", "Description")
         with self.assertRaises(NotSavedError):
-            s.save()
+            e.save()
         
         with self.assertRaises(NotSavedError):
-            s.save(self.clas)
+            e.save(self.clas)
     
     
     def test_delete(self):
         self.clas.save(WIMS_URL, "myself", "toto")
-        s = Sheet("Title", "Description")
+        e = Exam("Title", "Description")
         
         with self.assertRaises(NotSavedError):
-            s.delete()
+            e.delete()
         
-        s.save(self.clas)
-        Sheet.get(self.clas, s.qsheet)  # Ok
-        s.delete()
+        e.save(self.clas)
+        Exam.get(self.clas, e.qexam)  # Ok
+        e.delete()
         with self.assertRaises(AdmRawError):
-            Sheet.get(self.clas, s.qsheet)  # Should raise the exception
+            Exam.get(self.clas, e.qexam)  # Should raise the exception
     
     
     def test_remove(self):
         self.clas.save(WIMS_URL, "myself", "toto")
         c = Class("myclass", "A class", "an institution", "mail@mail.com", "password",
                   self.user, qclass=999999)
-        s = Sheet("Title", "Description")
+        e = Exam("Title", "Description")
         
         with self.assertRaises(NotSavedError):
-            s.remove(c, s)
+            e.remove(c, e)
         
-        s.save(self.clas)
-        Sheet.get(self.clas, s.qsheet)  # Ok
-        Sheet.remove(self.clas, s)
+        e.save(self.clas)
+        Exam.get(self.clas, e.qexam)  # Ok
+        Exam.remove(self.clas, e)
         with self.assertRaises(AdmRawError):
-            Sheet.get(self.clas, s.qsheet)  # Should raise the exception
+            Exam.get(self.clas, e.qexam)  # Should raise the exception
     
     
     def test_list(self):
-        s1 = Sheet("First", "First one")
-        s2 = Sheet("Second", "Second one")
-        s3 = Sheet("Third", "Third one")
+        s1 = Exam("First", "First one")
+        s2 = Exam("Second", "Second one")
+        s3 = Exam("Third", "Third one")
         
         self.clas.save(WIMS_URL, "myself", "toto")
         
         self.assertListEqual(
             [],
-            Sheet.list(self.clas)
+            Exam.list(self.clas)
         )
         
         self.clas.additem(s1)
@@ -157,59 +156,25 @@ class SheetTestCase(unittest.TestCase):
         self.clas.additem(s3)
         
         self.assertListEqual(
-            sorted([s1, s2, s3], key=lambda i: i.qsheet),
-            sorted(Sheet.list(self.clas), key=lambda i: i.qsheet)
+            sorted([s1, s2, s3], key=lambda i: i.qexam),
+            sorted(Exam.list(self.clas), key=lambda i: i.qexam)
         )
     
     
     def test_eq(self):
-        s1 = Sheet("First", "First one")
-        s2 = Sheet("Second", "Second one")
-        s3 = Sheet("Third", "Third one")
+        s1 = Exam("First", "First one")
+        s2 = Exam("Second", "Second one")
+        s3 = Exam("Third", "Third one")
         
         self.clas.save(WIMS_URL, "myself", "toto")
         self.clas.additem(s1)
         self.clas.additem(s2)
         
-        self.assertEqual(s1, self.clas.getitem(s1.qsheet, Sheet))
-        self.assertNotEqual(s2, self.clas.getitem(s1.qsheet, Sheet))
+        self.assertEqual(s1, self.clas.getitem(s1.qexam, Exam))
+        self.assertNotEqual(s2, self.clas.getitem(s1.qexam, Exam))
         self.assertNotEqual(s2, 1)
         
         self.assertRaises(NotSavedError, lambda: s1 == s3)
-    
-    
-    def test_default(self):
-        d = {
-            "a": [1, 2]
-        }
-        self.assertEqual(default(d, "a", 0), 1)
-        self.assertEqual(default(d, "a", 1), 2)
-        self.assertEqual(default(d, "a", 3), None)
-        self.assertEqual(default(d, "a", 3, -1), -1)
-        self.assertEqual(default(d, "b", 1), None)
-        self.assertEqual(default(d, "b", 1, -1), -1)
-    
-    
-    def test_compute_grade(self):
-        formula = ("max(I,Q)", "I", "I*Q^0.3", "I*Q^0.5", "I*Q", "I^2*Q", "(I*Q)^2")
-        I = (0, 1, 2)
-        Q = 3.3
-        cumul = best = acquired = 100
-        expected = {
-            formula[0]: {0: 10, 1: 10, 2: 10},
-            formula[1]: {0: 10, 1: 10, 2: 10},
-            formula[2]: {0: 7.17, 1: 7.17, 2: 7.17},
-            formula[3]: {0: 5.74, 1: 5.74, 2: 5.74},
-            formula[4]: {0: 3.3, 1: 3.3, 2: 3.3},
-            formula[5]: {0: 3.3, 1: 3.3, 2: 3.3},
-            formula[6]: {0: 1.09, 1: 1.09, 2: 1.09},
-        }
-        for f in formula:
-            for i in I:
-                self.assertEqual(
-                    Sheet._compute_grade(f, i, Q, cumul, best, acquired),
-                    expected[f][i]
-                )
     
     
     def test_scores(self):
@@ -228,24 +193,16 @@ class SheetTestCase(unittest.TestCase):
                     '>> /home/wims/log/classes/.index"')
         
         with self.assertRaises(NotSavedError):
-            Sheet().scores()
+            Exam().scores()
         
         c = Class.get(self.api.url, self.api.ident, self.api.passwd, qclass, "myclass")
-        s1 = c.getitem(1, Sheet)
-        s2 = c.getitem(2, Sheet)
+        e = c.getitem(1, Exam)
         u = c.getitem("qcoumes", User)
         
-        es1_1 = ExerciseScore(None, u, 3.3, 10, 10, 10, 0, 10, 1, 3)
-        ss1 = SheetScore(s1, u, 7.17, 3.3, 100, 100, 100, 1, [es1_1])
+        score = ExamScore(e, u, 6.67, 1)
         
-        es2_1 = ExerciseScore(None, u, 4.59, 10, 10, 10, 0, 10, 1, 2)
-        es2_2 = ExerciseScore(None, u, 5.41, 10, 10, 10, 10, 10, 1, 2)
-        ss2 = SheetScore(s2, u, 8.12, 5, 100, 100, 100, 1, [es2_1, es2_2])
-        
-        self.assertEqual(s1.scores("qcoumes"), ss1)
-        self.assertEqual(s1.scores(), [ss1])
-        self.assertEqual(s2.scores("qcoumes"), ss2)
-        self.assertEqual(s2.scores(), [ss2])
+        self.assertEqual(e.scores("qcoumes"), score)
+        self.assertEqual(e.scores(), [score])
         
         with self.assertRaises(ValueError):
-            s1.scores("unknown")
+            e.scores("unknown")

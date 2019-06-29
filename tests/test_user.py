@@ -26,6 +26,8 @@ class UserTestCase(unittest.TestCase):
     def tearDown(self):
         self.api.delclass(999999, "myclass")
         self.clas._saved = False
+        self.user._saved = False
+        self.user._class = None
     
     
     def test_init_and_properties(self):
@@ -128,7 +130,7 @@ class UserTestCase(unittest.TestCase):
         u3 = User("Test3", "test", "test", "pass", "mail@mail.com")
         
         self.clas.save(WIMS_URL, "myself", "toto")
-
+        
         self.assertListEqual(
             [],
             User.list(self.clas)

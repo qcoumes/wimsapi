@@ -1,45 +1,46 @@
 import datetime
 import sys
 
-from wimsapi.exceptions import AdmRawError, NotSavedError
-from wimsapi.item import ClassItemABC
-from wimsapi.utils import one_year_later
+from .exceptions import AdmRawError, NotSavedError
+from .item import ClassItemABC
+from .score import ExerciseScore, SheetScore
+from .user import User
+from .utils import default, one_year_later
 
 
 
 class Sheet(ClassItemABC):
     """This class is used to represent a WIMS' Worksheet.
-
-    title - (str) name of the sheet (defaults to "sheet n#")
-    description - (str) description of the sheet (defaults to "sheet n#")
-    expiration - (str) expiration date (yyyymmdd) defaults to one year later
-    sheetmode - (str) the mode of the sheet:
-                          0 : pending (default)
-                          1 : active
-                          2 : expired
-                          3 : expired + hidden
-    weight - (int) weight of the sheet in the class score (default to 1), use 0 if you want this
-                   sheet's score to be ignored.
-    formula - (str) How the score is calculated for this sheet (0 to 6, default to 2)
-                        0 : Very lenient: maximum between percentage and quality.
-                        1 : Quality is not taken into account. You get maximum of grade once all
-                            the required work is done.
-                        2 : Quality has only slight effect over the grade.
-                        3 : More effect of quality.
-                        4 : To have a grade of 10, you must gather all required points (100%)
-                            without making any error (quality=10).
-                        5 : Unfinished work is over-punished.
-                        6 : Any mistake is over-punished.
-    indicator - (str) what indicator will be used in the score formula (0 to 2, default to 1)
-    contents - (str) the contents for the multi-line file to be created.
-                  The semicolons (;) in this parameter will be
-                  interpreted as new lines. Equal characters (=) must
-                  be replaced by the character AT (@).
-                  There is no check made, so the integrity of the
-                  contents is up to you only! (defaults to "")"""
+    
+    Parameters:
+        title - (str) name of the sheet (defaults to "sheet n#")
+        description - (str) description of the sheet (defaults to "sheet n#")
+        expiration - (str) expiration date (yyyymmdd) defaults to one year later
+        sheetmode - (str) the mode of the sheet:
+            0 : pending (default)
+            1 : active
+            2 : expired
+            3 : expired + hidden
+        weight - (int) weight of the sheet in the class score (default to 1), use 0 if you want this
+            sheet's score to be ignored.
+        formula - (str) How the score is calculated for this sheet (0 to 6, default to 2)
+            0 : Very lenient: maximum between percentage and quality.
+            1 : Quality is not taken into account. You get maximum of grade once all
+                the required work is done.
+            2 : Quality has only slight effect over the grade.
+            3 : More effect of quality.
+            4 : To have a grade of 10, you must gather all required points (100%)
+                without making any error (quality=10).
+            5 : Unfinished work is over-punished.
+            6 : Any mistake is over-punished.
+        indicator - (str) what indicator will be used in the score formula (0 to 2, default to 1)
+        contents - (str) the contents for the multi-line file to be created.
+            The semicolons (;) in this parameter will be interpreted as new lines. Equal characters
+            (=) must be replaced by the character AT (@). There is no check made, so the integrity
+            of the contents is up to you only! (defaults to "")"""
     
     
-    def __init__(self, title, description, expiration=None, sheetmode=0, weight=1,
+    def __init__(self, title=None, description=None, expiration=None, sheetmode=0, weight=1,
                  formula=2, indicator=1, contents="", **kwargs):
         if expiration is not None:
             datetime.datetime.strptime(expiration, "%Y%m%d")
@@ -74,7 +75,7 @@ class Sheet(ClassItemABC):
         
         status, sheet_info = self._class._api.getsheet(
             self._class.qclass, self._class.rclass, self.qsheet, verbose=True)
-        if not status:  # pragma: no cover
+        if not status:
             raise AdmRawError(sheet_info['message'])
         
         for k in ['status', 'code', 'job']:
@@ -84,12 +85,18 @@ class Sheet(ClassItemABC):
     
     
     def __eq__(self, other):
+        """Sheets have to come from the same server and have the same qsheet to be equal."""
         if isinstance(other, self.__class__):
             if not self.wclass or not other.wclass:
                 raise NotSavedError("Cannot test equality between unsaved sheets")
-            return self.refresh().qsheet == other.refresh().qsheet
-        
+            return str(self.qsheet) == str(other.qsheet) and self._class == other._class
         return False
+    
+    
+    def __hash__(self):
+        if not self.wclass:
+            raise NotSavedError("Unsaved User cannot be hashed")
+        return hash((self._class.qclass, self.qsheet))
     
     
     def refresh(self):
@@ -138,7 +145,7 @@ class Sheet(ClassItemABC):
             status, response = wclass._api.addsheet(
                 wclass.qclass, wclass.rclass, self._to_payload(), verbose=True)
         
-        if not status:  # pragma: no cover
+        if not status:
             raise AdmRawError(response['message'])
         
         self.qsheet = response['sheet_id'] if "sheet_id" in response else response["querysheet"]
@@ -153,7 +160,7 @@ class Sheet(ClassItemABC):
         
         status, response = self._class._api.delsheet(self._class.qclass, self._class.rclass,
                                                      self.qsheet, verbose=True)
-        if not status:  # pragma: no cover
+        if not status:
             raise AdmRawError(response['message'])
         
         self.wclass = False
@@ -172,7 +179,7 @@ class Sheet(ClassItemABC):
             raise NotSavedError("Class must be saved before being able to check whether a sheet "
                                 "exists")
         
-        sheet = sheet.qsheet if type(sheet) is cls else sheet
+        sheet = sheet.qsheet if isinstance(sheet, cls) else sheet
         status, response = wclass._api.checksheet(wclass.qclass, wclass.rclass, sheet,
                                                   verbose=True)
         msg = ('element #%s of type sheet does not exist in this class (%s)'
@@ -194,9 +201,9 @@ class Sheet(ClassItemABC):
         if not wclass._saved:
             raise NotSavedError("Class must be saved before being able to remove a sheet")
         
-        qsheet = sheet.qsheet if type(sheet) is cls else sheet
+        qsheet = sheet.qsheet if isinstance(sheet, cls) else sheet
         status, response = wclass._api.delsheet(wclass.qclass, wclass.rclass, qsheet, verbose=True)
-        if not status:  # pragma: no cover
+        if not status:
             raise AdmRawError(response['message'])
     
     
@@ -208,7 +215,7 @@ class Sheet(ClassItemABC):
         
         status, sheet_info = wclass._api.getsheet(wclass.qclass, wclass.rclass, qsheet,
                                                   verbose=True)
-        if not status:  # pragma: no cover
+        if not status:
             raise AdmRawError(sheet_info['message'])
         
         duplicate = dict(sheet_info)
@@ -226,8 +233,93 @@ class Sheet(ClassItemABC):
     
     @classmethod
     def list(cls, wclass):
+        """Returns a list of every Sheet of wclass."""
         status, response = wclass._api.listsheets(wclass.qclass, wclass.rclass, verbose=True)
-        if not status:  # pragma: no cover
+        if not status:
             raise AdmRawError(response['message'])
         
         return [cls.get(wclass, qsheet) for qsheet in response["sheetlist"] if qsheet != '']
+    
+    
+    @staticmethod
+    def _compute_grade(formula, i, Q, cumul, best, acquired):
+        """Compute the grade of a sheet according to the formula and the chosen I.
+        
+        Formula contains both Q and I."""
+        if i == 0:
+            I = cumul
+        elif i == 1:
+            I = best
+        else:
+            I = acquired
+        
+        Q /= 10
+        I /= 100
+        formula = "10 * (%s)" % formula
+        return round(eval(formula.replace("^", "**")), 2)
+    
+    
+    def scores(self, user=None):
+        """Returns a list of SheetScore for every user. If user is given returns only its
+        SheetScore.
+        
+        user can either be an instance of wimsapi.User or its quser.
+        
+        A value of -1 on some members mean that WIMS did not send the value. This may be caused
+        by an outdated WIMS server."""
+        if not self.wclass:
+            raise NotSavedError("Sheet must be saved before being able to retrieve scores")
+        
+        quser = user.quser if isinstance(user, User) else user
+        if quser is not None and not self._class.checkitem(quser, User):  # Checks that quser exists
+            raise ValueError("User '%s' does not exists in class '%s'" % (user, self._class.qclass))
+        
+        status, response = self._class._api.getsheetscores(self._class.qclass, self._class.rclass,
+                                                           self.qsheet, verbose=True)
+        if not status:
+            raise AdmRawError(response['message'])
+        
+        scores = []
+        exo_count = len(response["exo_weights" if "exo_weights" in response else "weights"])
+        for data in response["data_scores"]:
+            if quser is not None and data['id'] != quser:
+                continue
+            
+            user = self._class.getitem(data['id'], User)
+            try:
+                score = self._compute_grade(response["sheet_formula"]["formula"],
+                                            response["sheet_formula"]["I"], data["user_quality"],
+                                            data["user_percent"], data["user_best"],
+                                            data["user_level"])
+            except Exception:  # pragma: no cover
+                score = -1
+            
+            sheet_params = {
+                "sheet":     self,
+                "user":      user,
+                "score":     score,
+                "quality":   data.get("user_quality", -1),
+                "cumul":     data.get("user_percent", -1),
+                "best":      data.get("user_best", -1),
+                "acquired":  data.get("user_level", -1),
+                "weight":    self.weight,
+                "exercises": [],
+            }
+            for i in range(exo_count):
+                exo_params = {
+                    "exo":      None,
+                    "user":     user,
+                    "quality":  default(data, "mean_detail", i, -1),
+                    "cumul":    default(data, "got_detail", i, -1),
+                    "best":     default(data, "best_detail", i, -1),
+                    "acquired": default(data, "level_detail", i, -1),
+                    "last":     default(data, "last_detail", i, -1),
+                    "tries":    default(data, "try_detail", i, -1),
+                    "weight":   default(response, "exo_weights", i, -1),
+                    "required": default(response, "requires", i, -1),
+                }
+                sheet_params["exercises"].append(ExerciseScore(**exo_params))
+            
+            scores.append(SheetScore(**sheet_params))
+        
+        return scores[0] if quser is not None else scores

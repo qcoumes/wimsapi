@@ -1,10 +1,10 @@
 import datetime
 
-from wimsapi.api import WimsAPI
-from wimsapi.exceptions import AdmRawError, InvalidItemTypeError, NotSavedError
-from wimsapi.item import ClassItemABC
-from wimsapi.user import User
-from wimsapi.utils import one_year_later
+from .api import WimsAPI
+from .exceptions import AdmRawError, InvalidItemTypeError, NotSavedError
+from .item import ClassItemABC
+from .user import User
+from .utils import one_year_later
 
 
 LANG = [
@@ -28,10 +28,11 @@ LANG = [
 ]
 
 LEVEL = [
-    "E1", "E2", "E3", "E4", "E5", "E6",
-    "H1", "H2", "H3", "H4", "H5", "H6",
-    "U1", "U2", "U3", "U4", "U5",
-    "G", "R",
+    "K1", "K2", "K3",  # Kindergarten
+    "E1", "E2", "E3", "E4", "E5", "E6",  # Elementary school
+    "H1", "H2", "H3", "H4", "H5", "H6",  # High school
+    "U1", "U2", "U3", "U4", "U5",  # University
+    "G", "R",  # Graduate, Researcher
 ]
 
 
@@ -63,7 +64,7 @@ class Class:
     
     def __init__(self, rclass, name, institution, email, password, supervisor, qclass=None,
                  lang="en", expiration=None, limit=30, level="H4", secure='all', bgcolor='',
-                 refcolor='', css='', **kwargs):
+                 refcolor='', css='', cloningpwd='', **kwargs):
         if lang not in LANG:
             raise ValueError("lang must be one of wimsapi.class.LANG")
         if level not in LEVEL:
@@ -88,6 +89,7 @@ class Class:
         self.bgcolor = bgcolor
         self.refcolor = refcolor
         self.css = css
+        self.cloningpwd = cloningpwd
     
     
     def __contains__(self, item):
@@ -103,11 +105,18 @@ class Class:
     
     
     def __eq__(self, other):
+        """Classes have to come from the same server and have the same qclass to be equal."""
         if isinstance(other, self.__class__):
             if not self._api or not other._api:
                 raise NotSavedError("Cannot test equality between unsaved classes")
-            return self.refresh().qclass == other.refresh().qclass
+            return str(self.qclass) == str(other.qclass) and self.url == other.url
         return False
+    
+    
+    def __hash__(self):
+        if not self._api:
+            raise NotSavedError("Unsaved classes cannot be hashed")
+        return hash((self.qclass, self.url))
     
     
     def _to_payload(self):
@@ -153,12 +162,27 @@ class Class:
         if not self._api:
             raise NotSavedError("infos is not defined until the WIMS class is saved once")
         status, class_info = self._api.getclass(self.qclass, self.rclass, verbose=True)
-        if not status:  # pragma: no cover
+        if not status:
             raise AdmRawError(class_info['message'])
         
         for k in ['status', 'code', 'job']:
             del class_info[k]
         return class_info
+    
+    
+    @classmethod
+    def check(cls, url, ident, passwd, qclass, rclass):
+        """Returns True if the class <qclass> exists and allows connection with ident and
+        rclass, False otherwise."""
+        w = WimsAPI(url, ident, passwd)
+        status, response = w.checkclass(qclass, rclass, verbose=True)
+        
+        msg1 = 'class %s not existing' % str(qclass)
+        msg2 = 'connection refused by requested class (%s)' % str(qclass)
+        if not status and response['message'] not in [msg1, msg2]:  # pragma: no cover
+            raise AdmRawError(response['message'])
+        
+        return status
     
     
     def save(self, url=None, ident=None, passwd=None):
@@ -180,18 +204,19 @@ class Class:
         
         if self._saved:
             status, response = self._api.modclass(self.qclass, self.rclass, payload, verbose=True)
-            if not status:  # pragma: no cover
+            if not status:
                 raise AdmRawError(response['message'])
         else:
             status, response = self._api.addclass(
                 self.rclass, payload, self.supervisor._to_payload(), self.qclass, verbose=True
             )
-            if not status:  # pragma: no cover
+            if not status:
                 raise AdmRawError(response['message'])
+            self._saved = True
             self.qclass = response['class_id']
             self.supervisor.quser = "supervisor"
-        
-        self._saved = True
+            self.supervisor._saved = True
+            self.supervisor._class = self
     
     
     def delete(self):
@@ -200,7 +225,7 @@ class Class:
             raise NotSavedError("Can't delete unsaved class")
         
         status, response = self._api.delclass(self.qclass, self.rclass, verbose=True)
-        if not status:  # pragma: no cover
+        if not status:
             raise AdmRawError(response['message'])
         
         self._saved = False
@@ -225,20 +250,20 @@ class Class:
         api = WimsAPI(url, ident, passwd)
         
         status, class_info = api.getclass(qclass, rclass, verbose=True)
-        if not status:  # pragma: no cover
+        if not status:
             raise AdmRawError(class_info['message'])
         
         status, class_password = api.getclass(qclass, rclass, verbose=True)
-        if not status:  # pragma: no cover
+        if not status:
             raise AdmRawError(class_password['message'])
         
         status, supervisor_info = api.getuser(qclass, rclass, "supervisor", verbose=True)
-        if not status:  # pragma: no cover
+        if not status:
             raise AdmRawError(supervisor_info['message'])
         
         status, password_info = api.getuser(qclass, rclass, "supervisor", ["password"],
                                             verbose=True)
-        if not status:  # pragma: no cover
+        if not status:
             raise AdmRawError(password_info['message'])
         
         supervisor_info['password'] = password_info['password']
@@ -251,11 +276,15 @@ class Class:
         c = cls(**class_info)
         c._api = api
         c._saved = True
+        c.supervisor._saved = True
+        c.supervisor._class = c
         return c
     
     
     @classmethod
     def list(cls, url, ident, passwd, rclass):
+        """Return all the instances of Class of the given WIMS server (url)
+        using ident and rclass."""
         api = WimsAPI(url, ident, passwd)
         status, response = api.listclasses(rclass, verbose=True)
         if not status:
@@ -294,7 +323,7 @@ class Class:
         if test:
             raise InvalidItemTypeError(
                 "Item of type %s cannot be deleted from the WIMS class"
-                % str(type(item) if type(item) is not str else cls))
+                % str(type(item) if not isinstance(item, str) else cls))
         if not self._saved:
             raise NotSavedError("Class must be saved before being able to remove an item")
         
@@ -315,7 +344,7 @@ class Class:
         if test:
             raise InvalidItemTypeError(
                 "Cannot check if an item of type %s is in a WIMS class"
-                % str(type(item) if type(item) is not str else cls))
+                % str(type(item) if not isinstance(item, str) else cls))
         if not self._saved:
             raise NotSavedError("Class must be saved before being able to check whether an item "
                                 "exists")

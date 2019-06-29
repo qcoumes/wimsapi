@@ -7,6 +7,12 @@ class ClassItemABC(ABC):  # pragma: no cover
     of actually modifying wimsapi.class.Class."""
     
     
+    @abstractmethod
+    def refresh(self):
+        """Refresh this item from wclass."""
+        pass
+    
+    
     @classmethod
     @abstractmethod
     def check(cls, wclass, item):
