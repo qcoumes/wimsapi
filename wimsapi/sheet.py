@@ -246,6 +246,7 @@ class Sheet(ClassItemABC):
         """Compute the grade of a sheet according to the formula and the chosen I.
         
         Formula contains both Q and I."""
+        i = int(i)
         if i == 0:
             I = cumul
         elif i == 1:
