@@ -1,6 +1,11 @@
 # Changelog
 
 
+## 0.5.1
+
+* Fix sheet's score computation
+
+
 ## 0.5.0
 
 * Added classes `Exam` and `ExamScore`, `ExerciseScore` and `SheetScore`
