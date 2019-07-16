@@ -1,7 +1,15 @@
 # Changelog
 
 
-## 0.5.1
+### 0.5.2
+
+* Parameters of `api.py` requests are now encoding in `ISO-8859-1`, mathching WIMS'
+  default encoding
+  
+* Adding `__repr__` and `__str__` method to `Class` and `Item` subtypes.
+
+
+### 0.5.1
 
 * Fix sheet's score computation
 
