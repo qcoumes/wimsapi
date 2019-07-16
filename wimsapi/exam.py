@@ -21,7 +21,7 @@ class Exam(ClassItemABC):
     
     
     def __init__(self, title=None, description=None, expiration=None, duration=60, attempts=1,
-                 **kwargs):
+                 exammode=0, **kwargs):
         if expiration is not None:
             datetime.datetime.strptime(expiration, "%Y%m%d")
         
@@ -35,7 +35,7 @@ class Exam(ClassItemABC):
         self.expiration = expiration if expiration is not None else one_year_later()
         self.attempts = attempts
         self.duration = duration
-        self.exammode = 0
+        self.exammode = exammode
         self.exos = []
     
     

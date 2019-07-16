@@ -8,6 +8,8 @@
   
 * Adding `__repr__` and `__str__` method to `Class` and `Item` subtypes.
 
+* Getting Exams from the WIMS server now retrieve the correct status.
+
 
 ### 0.5.1
 
