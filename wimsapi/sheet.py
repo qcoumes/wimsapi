@@ -84,6 +84,13 @@ class Sheet(ClassItemABC):
         return sheet_info
     
     
+    def __str__(self):
+        return "<wimsapi.Sheet object at %s - qsheet : %s>" % (hex(id(self)), str(self.qsheet))
+    
+    
+    __repr__ = __str__
+    
+    
     def __eq__(self, other):
         """Sheets have to come from the same server and have the same qsheet to be equal."""
         if isinstance(other, self.__class__):

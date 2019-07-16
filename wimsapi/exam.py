@@ -62,6 +62,13 @@ class Exam(ClassItemABC):
         return exam_info
     
     
+    def __str__(self):
+        return "<wimsapi.Exam object at %s - qexam : %s>" % (hex(id(self)), str(self.qexam))
+    
+    
+    __repr__ = __str__
+    
+    
     def __eq__(self, other):
         """Exams have to come from the same server and have the same qexam to be equal."""
         if isinstance(other, self.__class__):

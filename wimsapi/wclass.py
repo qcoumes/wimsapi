@@ -92,6 +92,13 @@ class Class:
         self.cloningpwd = cloningpwd
     
     
+    def __str__(self):
+        return "<wimsapi.Class object at %s - qclass : %s>" % (hex(id(self)), str(self.qclass))
+    
+    
+    __repr__ = __str__
+    
+    
     def __contains__(self, item):
         """check if an item is in the WIMS class.
         

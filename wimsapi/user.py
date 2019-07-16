@@ -79,6 +79,13 @@ class User(ClassItemABC):
         return user_info
     
     
+    def __str__(self):
+        return "<wimsapi.User object at %s - quser : %s>" % (hex(id(self)), str(self.quser))
+    
+    
+    __repr__ = __str__
+    
+    
     def __eq__(self, other):
         """Users have to come from the same class and have the same quser to be equal."""
         if isinstance(other, self.__class__):
