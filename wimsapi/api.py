@@ -175,7 +175,7 @@ class WimsAPI:
             },
             **({'qclass': qclass} if qclass is not None else {})
         }
-        request = post(self.url, data=params, **kwargs)
+        request = post(self.url, data=params, timeout=5, **kwargs)
         response = parse_response(request, verbose)
         return response['status'] == 'OK', response
     
@@ -202,7 +202,7 @@ class WimsAPI:
                 'data1':  '\n'.join([str(k) + "=" + str(v) for k, v in exam_info.items()]),
             }
         }
-        request = post(self.url, data=params, **kwargs)
+        request = post(self.url, data=params, timeout=5, **kwargs)
         response = parse_response(request, verbose)
         return response['status'] == 'OK', response
     
@@ -232,7 +232,7 @@ class WimsAPI:
         }
         if no_build:
             params['option'] = 'no_build'
-        request = post(self.url, data=params, **kwargs)
+        request = post(self.url, data=params, timeout=5, **kwargs)
         response = parse_response(request, verbose)
         return response['status'] == 'OK', response
     
@@ -286,7 +286,7 @@ class WimsAPI:
                 'data1':  '\n'.join([str(k) + "=" + str(v) for k, v in sheet_info.items()]),
             }
         }
-        request = post(self.url, data=params, **kwargs)
+        request = post(self.url, data=params, timeout=5, **kwargs)
         response = parse_response(request, verbose)
         return response['status'] == 'OK', response
     
@@ -328,7 +328,7 @@ class WimsAPI:
                 'data1':  '\n'.join([str(k) + "=" + str(v) for k, v in user_info.items()]),
             }
         }
-        request = post(self.url, data=params, **kwargs)
+        request = post(self.url, data=params, timeout=5, **kwargs)
         response = parse_response(request, verbose)
         return response['status'] == 'OK', response
     
@@ -364,7 +364,7 @@ class WimsAPI:
         }
         if hashlogin:
             params['hashlogin'] = hashlogin
-        request = post(self.url, data=params, **kwargs)
+        request = post(self.url, data=params, timeout=5, **kwargs)
         response = parse_response(request, verbose)
         return response['status'] == 'OK', response
     
@@ -384,7 +384,7 @@ class WimsAPI:
                 'rclass': rclass,
             }
         }
-        request = post(self.url, data=params, **kwargs)
+        request = post(self.url, data=params, timeout=5, **kwargs)
         response = parse_response(request, verbose)
         return response['status'] == 'OK', response
     
@@ -404,7 +404,7 @@ class WimsAPI:
                 'rclass': rclass,
             }
         }
-        request = post(self.url, data=params, **kwargs)
+        request = post(self.url, data=params, timeout=5, **kwargs)
         response = parse_response(request, verbose)
         return response['status'] == 'OK', response
     
@@ -426,7 +426,7 @@ class WimsAPI:
                 'qexam':  qexam,
             }
         }
-        request = post(self.url, data=params, **kwargs)
+        request = post(self.url, data=params, timeout=5, **kwargs)
         response = parse_response(request, verbose)
         return response['status'] == 'OK', response
     
@@ -437,7 +437,7 @@ class WimsAPI:
             **self.params,
             **{'job': 'checkident', 'code': code if code else random_code()}
         }
-        request = post(self.url, data=params, **kwargs)
+        request = post(self.url, data=params, timeout=5, **kwargs)
         response = parse_response(request, verbose)
         return response['status'] == 'OK', response
     
@@ -459,7 +459,7 @@ class WimsAPI:
                 'qsheet': qsheet,
             }
         }
-        request = post(self.url, data=params, **kwargs)
+        request = post(self.url, data=params, timeout=5, **kwargs)
         response = parse_response(request, verbose)
         return response['status'] == 'OK', response
     
@@ -481,7 +481,7 @@ class WimsAPI:
                 'quser':  quser,
             }
         }
-        request = post(self.url, data=params, **kwargs)
+        request = post(self.url, data=params, timeout=5, **kwargs)
         response = parse_response(request, verbose)
         return response['status'] == 'OK', response
     
@@ -501,7 +501,7 @@ class WimsAPI:
                 'rclass': rclass,
             }
         }
-        request = post(self.url, data=params, **kwargs)
+        request = post(self.url, data=params, timeout=5, **kwargs)
         response = parse_response(request, verbose)
         return response['status'] == 'OK', response
     
@@ -521,7 +521,7 @@ class WimsAPI:
                 'rclass': rclass,
             }
         }
-        request = post(self.url, data=params, **kwargs)
+        request = post(self.url, data=params, timeout=5, **kwargs)
         response = parse_response(request, verbose)
         return response['status'] == 'OK', response
     
@@ -541,7 +541,7 @@ class WimsAPI:
                 'rclass': rclass,
             }
         }
-        request = post(self.url, data=params, **kwargs)
+        request = post(self.url, data=params, timeout=5, **kwargs)
         response = parse_response(request, verbose)
         return response['status'] == 'OK', response
     
@@ -563,7 +563,7 @@ class WimsAPI:
                 'qexam':  qexam,
             }
         }
-        request = post(self.url, data=params, **kwargs)
+        request = post(self.url, data=params, timeout=5, **kwargs)
         response = parse_response(request, verbose)
         return response['status'] == 'OK', response
     
@@ -585,7 +585,7 @@ class WimsAPI:
                 'qexo':   qexo,
             }
         }
-        request = post(self.url, data=params, **kwargs)
+        request = post(self.url, data=params, timeout=5, **kwargs)
         response = parse_response(request, verbose)
         return response['status'] == 'OK', response
     
@@ -608,7 +608,7 @@ class WimsAPI:
                 'qsheet': qsheet,
             }
         }
-        request = post(self.url, data=params, **kwargs)
+        request = post(self.url, data=params, timeout=5, **kwargs)
         response = parse_response(request, verbose)
         return response['status'] == 'OK', response
     
@@ -630,7 +630,7 @@ class WimsAPI:
                 'quser':  quser,
             }
         }
-        request = post(self.url, data=params, **kwargs)
+        request = post(self.url, data=params, timeout=5, **kwargs)
         response = parse_response(request, verbose)
         return response['status'] == 'OK', response
     
@@ -663,7 +663,7 @@ class WimsAPI:
         }
         if options:
             params['option'] = ','.join(options)
-        request = post(self.url, data=params, **kwargs)
+        request = post(self.url, data=params, timeout=5, **kwargs)
         response = parse_response(request, verbose)
         return response['status'] == 'OK', response
     
@@ -694,7 +694,7 @@ class WimsAPI:
                 'quser':  quser,
             }
         }
-        request = post(self.url, data=params, **kwargs)
+        request = post(self.url, data=params, timeout=5, **kwargs)
         response = parse_response(request, verbose)
         return response['status'] == 'OK', response
     
@@ -717,7 +717,7 @@ class WimsAPI:
                 'option': filename,
             }
         }
-        request = post(self.url, data=params, stream=True, **kwargs)
+        request = post(self.url, data=params, stream=True, timeout=5, **kwargs)
         response = parse_response(request, return_request=True)
         return (
             response['status'] == 'OK' if isinstance(response, dict) else True,
@@ -742,7 +742,7 @@ class WimsAPI:
                 'data1':  date,
             }
         }
-        request = post(self.url, data=params, **kwargs)
+        request = post(self.url, data=params, timeout=5, **kwargs)
         response = parse_response(request, verbose)
         return response['status'] == 'OK', response
     
@@ -762,7 +762,7 @@ class WimsAPI:
                 'qclass': qclass,
             }
         }
-        request = post(self.url, data=params, stream=True, **kwargs)
+        request = post(self.url, data=params, stream=True, timeout=5, **kwargs)
         response = parse_response(request, return_request=True)
         return (
             response['status'] == 'OK' if isinstance(response, dict) else True,
@@ -820,7 +820,7 @@ class WimsAPI:
         }
         if options:
             params['option'] = ','.join(options)
-        request = post(self.url, data=params, stream=True, **kwargs)
+        request = post(self.url, data=params, stream=True, timeout=5, **kwargs)
         response = parse_response(request, return_request=True)
         return (
             response['status'] == 'OK' if isinstance(response, dict) else True,
@@ -845,7 +845,7 @@ class WimsAPI:
                 'qexam':  qexam,
             }
         }
-        request = post(self.url, data=params, **kwargs)
+        request = post(self.url, data=params, timeout=5, **kwargs)
         response = parse_response(request, verbose)
         return response['status'] == 'OK', response
     
@@ -869,7 +869,7 @@ class WimsAPI:
                 'qexam':  qexam,
             }
         }
-        request = post(self.url, data=params, **kwargs)
+        request = post(self.url, data=params, timeout=5, **kwargs)
         response = parse_response(request, verbose)
         return response['status'] == 'OK', response
     
@@ -891,7 +891,7 @@ class WimsAPI:
                 'qexam':  qexam,
             }
         }
-        request = post(self.url, data=params, **kwargs)
+        request = post(self.url, data=params, timeout=5, **kwargs)
         response = parse_response(request, verbose)
         return response['status'] == 'OK', response
     
@@ -915,7 +915,7 @@ class WimsAPI:
                 'qexo':   qexo,
             }
         }
-        request = post(self.url, data=params, **kwargs)
+        request = post(self.url, data=params, timeout=5, **kwargs)
         response = parse_response(request, verbose)
         return response['status'] == 'OK', response
     
@@ -937,7 +937,7 @@ class WimsAPI:
                 'qexo':   qexo,
             }
         }
-        request = post(self.url, data=params, stream=True, **kwargs)
+        request = post(self.url, data=params, stream=True, timeout=5, **kwargs)
         response = parse_response(request, return_request=True)
         return (
             response['status'] == 'OK' if isinstance(response, dict) else True,
@@ -964,7 +964,7 @@ class WimsAPI:
                 'qexo':   qexo,
             }
         }
-        request = post(self.url, data=params, **kwargs)
+        request = post(self.url, data=params, timeout=5, **kwargs)
         response = parse_response(request, verbose)
         return response['status'] == 'OK', response
     
@@ -978,7 +978,7 @@ class WimsAPI:
                 'code': code if code else random_code(),
             }
         }
-        request = post(self.url, data=params, **kwargs)
+        request = post(self.url, data=params, timeout=5, **kwargs)
         response = parse_response(request, verbose)
         return response['status'] == 'OK', response
     
@@ -1000,7 +1000,7 @@ class WimsAPI:
                 'quser':  quser,
             }
         }
-        request = post(self.url, data=params, **kwargs)
+        request = post(self.url, data=params, timeout=5, **kwargs)
         response = parse_response(request, verbose)
         return response['status'] == 'OK', response
     
@@ -1018,7 +1018,7 @@ class WimsAPI:
                 'option': module,
             }
         }
-        request = post(self.url, data=params, **kwargs)
+        request = post(self.url, data=params, timeout=5, **kwargs)
         response = parse_response(request, verbose)
         return response['status'] == 'OK', response
     
@@ -1046,7 +1046,7 @@ class WimsAPI:
         }
         if qsheet is not None:
             params['qsheet'] = qsheet
-        request = post(self.url, data=params, **kwargs)
+        request = post(self.url, data=params, timeout=5, **kwargs)
         response = parse_response(request, verbose)
         return response['status'] == 'OK', response
     
@@ -1085,7 +1085,7 @@ class WimsAPI:
         }
         if options:
             params['option'] = ','.join(options)
-        request = post(self.url, data=params, **kwargs)
+        request = post(self.url, data=params, timeout=5, **kwargs)
         response = parse_response(request, verbose)
         return response['status'] == 'OK', response
     
@@ -1107,7 +1107,7 @@ class WimsAPI:
                 'qsheet': qsheet,
             }
         }
-        request = post(self.url, data=params, **kwargs)
+        request = post(self.url, data=params, timeout=5, **kwargs)
         response = parse_response(request, verbose)
         return response['status'] == 'OK', response
     
@@ -1129,7 +1129,7 @@ class WimsAPI:
                 'qsheet': qsheet,
             }
         }
-        request = post(self.url, data=params, **kwargs)
+        request = post(self.url, data=params, timeout=5, **kwargs)
         response = parse_response(request, verbose)
         return response['status'] == 'OK', response
     
@@ -1145,7 +1145,7 @@ class WimsAPI:
                 'code': code if code else random_code(),
             }
         }
-        request = post(self.url, data=params, **kwargs)
+        request = post(self.url, data=params, timeout=5, **kwargs)
         response = parse_response(request, verbose)
         return response['status'] == 'OK', response
     
@@ -1177,7 +1177,7 @@ class WimsAPI:
         }
         if options:
             params['option'] = ','.join(options)
-        request = post(self.url, data=params, **kwargs)
+        request = post(self.url, data=params, timeout=5, **kwargs)
         response = parse_response(request, verbose)
         return response['status'] == 'OK', response
     
@@ -1191,10 +1191,10 @@ class WimsAPI:
             quser  - (str) user identifier on the receiving server.
             session - (str) session identifer returned by authuser().
             exercice - (str) addresse of the exercice found in 'About this module / this exercice'
-                       on the page of the exercice eg:
-                       'classes/en&exo=Exercise1&qnum=1&qcmlevel=1&scoredelay=700,700 '
+                on the page of the exercice eg:
+                'classes/en&exo=Exercise1&qnum=1&qcmlevel=1&scoredelay=700,700 '
             about - (bool) If True (default), show "about" which gives author information about the
-                     exercise"""
+                exercise."""
         params = {
             **self.params,
             **{
@@ -1208,7 +1208,7 @@ class WimsAPI:
                 'option':  'about' if about else 'noabout',
             }
         }
-        request = post(self.url, data=params, stream=True, **kwargs)
+        request = post(self.url, data=params, stream=True, timeout=5, **kwargs)
         response = parse_response(request, return_request=True)
         return (
             response['status'] == 'OK' if isinstance(response, dict) else True,
@@ -1237,7 +1237,7 @@ class WimsAPI:
                 'qexam':  qexam,
             }
         }
-        request = post(self.url, data=params, **kwargs)
+        request = post(self.url, data=params, timeout=5, **kwargs)
         response = parse_response(request, verbose)
         return response['status'] == 'OK', response
     
@@ -1262,7 +1262,7 @@ class WimsAPI:
                 'qexam':  qexam,
             }
         }
-        request = post(self.url, data=params, **kwargs)
+        request = post(self.url, data=params, timeout=5, **kwargs)
         response = parse_response(request, verbose)
         return response['status'] == 'OK', response
     
@@ -1291,7 +1291,7 @@ class WimsAPI:
                 'rclass': rclass,
             }
         }
-        request = post(self.url, data=params, **kwargs)
+        request = post(self.url, data=params, timeout=5, **kwargs)
         response = parse_response(request, verbose)
         return response['status'] == 'OK', response
     
@@ -1311,7 +1311,7 @@ class WimsAPI:
                 'rclass': rclass,
             }
         }
-        request = post(self.url, data=params, **kwargs)
+        request = post(self.url, data=params, timeout=5, **kwargs)
         response = parse_response(request, verbose)
         return response['status'] == 'OK', response
     
@@ -1331,7 +1331,7 @@ class WimsAPI:
                 'rclass': rclass,
             }
         }
-        request = post(self.url, data=params, **kwargs)
+        request = post(self.url, data=params, timeout=5, **kwargs)
         response = parse_response(request, verbose)
         return response['status'] == 'OK', response
     
@@ -1356,7 +1356,7 @@ class WimsAPI:
                 'qexam':  qexam,
             }
         }
-        request = post(self.url, data=params, **kwargs)
+        request = post(self.url, data=params, timeout=5, **kwargs)
         response = parse_response(request, verbose)
         return response['status'] == 'OK', response
     
@@ -1376,7 +1376,7 @@ class WimsAPI:
                 'option': level,
             }
         }
-        request = post(self.url, data=params, **kwargs)
+        request = post(self.url, data=params, timeout=5, **kwargs)
         response = parse_response(request, verbose)
         return response['status'] == 'OK', response
     
@@ -1396,7 +1396,7 @@ class WimsAPI:
                 'rclass': rclass,
             }
         }
-        request = post(self.url, data=params, **kwargs)
+        request = post(self.url, data=params, timeout=5, **kwargs)
         response = parse_response(request, verbose)
         return response['status'] == 'OK', response
     
@@ -1433,7 +1433,7 @@ class WimsAPI:
                 'data1':  '\n'.join([str(k) + "=" + str(v) for k, v in class_info.items()]),
             }
         }
-        request = post(self.url, data=params, **kwargs)
+        request = post(self.url, data=params, timeout=5, **kwargs)
         response = parse_response(request, verbose)
         return response['status'] == 'OK', response
     
@@ -1462,7 +1462,7 @@ class WimsAPI:
                 'data1':  '\n'.join([str(k) + "=" + str(v) for k, v in exam_info.items()]),
             }
         }
-        request = post(self.url, data=params, **kwargs)
+        request = post(self.url, data=params, timeout=5, **kwargs)
         response = parse_response(request, verbose)
         return response['status'] == 'OK', response
     
@@ -1509,7 +1509,7 @@ class WimsAPI:
                 'data1':  '\n'.join([str(k) + "=" + str(v) for k, v in sheet_info.items()]),
             }
         }
-        request = post(self.url, data=params, **kwargs)
+        request = post(self.url, data=params, timeout=5, **kwargs)
         response = parse_response(request, verbose)
         return response['status'] == 'OK', response
     
@@ -1550,7 +1550,7 @@ class WimsAPI:
                 'data1':  '\n'.join([str(k) + "=" + str(v) for k, v in user_info.items()]),
             }
         }
-        request = post(self.url, data=params, **kwargs)
+        request = post(self.url, data=params, timeout=5, **kwargs)
         response = parse_response(request, verbose)
         return response['status'] == 'OK', response
     
@@ -1581,7 +1581,7 @@ class WimsAPI:
         }
         if copy:
             params['option'] = 'copy'
-        request = post(self.url, data=params, **kwargs)
+        request = post(self.url, data=params, timeout=5, **kwargs)
         response = parse_response(request, verbose)
         return response['status'] == 'OK', response
     
@@ -1609,7 +1609,7 @@ class WimsAPI:
         }
         if copy:
             params['option'] = 'copy'
-        request = post(self.url, data=params, **kwargs)
+        request = post(self.url, data=params, timeout=5, **kwargs)
         response = parse_response(request, verbose)
         return response['status'] == 'OK', response
     
@@ -1659,7 +1659,7 @@ class WimsAPI:
                 'data1':  csv,
             }
         }
-        request = post(self.url, data=params, **kwargs)
+        request = post(self.url, data=params, timeout=5, **kwargs)
         response = parse_response(request, verbose)
         return response['status'] == 'OK', response
     
@@ -1694,7 +1694,7 @@ class WimsAPI:
         if options:
             params['data1'] += ('\nparams='
                                 + '\n'.join([str(k) + "=" + str(v) for k, v in options.items()]))
-        request = post(self.url, data=params, **kwargs)
+        request = post(self.url, data=params, timeout=5, **kwargs)
         response = parse_response(request, verbose)
         return response['status'] == 'OK', response
     
@@ -1716,7 +1716,7 @@ class WimsAPI:
                 'quser':  quser,
             }
         }
-        request = post(self.url, data=params, **kwargs)
+        request = post(self.url, data=params, timeout=5, **kwargs)
         response = parse_response(request, verbose)
         return response['status'] == 'OK', response
     
@@ -1736,7 +1736,7 @@ class WimsAPI:
                 'rclass': rclass,
             }
         }
-        request = post(self.url, data=params, **kwargs)
+        request = post(self.url, data=params, timeout=5, **kwargs)
         response = parse_response(request, verbose)
         return response['status'] == 'OK', response
     
@@ -1769,7 +1769,7 @@ class WimsAPI:
                 'data1':  qclass2,
             }
         }
-        request = post(self.url, data=params, **kwargs)
+        request = post(self.url, data=params, timeout=5, **kwargs)
         response = parse_response(request, verbose)
         return response['status'] == 'OK', response
     
@@ -1787,7 +1787,7 @@ class WimsAPI:
                 'data1': exo_src,
             }
         }
-        request = post(self.url, data=params, **kwargs)
+        request = post(self.url, data=params, timeout=5, **kwargs)
         response = parse_response(request, verbose)
         return response['status'] == 'OK', response
     

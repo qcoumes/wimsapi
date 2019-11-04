@@ -245,6 +245,7 @@ class Exam(ClassItemABC):
         
         scores = []
         for data in response["data_scores"]:
+            # Ignore score of other users if quser is given
             if quser is not None and data['id'] != quser:
                 continue
             user = self._class.getitem(data['id'], User)
