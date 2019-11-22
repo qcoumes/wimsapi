@@ -1,6 +1,18 @@
 # Changelog
 
 
+### O.5.4
+
+* Append `/` at the end of the WIMS server's url if it is not present when using
+`WimsAPI`.
+
+* Added adm/raw API to the documentation.
+
+### 0.5.3
+
+* Default timeout for low level API is now 10 seconds (instead of 120).
+
+
 ### 0.5.2
 
 * Parameters of `api.py` requests are now encoding in `ISO-8859-1`, mathching WIMS'
