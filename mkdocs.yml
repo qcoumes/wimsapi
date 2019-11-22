@@ -12,6 +12,7 @@ nav:
     - Exam: exam.md
     - Exceptions: exceptions.md
   - "Low-Level API": api.md
+  - "Adm/raw API": adm-raw.md
   - "Change log": CHANGES.md
   - License: license.md
   - Github: https://github.com/qcoumes/wimsapi
