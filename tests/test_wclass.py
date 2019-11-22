@@ -10,7 +10,7 @@ from wimsapi.user import User
 from wimsapi.wclass import Class, one_year_later
 
 
-WIMS_URL = os.getenv("WIMS_URL") or "http://localhost:7777/wims/wims.cgi"
+WIMS_URL = os.getenv("WIMS_URL") or "http://localhost:7777/wims/wims.cgi/"
 
 
 
@@ -73,6 +73,12 @@ class ClassTestCase(unittest.TestCase):
         with self.assertRaises(ValueError):
             Class("myclass", "A class", "an institution", "mail@mail.com", "password",
                   self.user, qclass=999999, expiration="Wrong")
+    
+    
+    def test_append_slash(self):
+        url = WIMS_URL if not WIMS_URL.endswith('/') else WIMS_URL[:-1]
+        c = Class.get(url, "myself", "toto", 9001, "myclass")
+        self.assertEqual(c.url, url + "/")
     
     
     def test_save_and_refresh(self):

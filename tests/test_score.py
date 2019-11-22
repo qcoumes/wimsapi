@@ -4,7 +4,7 @@ import unittest
 from wimsapi import Exam, ExamScore, ExerciseScore, Sheet, SheetScore, User
 
 
-WIMS_URL = os.getenv("WIMS_URL") or "http://localhost:7777/wims/wims.cgi"
+WIMS_URL = os.getenv("WIMS_URL") or "http://localhost:7777/wims/wims.cgi/"
 
 
 

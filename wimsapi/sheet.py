@@ -290,7 +290,7 @@ class Sheet(ClassItemABC):
         scores = []
         exo_count = len(response["exo_weights" if "exo_weights" in response else "weights"])
         for data in response["data_scores"]:
-            if quser is not None and data['id'] != quser:
+            if quser is not None and data['id'] != quser:  # Searching for specific user score
                 continue
             
             user = self._class.getitem(data['id'], User)

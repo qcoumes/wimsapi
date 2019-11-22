@@ -13,7 +13,7 @@ Warning: output must be set 'ident_type=json' and agent must be set to
 'ident_agent=python-requests' in 'WIMS_HOME/log/classes/.connections/IDENT' for
 this API to work properly.
 
-For more informations, see http://wims.unice.fr/wims/?module=adm/raw&job=help"""
+For more information, see https://wimsapi.readthedocs.io/adm-raw/"""
 
 import json
 import random
@@ -40,7 +40,7 @@ def random_code():
 
 
 def parse_response(request, verbose=False, return_request=False):
-    """Return a dictionnary containing at least 'status' and 'message' keys.
+    """Return a dictionary containing at least 'status' and 'message' keys.
     
     The goal is that the response is always the same, whether the output type of the WIMS server is
     set to JSON or WIMS.
@@ -89,24 +89,26 @@ class WimsAPI:
                result is from the good request.
         verbose - (boolean) Default to False. Tell whether or not showing the whole response in the
                    the exception if the response could not be parsed.
-    Any additionnal keyword argument will be passe to the request.post() function.
+    Any additional keyword argument will be passe to the request.post() function.
     
-    Every method return a tuple containing a boolean and a dictionnary containing at least 'status',
+    Every method return a tuple containing a boolean and a dictionary containing at least 'status',
     'message' and 'code' keys.
     Status is either a word OK (which set the boolean to True), or the word ERROR (which set the
     boolean to False).
     In case the status is OK, the 'message' key contains the remaining of the data (can be empty),
-    the dictionnary can also contains more keys.
+    the dictionary can also contains more keys.
     In case the status is ERROR, key 'message' contains the nature of the error.
     
     Warning: output must be set 'ident_type=json' in 'WIMS_HOME/log/classes/.connections/IDENT'
     for this API to work properly.
     
-    For more informations, see http://wims.unice.fr/wims/?module=adm/raw&job=help"""
+    For more information, see https://wimsapi.readthedocs.io/adm-raw/"""
     
     
     def __init__(self, url, ident, passwd):
         self.params = {'module': 'adm/raw', 'ident': ident, 'passwd': passwd}
+        if not url.endswith('/'):
+            url += '/'
         self.url = url
     
     

@@ -11,7 +11,7 @@ from wimsapi.utils import default
 from wimsapi.wclass import Class
 
 
-WIMS_URL = os.getenv("WIMS_URL") or "http://localhost:7777/wims/wims.cgi"
+WIMS_URL = os.getenv("WIMS_URL") or "http://localhost:7777/wims/wims.cgi/"
 
 
 
