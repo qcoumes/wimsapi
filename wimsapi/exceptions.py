@@ -4,6 +4,15 @@ class WimsAPIError(Exception):
 
 
 
+class InvalidResponseError(WimsAPIError):
+    """Raised when WIMS send a badly formatted response."""
+    
+    def __init__(self, message, response):
+        self.message = message
+        self.response = response
+
+
+
 class AdmRawError(WimsAPIError):
     """Raised when an error occurs while communicating with the WIMS server."""
     

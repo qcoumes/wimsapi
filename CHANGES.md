@@ -1,7 +1,11 @@
 # Changelog
 
 
-<<<<<<< HEAD
+### 0.5.5
+
+* Added InvalidResponseError exception in api.py when WIMS send a badly formatted response.
+
+
 ### O.5.4
 
 * Append `/` at the end of the WIMS server's url if it is not present when using
@@ -9,14 +13,10 @@
 
 * Added adm/raw API to the documentation.
 
+
 ### 0.5.3
 
 * Default timeout for low level API is now 10 seconds (instead of 120).
-=======
-### 0.5.3
-
-* Added InvalidResponseError exception in api.py when WIMS send a badly formatted response.
->>>>>>> bump to 0.5.3
 
 
 ### 0.5.2
