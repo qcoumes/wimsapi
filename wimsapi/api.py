@@ -21,6 +21,8 @@ import string
 
 import requests
 
+from wimsapi.exceptions import InvalidResponseError
+
 
 
 def post(url, **kwargs):
@@ -66,7 +68,7 @@ def parse_response(request, verbose=False, return_request=False):
                        + "or use return_request=True to get the request object.")
             else:
                 msg = "Received:\n\n" + request.text
-            raise ValueError("Not a adm/raw response, maybe the URL is incorrect. " + msg)
+            raise InvalidResponseError("Not a adm/raw response, maybe the URL is incorrect. " + msg)
         return request
     
     return response
