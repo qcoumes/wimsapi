@@ -1,6 +1,10 @@
 # Changelog
 
 
+### 0.5.7
+
+* Added `__str__` method to InvalidResponseError.
+
 ### 0.5.6
 
 * Added `response` field to InvalidResponseError.
