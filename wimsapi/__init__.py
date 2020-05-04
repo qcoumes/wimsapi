@@ -10,4 +10,4 @@ from .wclass import Class
 
 name = "wimsapi"
 __title__ = 'wimsapi'
-__version__ = VERSION = '0.5.7'
+__version__ = VERSION = '0.5.8'

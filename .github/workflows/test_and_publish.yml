@@ -1,0 +1,72 @@
+name: Python package
+
+on:
+  push:
+    branches:
+      - master
+      - '*.*.*'
+  pull_request:
+    branches:
+      - master
+      - '*.*.*'
+  schedule:
+    - cron:  '0 6 * * 1'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.5, 3.6, 3.7, 3.8]
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup Python
+        uses: actions/setup-python@master
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Setup the WIMS server
+        run: |
+          git clone https://github.com/qcoumes/docker-wims-minimal.git wims
+          docker build -t wims-minimal wims/
+          docker run -itd -p 7777:80 --name wims wims-minimal
+          docker container start wims
+          docker exec -it wims ./bin/apache-config
+          docker exec -it wims service apache2 restart
+
+      - name: Install Tox and any other packages
+        run: |
+          pip install tox
+
+      - name: Run Tox
+        run: tox -e py
+
+      - name: Upload coverage to Codecov
+        if: matrix.python-version == 3.8
+        uses: codecov/codecov-action@v1
+        with:
+          file: ./coverage.xml
+
+  publish:
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'push' }}
+    continue-on-error: true
+    needs: test
+
+    steps:
+      - uses: actions/checkout@master
+
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.8
+
+      - name: Creating Built Distributions
+        run: python setup.py bdist
+
+      - name: Publish distribution to PyPI
+        uses: pypa/gh-action-pypi-publish@master
+        with:
+          password: ${{ secrets.pypi_password }}
