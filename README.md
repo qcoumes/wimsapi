@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/qcoumes/wimsapi.svg?branch=master)](https://travis-ci.org/qcoumes/wimsapi)
+[![Python package](https://github.com/qcoumes/wimsapi/workflows/Python%20package/badge.svg)](https://github.com/qcoumes/wimsapi/actions/)
 [![codecov](https://codecov.io/gh/qcoumes/wimsapi/branch/master/graph/badge.svg)](https://codecov.io/gh/qcoumes/wimsapi)
 [![CodeFactor](https://www.codefactor.io/repository/github/qcoumes/wimsapi/badge)](https://www.codefactor.io/repository/github/qcoumes/wimsapi)
 [![Documentation Status](https://readthedocs.org/projects/wimsapi/badge/?version=master)](https://wimsapi.readthedocs.io/?badge=master)

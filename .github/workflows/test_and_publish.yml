@@ -31,10 +31,10 @@ jobs:
         run: |
           git clone https://github.com/qcoumes/docker-wims-minimal.git wims
           docker build -t wims-minimal wims/
-          docker run -itd -p 7777:80 --name wims wims-minimal
+          docker run -id -p 7777:80 --name wims wims-minimal
           docker container start wims
-          docker exec -it wims ./bin/apache-config
-          docker exec -it wims service apache2 restart
+          docker exec -i wims ./bin/apache-config
+          docker exec -i wims service apache2 restart
 
       - name: Install Tox and any other packages
         run: |
