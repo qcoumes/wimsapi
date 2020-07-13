@@ -178,10 +178,10 @@ class Class:
     
     
     @classmethod
-    def check(cls, url, ident, passwd, qclass, rclass):
+    def check(cls, url, ident, passwd, qclass, rclass, **kwargs):
         """Returns True if the class <qclass> exists and allows connection with ident and
         rclass, False otherwise."""
-        w = WimsAPI(url, ident, passwd)
+        w = WimsAPI(url, ident, passwd, **kwargs)
         status, response = w.checkclass(qclass, rclass, verbose=True)
         
         msg1 = 'class %s not existing' % str(qclass)
@@ -192,7 +192,7 @@ class Class:
         return status
     
     
-    def save(self, url=None, ident=None, passwd=None):
+    def save(self, url=None, ident=None, passwd=None, **kwargs):
         """Save this the modification done on this class on the WIMS server.
         
         If the class has not been obtain through the get() method and has never been
@@ -201,7 +201,7 @@ class Class:
         Use the method refresh() on any other instance representing this class
         to reflect the change saved."""
         if url and ident and passwd:
-            self._api = WimsAPI(url, ident, passwd)
+            self._api = WimsAPI(url, ident, passwd, **kwargs)
         
         if not self._api:
             raise NotSavedError("url, ident and passwd must be provided when saving for the first "
@@ -251,10 +251,10 @@ class Class:
     
     
     @classmethod
-    def get(cls, url, ident, passwd, qclass, rclass):
+    def get(cls, url, ident, passwd, qclass, rclass, **kwargs):
         """Return an instance of a WIMS class corresponding to the class 'qclass' on
         the WIMS server pointed by 'url'."""
-        api = WimsAPI(url, ident, passwd)
+        api = WimsAPI(url, ident, passwd, **kwargs)
         
         status, class_info = api.getclass(qclass, rclass, verbose=True)
         if not status:
@@ -289,10 +289,10 @@ class Class:
     
     
     @classmethod
-    def list(cls, url, ident, passwd, rclass):
+    def list(cls, url, ident, passwd, rclass, **kwargs):
         """Return all the instances of Class of the given WIMS server (url)
         using ident and rclass."""
-        api = WimsAPI(url, ident, passwd)
+        api = WimsAPI(url, ident, passwd, **kwargs)
         status, response = api.listclasses(rclass, verbose=True)
         if not status:
             if "there is no class allowed for this server" in response['message']:

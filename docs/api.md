@@ -19,7 +19,7 @@ This class allow a python3 script to communicate with a WIMS server.
 * ident - (str) Sender identifier (a word, according to the definition
             in `WIMS_HOME/log/classes/.connections/`)
 * passwd - (str) Sender password (as defined in `WIMS_HOME/log/classes/.connections/`)
- 
+* kwargs - (dict) Keyword argument that will be passed to the request.post() calls.
  ___
  
 Two optionnal parameter can be passed to every method of this class:
@@ -29,7 +29,9 @@ Two optionnal parameter can be passed to every method of this class:
            result is from the good request.
 * verbose - (boolean) Default to False. Tell whether or not showing the whole response in the
                the exception if the response could not be parsed.
-* Any additionnal keyword argument will be passe to the `requests.post()` function.
+* Any additional keyword argument will be passed to the request.post() function if the same
+      argument is present in both the instance and the method's call, the method's call one will
+      prevail.
  
 ___
  

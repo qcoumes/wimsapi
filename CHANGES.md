@@ -1,5 +1,12 @@
 # Changelog
 
+#### 0.5.9
+
+* Keyword argument that will be passed to every call of `request.post()` can now
+be given to `WimsApi` constructor.
+* Every method of `Class` creating a `WimsAPI` can also receive such argument
+(`check()`, `save()`, `get()`, `list()`)
+* Now use `sdist` instead of `bdist` to create new distribution.
 
 #### 0.5.8
 
