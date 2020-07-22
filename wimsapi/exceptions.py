@@ -4,7 +4,7 @@ class WimsAPIError(Exception):
 
 
 
-class InvalidResponseError(WimsAPIError):
+class InvalidResponseError(WimsAPIError):  # pragma: no cover
     """Raised when WIMS send a badly formatted response."""
     
     
