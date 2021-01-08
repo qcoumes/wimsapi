@@ -1,4 +1,4 @@
-from .exceptions import AdmRawError, NotSavedError
+from .exceptions import AdmRawError, InvalidIdentifier, NotSavedError
 from .item import ClassItemABC
 
 
@@ -117,7 +117,7 @@ class User(ClassItemABC):
         return {k: v for k, v in self.__dict__.items() if k not in ['quser', '_class', '_saved']}
     
     
-    def save(self, wclass=None, check_exists=True):
+    def save(self, wclass=None, check_exists=True, adapt=True):
         """Save the User in the given class.
         
         wclass is an instance of wimsapi.Class. The argument is optionnal
@@ -146,6 +146,13 @@ class User(ClassItemABC):
         else:
             status, response = wclass._api.adduser(
                 wclass.qclass, wclass.rclass, self.quser, self._to_payload(), verbose=True)
+            if status and response["user_id"] != self.quser:
+                if adapt:
+                    self.quser = response["user_id"]
+                else:
+                    # Removing the user with the invalid quser
+                    User.remove(wclass, response["user_id"])
+                    raise InvalidIdentifier("quser '%s' contains invalid character" % self.quser)
         
         if not status:
             raise AdmRawError(response['message'])
@@ -159,8 +166,8 @@ class User(ClassItemABC):
         if not self.wclass:
             raise NotSavedError("Cannot delete an unsaved user")
         
-        status, response = self._class._api.deluser(self._class.qclass, self._class.rclass,
-                                                    self.quser, verbose=True)
+        status, response = self._class._api.deluser(
+            self._class.qclass, self._class.rclass, self.quser, verbose=True)
         if not status:
             raise AdmRawError(response['message'])
         

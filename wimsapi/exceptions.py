@@ -41,3 +41,8 @@ class NotSavedError(WimsAPIError):
 class InvalidItemTypeError(WimsAPIError):
     """Raised when trying to add/get/delete an invalide type from a WIMS class."""
     pass
+
+
+class InvalidIdentifier(WimsAPIError):
+    """Raised when an identifier containing invalid character is sent to WIMS."""
+    pass

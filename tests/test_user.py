@@ -2,7 +2,7 @@ import os
 import unittest
 
 from wimsapi.api import WimsAPI
-from wimsapi.exceptions import AdmRawError, NotSavedError
+from wimsapi.exceptions import AdmRawError, InvalidIdentifier, NotSavedError
 from wimsapi.user import User
 from wimsapi.wclass import Class
 
@@ -72,6 +72,15 @@ class UserTestCase(unittest.TestCase):
         self.assertEqual(u2.firstname, "modified")
     
     
+    def test_save_adapt(self):
+        self.clas.save(WIMS_URL, "myself", "toto")
+        u = User("ap'ostrophe", "test", "test", "pass", "mail@mail.com")
+        u.save(self.clas)
+        self.assertEqual("apostrophe", u.quser)
+        self.assertTrue(User.check(self.clas, "apostrophe"))
+        self.assertFalse(User.check(self.clas, "ap'ostrophe"))
+    
+    
     def test_check(self):
         self.clas.save(WIMS_URL, "myself", "toto")
         u = User("Test", "test", "test", "pass", "mail@mail.com")
@@ -92,6 +101,13 @@ class UserTestCase(unittest.TestCase):
         
         with self.assertRaises(NotSavedError):
             self.user.save(self.clas)
+        
+        self.clas.save(WIMS_URL, "myself", "toto")
+        u = User("ap'ostrophe", "test", "test", "pass", "mail@mail.com")
+        with self.assertRaises(InvalidIdentifier):
+            u.save(self.clas, adapt=False)
+        self.assertFalse(User.check(self.clas, "apostrophe"))
+        self.assertFalse(User.check(self.clas, "ap'ostrophe"))
     
     
     def test_delete(self):
