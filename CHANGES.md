@@ -1,5 +1,17 @@
 # Changelog
 
+#### 0.5.10
+
+* WIMS accept request saving user with invalid `quser`, removing or changing
+  invalid character. But `wimsapi` was taking this change into account, the `quser`
+  attribute of the user was thus invalid, causing problem when further communicating with
+  the WIMS server.  
+  To solve this problem `User.save()` now has a `adapt=True` keyword argument. When `True`,
+  the `quser` attribute will be modified to match the one used by WIMS. If `False`, the
+  user created on the WIMS server with the modifier `quser` will be deleted and the new
+  exception `InvalidIdentifier` will be raised.
+
+
 #### 0.5.9
 
 * Keyword argument that will be passed to every call of `request.post()` can now
