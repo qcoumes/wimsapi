@@ -341,7 +341,7 @@ class WimsAPI:
         return response['status'] == 'OK', response
     
     
-    def authuser(self, qclass, rclass, quser, hashlogin=None, verbose=False, code=None, **kwargs):
+    def authuser(self, qclass, rclass, quser, hashlogin=None, verbose=False, code=None, ip=None, **kwargs):
         """Get an authentification token for an user.
         
         User's password is not required.
@@ -356,6 +356,7 @@ class WimsAPI:
             qclass - (int) identifier of the class on the receiving server.
             rclass - (str) identifier of the class on the sending server.
             quser  - (str) user identifier on the receiving server.
+            ip     - (str) IP of the user trying to authenticate trough WimsAPI.
             hashlogin  - (str) hash function to use for an external authentification
             
         Return a session number under which the user can connect with no need of further
@@ -368,6 +369,7 @@ class WimsAPI:
                 'qclass': qclass,
                 'rclass': rclass,
                 'quser':  quser,
+                'data1': ip
             }
         }
         if hashlogin:
