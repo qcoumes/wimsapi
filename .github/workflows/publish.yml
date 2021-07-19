@@ -1,23 +1,15 @@
-name: Python package
+name: Publish
 
 on:
   push:
-    branches:
-      - master
-      - '*.*.*'
-  pull_request:
-    branches:
-      - master
-      - '*.*.*'
-  schedule:
-    - cron:  '0 8 * * 1'
+    tags: ['**']
 
 jobs:
   test:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [3.5, 3.6, 3.7, 3.8, 3.9]
+        python-version: [ 3.5, 3.6, 3.7, 3.8, 3.9 ]
 
     steps:
       - uses: actions/checkout@v2
@@ -46,19 +38,17 @@ jobs:
         with:
           file: ./coverage.xml
 
-  publish:
-    runs-on: ubuntu-latest
-    if: ${{ github.event_name == 'push' }}
-    continue-on-error: true
-    needs: test
 
+  publish:
+    needs: test
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
 
-      - name: Set up Python 3.8
+      - name: Set up Python 3.9
         uses: actions/setup-python@v2
         with:
-          python-version: 3.8
+          python-version: 3.9
 
       - name: Creating Built Distributions
         run: python setup.py sdist
