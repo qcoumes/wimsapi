@@ -1,5 +1,12 @@
 # Changelog
 
+
+#### 0.5.11
+
+* `api.WimsAPI.authuser` now accept an `ip` argument, allowing a persistent session for the
+  same IP. (Contributed by Gianluca Amato)
+
+
 #### 0.5.10
 
 * WIMS accept request saving user with invalid `quser`, removing or changing
