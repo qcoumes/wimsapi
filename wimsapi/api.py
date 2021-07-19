@@ -341,7 +341,8 @@ class WimsAPI:
         return response['status'] == 'OK', response
     
     
-    def authuser(self, qclass, rclass, quser, hashlogin=None, verbose=False, code=None, ip=None, **kwargs):
+    def authuser(self, qclass, rclass, quser, hashlogin=None, verbose=False, code=None, ip=None,
+                 **kwargs):
         """Get an authentification token for an user.
         
         User's password is not required.
